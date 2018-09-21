@@ -2,6 +2,7 @@ package com.ch.test;
 
 import com.ch.cloud.kafka.admin.TopicsManager;
 import kafka.admin.AdminUtils;
+import kafka.consumer.SimpleConsumer;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
@@ -15,6 +16,8 @@ import org.apache.zookeeper.data.Stat;
 import org.junit.Test;
 import scala.Tuple2;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -26,7 +29,8 @@ public class KafkaTests {
 
     final String zk = "10.202.34.30:2182/kafka/st";
     final String servers = "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093";
-    final String group = "GROUND_DEV_01370603";
+    //    final String group = "GROUND_DEV_01370603";
+    final String group = "GRD_DEV_S01";
 
     @Test
     public void testLoad() {
@@ -101,5 +105,53 @@ public class KafkaTests {
 //            System.out.println(k + ":" + v.offset());
 //        });
 
+    }
+
+    @Test
+    public void consumer() {
+//        DemoConsumer demoConsumer = new DemoConsumer(zk, group, "GROUND_DEV_LOG_02");
+//        demoConsumer.nextTuple();
+
+        SimpleConsumer consumer2 = new SimpleConsumer("10.202.34.28", 9093, 1000, 1000, group);
+        List<String> topics = Collections.singletonList("GROUND_DEV_LOG_02");
+//        TopicMetadataRequest req = new TopicMetadataRequest((short)1,1,group, topics);
+//        TopicMetadataResponse resp = consumer2.send(req);
+        KafkaConsumer<String, Object> consumer = new KafkaConsumer<String, Object>(getProp());
+
+//        consumer.assign(Arrays.asList(new TopicPartition("GROUND_DEV_LOG_02", 0)));
+//        //不改变当前offset
+//        consumer.seekToBeginning(Arrays.asList(new TopicPartition("GROUND_DEV_LOG_02", 0)));
+//// 不改变当前offset
+////       consumer.seek(new TopicPartition(topicName, 0), 10);
+//
+//        while (true) {
+//            ConsumerRecords<String, Object> records = consumer.poll(100);
+//            for (ConsumerRecord<String, Object> record : records) {
+//                System.out.println(record.toString());
+//            }
+//        }
+
+//        FetchRequest fetchRequest1 = new FetchRequest()
+    }
+
+
+    private Properties getProp() {
+
+        Properties props = new Properties();
+
+        props.put("zookeeper.connect", servers);
+//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+
+//  smallest,earliest,largest
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "smallest");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+//        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+
+        props.put("zookeeper.session.timeout.ms", "400");
+        props.put("zookeeper.sync.time.ms", "200");
+        return props;
     }
 }

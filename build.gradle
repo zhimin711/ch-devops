@@ -45,7 +45,7 @@ dependencies {
     //私有相关包
     compile("com.ch:ch-core:${chVersion}")
 
-    compile("com.ch:ch-helper:${chVersion}")
+//    compile("com.ch:ch-helper:${chVersion}")
     compile("com.ch:ch-jdbc-mybatis:${chVersion}")
     compile("com.ch:ch-shiro:${chVersion}")
 
@@ -66,11 +66,17 @@ dependencies {
 
 
 //     https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
-    compile 'org.apache.kafka:kafka-clients:0.8.2.0'
+    compile 'org.apache.kafka:kafka-clients:0.8.2.0', {
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'org.slf4j'
+    }
 //    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.0'
 
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka
-    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.0'
+    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.0', {
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'org.slf4j'
+    }
 //    compile group: 'org.apache.kafka', name: 'kafka_2.12', version: '2.0.0'
 
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
@@ -81,7 +87,7 @@ dependencies {
 //    compile group: 'org.apache.kafka', name: 'kafka-streams', version: '2.0.0'
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka-tools
 //    compile group: 'org.apache.kafka', name: 'kafka-tools', version: '1.1.0'
-    compile group: 'org.apache.kafka', name: 'kafka-tools', version: '1.0.2'
+//    compile group: 'org.apache.kafka', name: 'kafka-tools', version: '1.0.2'
 
     /* dubbo微服务依赖包 dubbo service jar start*/
     compile('com.alibaba:dubbo:2.5.3') {
@@ -92,7 +98,7 @@ dependencies {
         exclude group: 'org.slf4j'
     }
     /* dubbo service jar end*/
-//
+
 //    compile group: 'com.ch', name: 'ch-logback-flume', version: '1.0.1-SNAPSHOT'
 }
 dependencyManagement {
