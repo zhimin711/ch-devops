@@ -64,20 +64,25 @@ dependencies {
     compile 'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1'
     compile "mysql:mysql-connector-java:5.1.30"
 
-
 //     https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
-    compile 'org.apache.kafka:kafka-clients:0.8.2.0', {
+//    compile 'org.apache.kafka:kafka-clients:0.8.2.0', {
+//        exclude group: 'log4j', module: 'log4j'
+//        exclude group: 'org.slf4j'
+//    }
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.0', {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
-//    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.0'
 
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka
-    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.0', {
+//    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.0', {
+//        exclude group: 'log4j', module: 'log4j'
+//        exclude group: 'org.slf4j'
+//    }
+    compile group: 'org.apache.kafka', name: 'kafka_2.12', version: '2.0.0', {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
-//    compile group: 'org.apache.kafka', name: 'kafka_2.12', version: '2.0.0'
 
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
     compile('org.springframework.kafka:spring-kafka:1.0.0.RELEASE')
