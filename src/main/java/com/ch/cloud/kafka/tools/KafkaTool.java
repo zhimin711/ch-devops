@@ -259,6 +259,11 @@ public class KafkaTool {
                         continue;
                     }
                     readOffset = messageAndOffset.nextOffset();
+                    ByteBuffer payload = messageAndOffset.message().payload();
+
+                    byte[] bytes = new byte[payload.limit()];
+                    payload.get(bytes);
+                    logger.info("message\t=====>{}: {}", messageAndOffset.offset(), new String(bytes));
                     msgCount++;
                 }
                 logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, readOffset);

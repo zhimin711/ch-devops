@@ -116,9 +116,10 @@ public class KafkaTests {
 
     @Test
     public void test() {
-        KafkaTool kafkaTool = new KafkaTool("10.202.24.5:9094,10.202.24.6:9094,10.202.24.7:9094,10.202.24.8:9094,10.202.24.9:9094");
+//        KafkaTool kafkaTool = new KafkaTool("10.202.24.5:9094,10.202.24.6:9094,10.202.24.7:9094,10.202.24.8:9094,10.202.24.9:9094");
+        KafkaTool kafkaTool = new KafkaTool(servers);
         String topic = "GROUND_DEV_LOG_02";
-        topic = "SHIVA_TRTMS_GROUND_TASKMANAGE_CI";
+//        topic = "SHIVA_TRTMS_GROUND_TASKMANAGE_CI";
 //        Map<Integer, Long> partOffset = kafkaTool.getTopicOffset(topic, -1);
 //        System.out.println(partOffset);
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
