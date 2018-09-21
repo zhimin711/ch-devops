@@ -1,0 +1,32 @@
+
+apply plugin: 'docker'
+
+sourceCompatibility = 1.8
+[compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"
+
+docker {
+    useApi true
+    hostUrl 'http://10.202.72.129:5678'
+    apiUsername 'admin'
+    apiPassword 'admin123'
+    apiEmail 'admin@ch-cloud.com'
+}
+
+
+jar {
+    version = 'latest'
+}
+
+task buildDocker(type: Docker, dependsOn: build, group: "custom") {
+    push = true
+    applicationName = jar.baseName
+    tagVersion = jar.version
+    dockerfile = file('src/main/docker/Dockerfile')
+    doFirst {
+        copy {
+            from jar
+            into stageDir
+        }
+    }
+}
+
