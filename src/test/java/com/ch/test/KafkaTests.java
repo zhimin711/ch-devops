@@ -1,25 +1,20 @@
 package com.ch.test;
 
 import com.ch.cloud.kafka.admin.TopicsManager;
-import kafka.admin.AdminUtils;
+import com.ch.cloud.kafka.tools.KafkaTool;
+import kafka.api.OffsetRequest;
+import kafka.api.OffsetResponse;
+import kafka.api.PartitionOffsetRequestInfo;
+import kafka.api.TopicMetadataResponse;
+import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
-import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.apache.commons.io.Charsets;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.zookeeper.data.Stat;
 import org.junit.Test;
-import scala.Tuple2;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
 
 /**
  * @author 01370603
@@ -42,88 +37,33 @@ public class KafkaTests {
 
     @Test
     public void testConsumer() {
-        Properties prop = new Properties();
-//        prop.put("zookeeper.connect", "10.202.34.30:2182/kafka/st");
-        prop.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);//
-        prop.put(ConsumerConfig.GROUP_ID_CONFIG, group);
-//        prop.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 100);
-        prop.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        prop.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-//如果是之前存在的group.id
-//        ConsumerConfig.
-        Consumer<String, String> consumer = new KafkaConsumer<>(prop);
+        Consumer<String, String> consumer = new KafkaConsumer<>(getProp());
         TopicPartition p = new TopicPartition("GROUND_DEV_LOG_02", 1);
-//        指定消费topic的那个分区
-//        consumer.assign(Collections.singletonList(p));
-
-//        指定从topic的分区的某个offset开始消费
-//        consumer.seekToBeginning(Arrays.asList(p));
-//        consumer.seek(p, 0);
-//        consumer.subscribe(Arrays.asList("test2"));
-
-//如果是之前不存在的group.id
-//        Map<TopicPartition, OffsetAndMetadata> hashMaps = new HashMap<TopicPartition, OffsetAndMetadata>();
-//        hashMaps.put(new TopicPartition("test2", 0), new OffsetAndMetadata(0));
-//        consumer.commitSync(hashMaps);
-//        consumer.subscribe(Arrays.asList("test2"));
-//        while (true) {
-//            Duration timeout = Duration.ofMillis(100);
-//            ConsumerRecords<String, String> c = consumer.poll(timeout);
-//            for (ConsumerRecord<String, String> c1 : c) {
-//                System.out.println("Key: " + c1.key() + " Value: " + c1.value() + " Offset: " + c1.offset() + " Partitions: " + c1.partition());
-//
-//            }
-//        }
     }
 
 
     @Test
-    public void testAdmin() throws ExecutionException, InterruptedException {
-        ZkClient zkClient = new ZkClient(zk);
-        ZkSerializer serializer = new ZkSerializer() {
-            @Override
-            public byte[] serialize(Object o) throws ZkMarshallingError {
-                return new byte[0];
-            }
-
-            @Override
-            public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-                return new String(bytes, Charsets.UTF_8);
-            }
-        };
-        zkClient.setZkSerializer(serializer);
-        Tuple2<String, Stat> t = ZkUtils.readData(zkClient, "/");
-
-        Properties config = AdminUtils.fetchTopicConfig(zkClient, "GROUND_DEV_LOG_02");
-
-//        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, servers);
-//        AdminClient adminClient = AdminClient.create(props);
-//        ListConsumerGroupOffsetsResult offsetsResult = adminClient.listConsumerGroupOffsets(group);
-//        KafkaFuture<Map<TopicPartition, OffsetAndMetadata>> kafkaFuture = offsetsResult.partitionsToOffsetAndMetadata();
-//        Map<TopicPartition, OffsetAndMetadata> metaMap = kafkaFuture.get();
-//        metaMap.forEach((k, v) -> {
-//            System.out.println(k + ":" + v.offset());
-//        });
+    public void testAdmin() {
 
     }
 
     @Test
     public void consumer() {
-//        DemoConsumer demoConsumer = new DemoConsumer(zk, group, "GROUND_DEV_LOG_02");
-//        demoConsumer.nextTuple();
+        String topic = "GROUND_DEV_LOG_02";
+        SimpleConsumer consumer = new SimpleConsumer("10.202.34.28", 9093, 1000, 1000, group);
+        List<String> topics = Collections.singletonList(topic);
+        kafka.javaapi.TopicMetadataRequest req = new kafka.javaapi.TopicMetadataRequest(topics);
+        TopicMetadataResponse resp = consumer.send(req.underlying());
+        kafka.javaapi.TopicMetadataResponse response = new kafka.javaapi.TopicMetadataResponse(resp);
+        for (kafka.javaapi.TopicMetadata meta : response.topicsMetadata()) {
+            meta.partitionsMetadata().forEach(r -> {
+                long offset = getLastOffset(consumer, topic, r.partitionId(), OffsetRequest.LatestTime(), group);
+                System.out.println(r.partitionId() + ":" + offset);
+            });
 
-        SimpleConsumer consumer2 = new SimpleConsumer("10.202.34.28", 9093, 1000, 1000, group);
-        List<String> topics = Collections.singletonList("GROUND_DEV_LOG_02");
-//        TopicMetadataRequest req = new TopicMetadataRequest((short)1,1,group, topics);
-//        TopicMetadataResponse resp = consumer2.send(req);
-        KafkaConsumer<String, Object> consumer = new KafkaConsumer<String, Object>(getProp());
+        }
+//        KafkaConsumer<String, Object> consumer = new KafkaConsumer<String, Object>(getProp());
 
-//        consumer.assign(Arrays.asList(new TopicPartition("GROUND_DEV_LOG_02", 0)));
-//        //不改变当前offset
-//        consumer.seekToBeginning(Arrays.asList(new TopicPartition("GROUND_DEV_LOG_02", 0)));
-//// 不改变当前offset
-////       consumer.seek(new TopicPartition(topicName, 0), 10);
-//
 //        while (true) {
 //            ConsumerRecords<String, Object> records = consumer.poll(100);
 //            for (ConsumerRecord<String, Object> record : records) {
@@ -131,7 +71,26 @@ public class KafkaTests {
 //            }
 //        }
 
-//        FetchRequest fetchRequest1 = new FetchRequest()
+//        FetchRequest req = new FetchRequestBuilder().clientId(group)
+//                .addFetch("GROUND_DEV_LOG_02", 0, 100, 100) // 1000000bytes
+//                .build();
+//        FetchResponse fetchResponse = consumer2.fetch(req);
+
+    }
+
+    public static long getLastOffset(SimpleConsumer consumer, String topic, int partition, long whichTime, String clientName) {
+        TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
+        Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<>();
+        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));
+        kafka.javaapi.OffsetRequest request = new kafka.javaapi.OffsetRequest(requestInfo, kafka.api.OffsetRequest.CurrentVersion(), clientName);
+        OffsetResponse resp = consumer.getOffsetsBefore(request.underlying());
+        kafka.javaapi.OffsetResponse response = new kafka.javaapi.OffsetResponse(resp);
+        if (response.hasError()) {
+            System.out.println("Error fetching data Offset Data the Broker. Reason: " + response.errorCode(topic, partition));
+            return 0;
+        }
+        long[] offsets = response.offsets(topic, partition);
+        return offsets[0];
     }
 
 
@@ -154,4 +113,15 @@ public class KafkaTests {
         props.put("zookeeper.sync.time.ms", "200");
         return props;
     }
+
+    @Test
+    public void test() {
+        KafkaTool kafkaTool = new KafkaTool(servers);
+        String topic = "GROUND_DEV_LOG_02";
+//        Map<Integer, Long> partOffset = kafkaTool.getTopicOffset(topic, -1);
+//        System.out.println(partOffset);
+        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
+//        kafkaTool.getTopicContextOffset(topic, OffsetRequest.LatestTime());
+    }
+
 }

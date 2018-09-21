@@ -1,0 +1,178 @@
+package com.ch.cloud.kafka.tools;
+
+import com.ch.utils.CommonUtils;
+import com.google.common.collect.Maps;
+import kafka.api.*;
+import kafka.common.TopicAndPartition;
+import kafka.consumer.SimpleConsumer;
+import kafka.javaapi.TopicMetadataRequest;
+import kafka.javaapi.message.ByteBufferMessageSet;
+import kafka.message.MessageAndOffset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.stream.Stream;
+
+/**
+ * @author 01370603
+ * @date 2018/9/21 15:48
+ */
+public class KafkaTool {
+
+    private Logger logger = LoggerFactory.getLogger(KafkaTool.class);
+
+    private String clientId = "GRD_DEV_S01";
+    private int timeout = 5000;
+    private int bufferSize = 1000;
+
+    private Map<String, Integer> hosts;
+
+    public KafkaTool(String servers) {
+        hosts = Maps.newHashMap();
+        if (CommonUtils.isNotEmpty(servers)) {
+            String[] serverArr = servers.split(",");
+            Stream.of(serverArr).forEach(r -> {
+                int index = r.indexOf(":");
+                if (index > 0) {
+                    String ip = r.substring(0, index);
+                    String port = r.substring(index + 1);
+                    hosts.put(ip, Integer.valueOf(port));
+                }
+            });
+        }
+    }
+
+    public Map<Integer, Long> getEarliestOffset(String topic) {
+        //kafka.api.OffsetRequest.EarliestTime() = -2
+        return getTopicOffset(topic, kafka.api.OffsetRequest.EarliestTime());
+    }
+
+    /***
+     * 获取指定 topic 的所有分区 offset
+     * @param topic 主题
+     * @param whichTime   要获取offset的时间,-1 最新，-2 最早
+     * @return
+     */
+
+    public Map<Integer, Long> getTopicOffset(String topic, long whichTime) {
+        HashMap<Integer, Long> offsets = new HashMap<>();
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        for (int part : leaders.keySet()) {
+            kafka.javaapi.PartitionMetadata metadata = leaders.get(part);
+            String leadBroker = metadata.leader().host();
+            int leadPort = metadata.leader().port();
+            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, clientId);
+            long partitionOffset = this.getPartitionOffset(consumer, topic, part, whichTime);
+            offsets.put(part, partitionOffset);
+        }
+        return offsets;
+    }
+
+
+    /***
+     * 获取指定 topic 的所有分区 offset
+     * @param topic 主题
+     * @param whichTime   要获取offset的时间,-1 最新，-2 最早
+     * @return
+     */
+
+    public void getTopicContextOffset(String topic, long whichTime) {
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        for (int part : leaders.keySet()) {
+            kafka.javaapi.PartitionMetadata metadata = leaders.get(part);
+            String leadBroker = metadata.leader().host();
+            int leadPort = metadata.leader().port();
+            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, clientId);
+            long readOffset = this.getPartitionOffset(consumer, topic, part, whichTime);
+            logger.info("readOffset =========> {}", readOffset);
+            FetchRequest req = new FetchRequestBuilder()
+                    .clientId(clientId)
+                    .addFetch(topic, part, readOffset , 100) // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
+                    .build();
+            FetchResponse resp = consumer.fetch(req);
+            kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
+            if (response.hasError()) {
+                // Something went wrong!
+                short code = response.errorCode(topic, part);
+                logger.error("Error fetching data from the Broker:{} Reason: {}", leadBroker, code);
+                continue;
+            }
+            ByteBufferMessageSet msgSet = response.messageSet(topic, part);
+            for (MessageAndOffset messageAndOffset : msgSet) {
+                long currentOffset = messageAndOffset.offset();
+                if (currentOffset < readOffset) {
+                    logger.error("Found an old offset: {}, Expecting: {}", currentOffset, readOffset);
+                    continue;
+                }
+                readOffset = messageAndOffset.nextOffset();
+                ByteBuffer payload = messageAndOffset.message().payload();
+
+                byte[] bytes = new byte[payload.limit()];
+                payload.get(bytes);
+                logger.info("=============>{}: {}", String.valueOf(messageAndOffset.offset()), new String(bytes));
+            }
+            consumer.close();
+        }
+
+    }
+
+    /***
+     * 获取 offset
+     * @param consumer SimpleConsumer
+     * @param topic topic
+     * @param partition partition
+     * @param whichTime 要获取offset的时间,-1 最新，-2 最早
+     * @return
+     */
+    private long getPartitionOffset(SimpleConsumer consumer, String topic, int partition, long whichTime) {
+        TopicAndPartition topicAndPartition = new TopicAndPartition(topic,
+                partition);
+        Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<TopicAndPartition, PartitionOffsetRequestInfo>();
+        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));
+        //PartitionOffsetRequestInfo(long time, int maxNumOffsets) 中的第二个参数maxNumOffsets，没弄明白是什么意思，但是测试后发现传入1 时返回whichTime 对应的offset，传入2 返回一个包含最大和最小offset的元组
+        kafka.javaapi.OffsetRequest request = new kafka.javaapi.OffsetRequest(requestInfo, OffsetRequest.CurrentVersion(), consumer.clientId());
+        OffsetResponse resp = consumer.getOffsetsBefore(request.underlying());
+        kafka.javaapi.OffsetResponse response = new kafka.javaapi.OffsetResponse(resp);
+        if (response.hasError()) {
+            logger.error("Error fetching data Offset Data the Broker. Reason:{}", response.errorCode(topic, partition));
+            return 0;
+        }
+        long[] offsets = response.offsets(topic, partition);
+        return offsets[0];
+    }
+
+    /***
+     * 获取每个 partition 元数据信息
+     * @param bootstraps (host,port)
+     * @param topic topic
+     * @return
+     */
+    private TreeMap<Integer, kafka.javaapi.PartitionMetadata> findLeader(Map<String, Integer> bootstraps, String topic) {
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> map = new TreeMap<>();
+        for (Map.Entry<String, Integer> bootstrap : bootstraps.entrySet()) {
+            SimpleConsumer consumer = null;
+            try {
+                consumer = new SimpleConsumer(bootstrap.getKey(), bootstrap.getValue(), timeout, bufferSize, clientId);
+                List<String> topics = Collections.singletonList(topic);
+                TopicMetadataRequest req = new TopicMetadataRequest(topics);
+                TopicMetadataResponse resp = consumer.send(req.underlying());
+                kafka.javaapi.TopicMetadataResponse response = new kafka.javaapi.TopicMetadataResponse(resp);
+
+                List<kafka.javaapi.TopicMetadata> metaData = response.topicsMetadata();
+                for (kafka.javaapi.TopicMetadata item : metaData) {
+                    for (kafka.javaapi.PartitionMetadata part : item.partitionsMetadata()) {
+                        map.put(part.partitionId(), part);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Error communicating with Broker [{}] to find Leader for [{}] Reason: ", bootstrap, topic, e);
+            } finally {
+                if (consumer != null)
+                    consumer.close();
+            }
+        }
+        return map;
+    }
+}
