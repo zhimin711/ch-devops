@@ -1,0 +1,15 @@
+server:
+  port: 8011
+spring:
+  application:
+    name: ch-kafka
+  profiles:
+    active: sf
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://10.202.4.42:8761/eureka,http://10.202.72.129:8761/eureka  #注册 中心已经开启认证
+  instance:
+    prefer-ip-address: true
+    instanceId: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+    hostname: ${spring.application.name}

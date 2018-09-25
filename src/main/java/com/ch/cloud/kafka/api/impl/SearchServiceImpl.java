@@ -4,12 +4,14 @@ import com.ch.cloud.kafka.api.SearchService;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentQuery;
+import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.TopicExtService;
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.err.ErrorCode;
 import com.ch.result.BaseResult;
 import com.ch.type.Status;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.JarUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,22 +29,28 @@ public class SearchServiceImpl implements SearchService {
 
     @Value("${share.path.libs}")
     private String libsDir;
-    private final String PATH_PROTOCOL = "file:";
 
     @Autowired
     private ClusterConfigService clusterConfigService;
     @Autowired
     private TopicExtService topicExtService;
 
+    @Override
     public BaseResult<String> searchContent(ContentQuery record) {
         BtClusterConfig config = clusterConfigService.findByClusterName(record.getCluster());
         BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getCluster(), record.getTopic());
 
         KafkaTool kafkaTool = new KafkaTool(config.getBrokers());
 
-        if (record.getType() == ContentQuery.Type.PROTO_STUFF) {
+        if (ContentType.from(topicExt.getType()) == ContentType.PROTO_STUFF) {
             try {
-                Class<?> clazz = JarUtils.loadClassForJar(PATH_PROTOCOL + topicExt.getClassFile(), topicExt.getClassName());
+                Class<?> clazz;
+                if (CommonUtils.isEmpty(topicExt.getClassFile())) {
+                    clazz = Class.forName(topicExt.getClassName());
+                } else {
+                    String PATH_PROTOCOL = "file:";
+                    clazz = JarUtils.loadClassForJar(PATH_PROTOCOL + topicExt.getClassFile(), topicExt.getClassName());
+                }
                 List<String> records = kafkaTool.searchTopicProtostuffContent(record.getTopic(), record.getContent(), clazz);
                 return new BaseResult<>(records);
             } catch (MalformedURLException | ClassNotFoundException e) {
@@ -51,14 +59,12 @@ public class SearchServiceImpl implements SearchService {
             }
         } else {
             try {
-
                 List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getContent());
                 return new BaseResult<>(records);
             } catch (Exception ignored) {
 
             }
         }
-
-        return new BaseResult<>(Status.SUCCESS);
+        return new BaseResult<>(Status.FAILED);
     }
 }

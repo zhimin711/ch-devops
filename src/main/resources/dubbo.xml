@@ -11,7 +11,9 @@
     <!-- 注册中心服务地址 -->
     <!--<dubbo:monitor protocol="registry"/>-->
     <dubbo:protocol name="dubbo" port="${dubbo.registry.port:-1}"/>
-    <dubbo:registry id="zookeeper" protocol="zookeeper" address="${dubbo.registry.address}" />
+    <dubbo:registry id="zookeeper" protocol="zookeeper" address="${dubbo.registry.address}"/>
+
+    <dubbo:consumer timeout="300000"/>
 
     <!--<dubbo:consumer  filter="transactionFilter" />-->
     <!-- 注册Service服务-->
@@ -19,8 +21,12 @@
     <bean id="testService" class="com.ch.cloud.kafka.service.impl.TestServiceImpl"/>
     <dubbo:service interface="com.ch.cloud.kafka.service.ITestService" ref="testService"/>
 
+    <dubbo:service interface="com.ch.cloud.kafka.api.IClusterConfig" ref="clusterConfigImpl"/>
+    <dubbo:service interface="com.ch.cloud.kafka.api.ITopicExt" ref="topicExtImpl"/>
+    <bean id="searchService" class="com.ch.cloud.kafka.api.impl.SearchServiceImpl"/>
+    <dubbo:service interface="com.ch.cloud.kafka.api.SearchService" ref="searchService"/>
     <!-- 引用Service服务-->
 
     <!--<dubbo:reference id="test2Service" interface="com.ch.cloud.test.service.ITest2Service"-->
-                     <!--check="false" version="1.0.0" url="" registry="zookeeper" protocol="dubbo" timeout="15000"/>-->
+    <!--check="false" version="1.0.0" url="" registry="zookeeper" protocol="dubbo" timeout="15000"/>-->
 </beans>

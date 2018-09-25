@@ -21,7 +21,7 @@ apply from: 'buildApi.gradle'
 apply from: 'mybatisGenerator.gradle'
 
 springBoot {
-    mainClass = "com.ch.log.LogApplication"
+    mainClass = "com.ch.cloud.kafka.KafkaApplication"
 }
 
 sourceCompatibility = 1.8

@@ -27,6 +27,12 @@ public class BtTopicExt implements Serializable {
     private String topicName;
 
     /**
+     * 存储类型：STRING, JSON, PROTO_STUFF
+     */
+    @Column(name = "TYPE")
+    private String type;
+
+    /**
      * 类文件
      */
     @Column(name = "CLASS_FILE")
@@ -128,6 +134,24 @@ public class BtTopicExt implements Serializable {
      */
     public void setTopicName(String topicName) {
         this.topicName = topicName;
+    }
+
+    /**
+     * 获取存储类型：STRING, JSON, PROTO_STUFF
+     *
+     * @return TYPE - 存储类型：STRING, JSON, PROTO_STUFF
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * 设置存储类型：STRING, JSON, PROTO_STUFF
+     *
+     * @param type 存储类型：STRING, JSON, PROTO_STUFF
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**
@@ -283,6 +307,7 @@ public class BtTopicExt implements Serializable {
         sb.append(", id=").append(id);
         sb.append(", clusterName=").append(clusterName);
         sb.append(", topicName=").append(topicName);
+        sb.append(", type=").append(type);
         sb.append(", classFile=").append(classFile);
         sb.append(", className=").append(className);
         sb.append(", description=").append(description);

@@ -1,11 +1,12 @@
 spring:
+  application:
+    name: ch-kafka
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-#    type: com.ch.jdbc.pool.ZhDataSource
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://10.202.10.66:3306/admin
-    username: admin
-    password: 123456
+    url: jdbc:mysql://grdtest-m.dbsit.sfdc.com.cn:3306/grdtest
+    username: grdtest
+    password: admin123
   thymeleaf:
     mode: HTML5
     cache: false
@@ -15,7 +16,7 @@ spring:
 #ZooKeeper
 dubbo:
   registry:
-    address: 10.202.10.66:2181
+    address: 10.202.107.137:2181
 logging:
   config: classpath:config/logback.xml
   path: logs/ch-sys
@@ -24,5 +25,5 @@ logging:
       ch: debug
 share:
   path:
-    upload: share/${spring.appliction.name}/upload
-    libs: share/${spring.appliction.name}/libs
+    upload: share/${spring.application.name}/upload
+    libs: share/${spring.application.name}/libs

@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.api;
 
+import com.ch.cloud.kafka.pojo.ContentQuery;
 import com.ch.result.BaseResult;
 
 /**
@@ -8,4 +9,5 @@ import com.ch.result.BaseResult;
  */
 public interface SearchService {
 
+    BaseResult<String> searchContent(ContentQuery record);
 }
