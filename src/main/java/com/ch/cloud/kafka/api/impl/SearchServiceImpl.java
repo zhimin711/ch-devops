@@ -48,8 +48,8 @@ public class SearchServiceImpl implements SearchService {
                 if (CommonUtils.isEmpty(topicExt.getClassFile())) {
                     clazz = Class.forName(topicExt.getClassName());
                 } else {
-                    String PATH_PROTOCOL = "file:";
-                    clazz = JarUtils.loadClassForJar(PATH_PROTOCOL + topicExt.getClassFile(), topicExt.getClassName());
+                    String prefix = "file:" + libsDir;
+                    clazz = JarUtils.loadClassForJar(prefix + topicExt.getClassFile(), topicExt.getClassName());
                 }
                 List<String> records = kafkaTool.searchTopicProtostuffContent(record.getTopic(), record.getContent(), clazz);
                 return new BaseResult<>(records);
