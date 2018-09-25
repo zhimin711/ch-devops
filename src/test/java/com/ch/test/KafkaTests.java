@@ -24,14 +24,18 @@ public class KafkaTests {
 
     final String zk = "10.202.34.30:2182/kafka/st";
     final String servers = "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093";
+    final String servers2 = "10.202.24.5:9094,10.202.24.6:9094,10.202.24.7:9094,10.202.24.8:9094,10.202.24.9:9094";
+    final String servers3 = "10.202.24.5:9096,10.202.24.6:9096,10.202.24.7:9096,10.202.24.8:9096,10.202.24.9:9096";
     //    final String group = "GROUND_DEV_01370603";
     final String group = "GRD_DEV_S01";
+    Object o;
 
     @Test
     public void testLoad() {
 //        TopicsManager.listAllTopic("10.202.34.28:2182/kafka1.1.0/default");
 //        TopicsManager.listAllTopic("10.202.34.30:2182/kafka/st");
-        TopicsManager.listTopicAllConfig("10.202.34.30:2182/kafka/st");
+//        TopicsManager.listTopicAllConfig("10.202.34.30:2182/kafka/st");
+        TopicsManager.listTopicAllConfig("10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus");
 
     }
 
@@ -116,14 +120,15 @@ public class KafkaTests {
 
     @Test
     public void test() {
-//        KafkaTool kafkaTool = new KafkaTool("10.202.24.5:9094,10.202.24.6:9094,10.202.24.7:9094,10.202.24.8:9094,10.202.24.9:9094");
-        KafkaTool kafkaTool = new KafkaTool(servers);
+        KafkaTool kafkaTool = new KafkaTool(servers3);
         String topic = "GROUND_DEV_LOG_02";
-//        topic = "SHIVA_TRTMS_GROUND_TASKMANAGE_CI";
+        topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
 //        Map<Integer, Long> partOffset = kafkaTool.getTopicOffset(topic, -1);
 //        System.out.println(partOffset);
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
         kafkaTool.getTopicContent(topic);
+        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
+        System.out.println(o);
     }
 
 }
