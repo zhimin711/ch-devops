@@ -90,6 +90,10 @@ dependencies {
         exclude group: 'org.slf4j'
     }
     /* dubbo service jar end*/
+    // https://mvnrepository.com/artifact/io.protostuff/protostuff-core
+    compile group: 'io.protostuff', name: 'protostuff-core', version: '1.6.0'
+    // https://mvnrepository.com/artifact/io.protostuff/protostuff-runtime
+    compile group: 'io.protostuff', name: 'protostuff-runtime', version: '1.6.0'
 }
 dependencyManagement {
     imports {

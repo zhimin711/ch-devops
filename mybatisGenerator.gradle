@@ -13,7 +13,7 @@ dependencies {
 def dbProperties = {
     def properties = new Properties()
     // src/main/resources/
-    file("../generatorConfig.properties").withInputStream { inputStream ->
+    file("generatorConfig.properties").withInputStream { inputStream ->
         properties.load(inputStream)
     }
     properties
@@ -40,7 +40,7 @@ task mybatisGenerate {
                 classpath: configurations.mybatisGenerator.asPath
         )
         ant.mbgenerator(overwrite: true,
-                configfile: "$parent.projectDir/" + properties.getProperty("config.file.name"), verbose: true) {
+                configfile: "$projectDir/" + properties.getProperty("config.file.name"), verbose: true) {
             propertyset {
                 propertyref(name: 'targetProject')
                 propertyref(name: 'userId')

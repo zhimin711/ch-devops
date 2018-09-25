@@ -1,7 +1,8 @@
 package com.ch.test;
 
-import com.ch.cloud.kafka.admin.TopicsManager;
+import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
+import com.ch.utils.JarUtils;
 import kafka.api.OffsetRequest;
 import kafka.api.OffsetResponse;
 import kafka.api.PartitionOffsetRequestInfo;
@@ -14,6 +15,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.Test;
 
+import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -22,9 +24,17 @@ import java.util.*;
  */
 public class KafkaTests {
 
+    //dev sfst
     final String zk = "10.202.34.30:2182/kafka/st";
+    //test bus
+    final String zk2 = "10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus";
+    //dev sfst
     final String servers = "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093";
+    //test sfst
     final String servers2 = "10.202.24.5:9094,10.202.24.6:9094,10.202.24.7:9094,10.202.24.8:9094,10.202.24.9:9094";
+    // test other2
+    final String servers4 = "10.202.24.5:9095,10.202.24.6:9095,10.202.24.7:9095,10.202.24.8:9095,10.202.24.9:9095";
+    //test bus
     final String servers3 = "10.202.24.5:9096,10.202.24.6:9096,10.202.24.7:9096,10.202.24.8:9096,10.202.24.9:9096";
     //    final String group = "GROUND_DEV_01370603";
     final String group = "GRD_DEV_S01";
@@ -32,11 +42,12 @@ public class KafkaTests {
 
     @Test
     public void testLoad() {
-//        TopicsManager.listAllTopic("10.202.34.28:2182/kafka1.1.0/default");
-//        TopicsManager.listAllTopic("10.202.34.30:2182/kafka/st");
-//        TopicsManager.listTopicAllConfig("10.202.34.30:2182/kafka/st");
-        TopicsManager.listTopicAllConfig("10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus");
-
+//        TopicManager.listAllTopic("10.202.34.28:2182/kafka1.1.0/default");
+//        TopicManager.listAllTopic("10.202.34.30:2182/kafka/st");
+//        TopicManager.listTopicAllConfig("10.202.34.30:2182/kafka/st");
+        TopicManager.listTopicAllConfig("10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus");
+        TopicManager.listTopicAllConfig(zk2);
+        ;
     }
 
     @Test
@@ -123,11 +134,20 @@ public class KafkaTests {
         KafkaTool kafkaTool = new KafkaTool(servers3);
         String topic = "GROUND_DEV_LOG_02";
         topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
+//        topic = "SHIVA_OMCS_RUSSIAN_PLANNING_REQUIRE_INFO";
 //        Map<Integer, Long> partOffset = kafkaTool.getTopicOffset(topic, -1);
 //        System.out.println(partOffset);
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
-        kafkaTool.getTopicContent(topic);
-        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
+//        kafkaTool.getTopicContent(topic);
+        o = kafkaTool.searchTopicStringContent(topic, null);
+//        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
+//        try {
+//            Class<?> clazz = JarUtils.loadClassForJar("file:C:\\Users\\01370603\\.gradle\\caches\\modules-2\\files-2.1\\com.sf.omcs\\omcs-output\\1.2.SP1-SNAPSHOT\\3aba13c4a55c6ed7b6ee079f560c1df50034aecf\\omcs-output-1.2.SP1-SNAPSHOT.jar", "com.sf.omcs.output.dto.russian.plan.PlanLineRequireInfoDto");
+//            o = kafkaTool.searchTopicProtostuffContent(topic, "", clazz);
+//        } catch (MalformedURLException | ClassNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        kafkaTool.searchTopicProtostuffContent()
         System.out.println(o);
     }
 

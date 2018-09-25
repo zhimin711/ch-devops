@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.admin;
+package com.ch.cloud.kafka.pojo;
 
 import java.util.Properties;
 

@@ -2,9 +2,9 @@ server:
   port: 8081
 spring:
   application:
-    name: ch-sys
+    name: ch-kafka
   profiles:
-    active: dev
+    active: sf
   cloud:
     config:
 #      profile: dev

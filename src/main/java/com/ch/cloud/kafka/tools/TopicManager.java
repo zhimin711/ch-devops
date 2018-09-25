@@ -1,5 +1,6 @@
-package com.ch.cloud.kafka.admin;
+package com.ch.cloud.kafka.tools;
 
+import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.TopicCommand;
@@ -7,7 +8,9 @@ import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Tuple2;
 import scala.collection.Iterator;
+import scala.collection.Map;
 import scala.collection.Seq;
 
 import java.util.Arrays;
@@ -19,9 +22,9 @@ import java.util.Properties;
  * @author 01370603
  * @date 2018/9/19 16:36
  */
-public class TopicsManager {
+public class TopicManager {
 
-    private final static Logger logger = LoggerFactory.getLogger(TopicsManager.class);
+    private final static Logger logger = LoggerFactory.getLogger(TopicManager.class);
 
     /*
     创建主题
@@ -54,7 +57,7 @@ public class TopicsManager {
      * @param config String s = "--zookeeper localhost:2181 --create --topic kafka-action " +
      *               "  --partitions 3 --replication-factor 1" +
      *               "  --if-not-exists --config max.message.bytes=204800 --config flush.messages=2";
-     *               执行：TopicsManager.createTopic(s);
+     *               执行：TopicManager.createTopic(s);
      */
     public static void createTopicByCommand(String config) {
         String[] args = config.split(" ");
@@ -128,16 +131,21 @@ public class TopicsManager {
      * kafka-configs.sh --zookeeper localhost:2181 --entity-type topics --describe
      */
     public static void listTopicAllConfig(String zkUrl) {
+        ZkClient zkClient = null;
         try {
-            ZkClient zkClient = new ZkClient(zkUrl);
-            Seq<String> topics = ZkUtils.getAllTopics(zkClient);
-            Iterator<String> iterator = topics.iterator();
+            zkClient = new ZkClient(zkUrl);
+
+            Map<String, Properties> configsMap = AdminUtils.fetchAllTopicConfigs(zkClient);
+
+            Iterator<Tuple2<String, Properties>> iterator = configsMap.iterator();
             while (iterator.hasNext()) {
-                System.out.println(iterator.next());
+                Tuple2<String, Properties> tuple2 = iterator.next();
+                System.out.println(tuple2._1 + tuple2._2);
             }
-            zkClient.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            close(zkClient);
         }
     }
 

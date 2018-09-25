@@ -7,5 +7,5 @@ import com.ch.result.BaseResult;
  * @date 2018/9/25 10:02
  */
 public interface SearchService {
-    BaseResult<String> searchStringContent(String servers, String topic, String pattern);
+
 }
