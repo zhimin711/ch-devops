@@ -17,9 +17,10 @@ spring:
 dubbo:
   registry:
     address: 10.202.107.137:2181
+    version: 1.0.0
 logging:
   config: classpath:config/logback.xml
-  path: logs/ch-sys
+  path: logs/${spring.application.name}
   level:
     com:
       ch: debug

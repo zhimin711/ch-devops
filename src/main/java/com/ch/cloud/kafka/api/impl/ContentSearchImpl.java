@@ -1,6 +1,6 @@
 package com.ch.cloud.kafka.api.impl;
 
-import com.ch.cloud.kafka.api.SearchService;
+import com.ch.cloud.kafka.api.IContentSearch;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentQuery;
@@ -25,7 +25,8 @@ import java.util.List;
  * @date 2018/9/25 10:02
  */
 @Service
-public class SearchServiceImpl implements SearchService {
+@com.alibaba.dubbo.config.annotation.Service
+public class ContentSearchImpl implements IContentSearch {
 
     @Value("${share.path.libs}")
     private String libsDir;
@@ -36,11 +37,11 @@ public class SearchServiceImpl implements SearchService {
     private TopicExtService topicExtService;
 
     @Override
-    public BaseResult<String> searchContent(ContentQuery record) {
+    public BaseResult<String> search(ContentQuery record) {
         BtClusterConfig config = clusterConfigService.findByClusterName(record.getCluster());
         BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getCluster(), record.getTopic());
 
-        KafkaTool kafkaTool = new KafkaTool(config.getBrokers());
+        KafkaTool kafkaTool = new KafkaTool(config.getZookeeper());
 
         if (ContentType.from(topicExt.getType()) == ContentType.PROTO_STUFF) {
             try {

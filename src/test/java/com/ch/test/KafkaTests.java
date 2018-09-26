@@ -1,5 +1,6 @@
 package com.ch.test;
 
+import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.utils.JarUtils;
@@ -45,9 +46,9 @@ public class KafkaTests {
 //        TopicManager.listAllTopic("10.202.34.28:2182/kafka1.1.0/default");
 //        TopicManager.listAllTopic("10.202.34.30:2182/kafka/st");
 //        TopicManager.listTopicAllConfig("10.202.34.30:2182/kafka/st");
-        TopicManager.listTopicAllConfig("10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus");
-        TopicManager.listTopicAllConfig(zk2);
-        ;
+//        TopicManager.listTopicAllConfig("10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus");
+//        TopicManager.listTopicAllConfig(zk2);
+        KafkaManager.getAllBrokersInCluster(zk2);
     }
 
     @Test
@@ -131,7 +132,7 @@ public class KafkaTests {
 
     @Test
     public void test() {
-        KafkaTool kafkaTool = new KafkaTool(servers3);
+        KafkaTool kafkaTool = new KafkaTool(zk2);
         String topic = "GROUND_DEV_LOG_02";
         topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
 //        topic = "SHIVA_OMCS_RUSSIAN_PLANNING_REQUIRE_INFO";

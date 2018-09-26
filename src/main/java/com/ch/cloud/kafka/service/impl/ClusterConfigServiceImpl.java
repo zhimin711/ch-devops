@@ -3,10 +3,14 @@ package com.ch.cloud.kafka.service.impl;
 import com.ch.cloud.kafka.mapper.BtClusterConfigMapper;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.mybatis.service.BaseService;
+import com.ch.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.Map;
 
 /**
  * @author 01370603
@@ -21,6 +25,20 @@ public class ClusterConfigServiceImpl extends BaseService<Long, BtClusterConfig>
     @Override
     protected Mapper<BtClusterConfig> getMapper() {
         return clusterConfigMapper;
+    }
+
+    @Override
+    public int save(BtClusterConfig record) {
+        Map<String, Integer> brokers = KafkaManager.getAllBrokersInCluster(record.getZookeeper());
+        record.setBrokers(JsonUtils.toJson(brokers));
+        return super.save(record);
+    }
+
+    @Override
+    public int update(BtClusterConfig record) {
+        Map<String, Integer> brokers = KafkaManager.getAllBrokersInCluster(record.getZookeeper());
+        record.setBrokers(JsonUtils.toJson(brokers));
+        return super.update(record);
     }
 
     @Override

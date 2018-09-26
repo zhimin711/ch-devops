@@ -21,10 +21,12 @@
     <bean id="testService" class="com.ch.cloud.kafka.service.impl.TestServiceImpl"/>
     <dubbo:service interface="com.ch.cloud.kafka.service.ITestService" ref="testService"/>
 
-    <dubbo:service interface="com.ch.cloud.kafka.api.IClusterConfig" ref="clusterConfigImpl"/>
-    <dubbo:service interface="com.ch.cloud.kafka.api.ITopicExt" ref="topicExtImpl"/>
-    <bean id="searchService" class="com.ch.cloud.kafka.api.impl.SearchServiceImpl"/>
-    <dubbo:service interface="com.ch.cloud.kafka.api.SearchService" ref="searchService"/>
+    <dubbo:service interface="com.ch.cloud.kafka.api.IClusterConfig" ref="clusterConfigImpl"
+                   version="${${dubbo.registry.version}:1.0.0}"/>
+    <dubbo:service interface="com.ch.cloud.kafka.api.ITopicExt" ref="topicExtImpl"
+                   version="${${dubbo.registry.version}:1.0.0}"/>
+    <dubbo:service interface="com.ch.cloud.kafka.api.IContentSearch" ref="contentSearchImpl"
+                   version="${${dubbo.registry.version}:1.0.0}"/>
     <!-- 引用Service服务-->
 
     <!--<dubbo:reference id="test2Service" interface="com.ch.cloud.test.service.ITest2Service"-->

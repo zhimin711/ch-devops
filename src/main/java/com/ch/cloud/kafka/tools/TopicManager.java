@@ -136,7 +136,6 @@ public class TopicManager {
             zkClient = new ZkClient(zkUrl);
 
             Map<String, Properties> configsMap = AdminUtils.fetchAllTopicConfigs(zkClient);
-
             Iterator<Tuple2<String, Properties>> iterator = configsMap.iterator();
             while (iterator.hasNext()) {
                 Tuple2<String, Properties> tuple2 = iterator.next();

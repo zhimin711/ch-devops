@@ -64,6 +64,6 @@ public class TopicExtImpl implements ITopicExt {
             BeanUtils.copyProperties(e, info);
             return info;
         }).collect(Collectors.toList());
-        return new BaseResult<TopicExtInfo>(records);
+        return new BaseResult<>(records);
     }
 }

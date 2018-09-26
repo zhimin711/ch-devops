@@ -10,16 +10,22 @@ import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import kafka.api.*;
+import kafka.cluster.Broker;
 import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
+import kafka.utils.ZkUtils;
+import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.exception.ZkMarshallingError;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
+import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.collection.Seq;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * @author 01370603
@@ -32,26 +38,13 @@ public class KafkaTool {
     private int timeout = 100000;
     private int bufferSize = 64 * 1024;
 
-    private Map<String, Integer> hosts;
+    private Map<String, Integer> brokers;
 
-    public KafkaTool(String servers) {
-        hosts = Maps.newHashMap();
-        if (CommonUtils.isEmpty(servers)) {
+    public KafkaTool(String zkUrl) {
+        if (CommonUtils.isEmpty(zkUrl)) {
             throw new InvalidArgumentException(ErrorCode.ARGS);
         }
-        String[] serverArr = servers.split(",");
-        Stream.of(serverArr).forEach(r -> {
-            int index = r.indexOf(":");
-            if (index <= 0) {
-                throw new InvalidArgumentException(ErrorCode.ARGS);
-            }
-            String ip = r.substring(0, index);
-            String port = r.substring(index + 1);
-            if (!CommonUtils.isNumeric(port)) {
-                throw new InvalidArgumentException(ErrorCode.ARGS);
-            }
-            hosts.put(ip, Integer.valueOf(port));
-        });
+        brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
     }
 
     public Map<Integer, Long> getEarliestOffset(String topic) {
@@ -68,7 +61,7 @@ public class KafkaTool {
 
     public Map<Integer, Long> getTopicOffset(String topic, long whichTime) {
         HashMap<Integer, Long> offsets = new HashMap<>();
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
             String leadBroker = metadata.leader().host();
@@ -90,7 +83,7 @@ public class KafkaTool {
      */
     public void getTopicContextOffset(String topic, long whichTime) {
         logger.info("\t\t=====> getTopicContextOffset: {}", whichTime);
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
             String leadBroker = metadata.leader().host();
@@ -236,7 +229,7 @@ public class KafkaTool {
      * @return
      */
     public void getTopicContent(String topic) {
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
 
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
         for (int partitionId : leaders.keySet()) {
@@ -289,7 +282,7 @@ public class KafkaTool {
     public List<String> searchTopicStringContent(String topic, String content) {
         List<String> resultList = Lists.newArrayList();
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         boolean isLast = CommonUtils.isEmpty(content);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
@@ -351,7 +344,7 @@ public class KafkaTool {
     public List<String> searchTopicProtostuffContent(String topic, String content, Class<?> clazz) {
         List<String> resultList = Lists.newArrayList();
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(hosts, topic);
+        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         boolean isLast = CommonUtils.isEmpty(content);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);

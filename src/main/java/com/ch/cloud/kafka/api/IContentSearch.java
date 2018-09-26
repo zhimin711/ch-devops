@@ -7,7 +7,7 @@ import com.ch.result.BaseResult;
  * @author 01370603
  * @date 2018/9/25 10:02
  */
-public interface SearchService {
+public interface IContentSearch {
 
-    BaseResult<String> searchContent(ContentQuery record);
+    BaseResult<String> search(ContentQuery record);
 }
