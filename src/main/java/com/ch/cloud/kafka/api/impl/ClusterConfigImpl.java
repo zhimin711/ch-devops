@@ -4,6 +4,8 @@ import com.ch.cloud.kafka.api.IClusterConfig;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.pojo.ClusterConfigInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.tools.KafkaManager;
+import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.result.BaseResult;
 import com.ch.result.PageResult;
 import com.github.pagehelper.PageInfo;
@@ -11,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +33,7 @@ public class ClusterConfigImpl implements IClusterConfig {
         BtClusterConfig r = new BtClusterConfig();
         BeanUtils.copyProperties(record, r);
         clusterConfigService.save(r);
-        return new BaseResult<Long>(r.getId());
+        return new BaseResult<>(r.getId());
     }
 
     @Override
@@ -65,5 +68,12 @@ public class ClusterConfigImpl implements IClusterConfig {
             return info;
         }).collect(Collectors.toList());
         return new BaseResult<ClusterConfigInfo>(records);
+    }
+
+    @Override
+    public BaseResult<String> getTopics(ClusterConfigInfo record) {
+        BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
+        List<String> list = TopicManager.getAllTopics(cluster.getZookeeper());
+        return new BaseResult<>(list);
     }
 }

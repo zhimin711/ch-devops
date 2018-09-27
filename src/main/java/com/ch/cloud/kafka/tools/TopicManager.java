@@ -78,7 +78,7 @@ public class TopicManager {
             Iterator<String> iterator = topicSeq.iterator();
             while (iterator.hasNext()) {
                 String topic = iterator.next();
-                logger.info("topic: {}", topic);
+                logger.debug("topic: {}", topic);
                 topics.add(topic);
             }
         } catch (Exception e) {

@@ -66,4 +66,5 @@ public class TopicExtImpl implements ITopicExt {
         }).collect(Collectors.toList());
         return new BaseResult<>(records);
     }
+
 }

@@ -27,4 +27,4 @@ logging:
 share:
   path:
     upload: share/${spring.application.name}/upload
-    libs: share/${spring.application.name}/libs
+    libs: /mnt/share/common/libs

@@ -3,8 +3,8 @@ package com.ch.cloud.kafka.api.impl;
 import com.ch.cloud.kafka.api.IContentSearch;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.pojo.ContentQuery;
 import com.ch.cloud.kafka.pojo.ContentType;
+import com.ch.cloud.kafka.pojo.TopicExtInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.TopicExtService;
 import com.ch.cloud.kafka.tools.KafkaTool;
@@ -13,12 +13,15 @@ import com.ch.result.BaseResult;
 import com.ch.type.Status;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JarUtils;
+import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 01370603
@@ -36,23 +39,43 @@ public class ContentSearchImpl implements IContentSearch {
     @Autowired
     private TopicExtService topicExtService;
 
+    private static Map<String, Class<?>> clazzMap = Maps.newHashMap();
+
     @Override
-    public BaseResult<String> search(ContentQuery record) {
-        BtClusterConfig config = clusterConfigService.findByClusterName(record.getCluster());
-        BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getCluster(), record.getTopic());
+    public BaseResult<String> search(TopicExtInfo record) {
+        BtClusterConfig config = clusterConfigService.findByClusterName(record.getClusterName());
+        BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
 
         KafkaTool kafkaTool = new KafkaTool(config.getZookeeper());
+        KafkaTool.SearchType searchType = KafkaTool.SearchType.LATEST;
+        if ("0".equals(record.getType())) {
+            searchType = KafkaTool.SearchType.CONTENT;
+            if (CommonUtils.isEmpty(record.getDescription())) {
+                return new BaseResult<>(ErrorCode.NON_NULL, "搜索内容不能为空！");
+            }
+        } else if ("2".equals(record.getType())) {
+            searchType = KafkaTool.SearchType.EARLIEST;
+        }
+        if ((searchType == KafkaTool.SearchType.EARLIEST || searchType == KafkaTool.SearchType.LATEST) && CommonUtils.isNumeric(record.getDescription())) {
+            long size = Long.valueOf(record.getDescription());
+            if (size > 1000) {
+                return new BaseResult<>(ErrorCode.ARGS, "搜索条数不能超过1000！");
+            }
+        }
 
         if (ContentType.from(topicExt.getType()) == ContentType.PROTO_STUFF) {
             try {
-                Class<?> clazz;
-                if (CommonUtils.isEmpty(topicExt.getClassFile())) {
-                    clazz = Class.forName(topicExt.getClassName());
-                } else {
-                    String prefix = "file:" + libsDir;
-                    clazz = JarUtils.loadClassForJar(prefix + topicExt.getClassFile(), topicExt.getClassName());
+                Class<?> clazz = clazzMap.get(topicExt.getClassName());
+                if (clazz == null) {
+                    if (CommonUtils.isEmpty(topicExt.getClassFile())) {
+                        clazz = Class.forName(topicExt.getClassName());
+                    } else {
+                        String prefix = "file:" + libsDir;
+                        clazz = JarUtils.loadClassForJar(prefix + File.separator + record.getClassFile(), topicExt.getClassName());
+                    }
+                    clazzMap.put(topicExt.getClassName(), clazz);
                 }
-                List<String> records = kafkaTool.searchTopicProtostuffContent(record.getTopic(), record.getContent(), clazz);
+                List<String> records = kafkaTool.searchTopicProtostuffContent(record.getTopicName(), record.getDescription(), clazz, searchType);
                 return new BaseResult<>(records);
             } catch (MalformedURLException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -60,7 +83,7 @@ public class ContentSearchImpl implements IContentSearch {
             }
         } else {
             try {
-                List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getContent());
+                List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), searchType);
                 return new BaseResult<>(records);
             } catch (Exception ignored) {
 
@@ -68,4 +91,5 @@ public class ContentSearchImpl implements IContentSearch {
         }
         return new BaseResult<>(Status.FAILED);
     }
+
 }

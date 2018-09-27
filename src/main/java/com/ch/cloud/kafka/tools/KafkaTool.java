@@ -5,24 +5,16 @@ import com.ch.err.InvalidArgumentException;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JsonUtils;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import kafka.api.*;
-import kafka.cluster.Broker;
 import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
-import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.collection.Seq;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -39,6 +31,10 @@ public class KafkaTool {
     private int bufferSize = 64 * 1024;
 
     private Map<String, Integer> brokers;
+
+    public enum SearchType {
+        CONTENT, EARLIEST, LATEST
+    }
 
     public KafkaTool(String zkUrl) {
         if (CommonUtils.isEmpty(zkUrl)) {
@@ -279,11 +275,19 @@ public class KafkaTool {
 
     }
 
-    public List<String> searchTopicStringContent(String topic, String content) {
+    public List<String> searchTopicStringContent(String topic, String content, SearchType searchType) {
         List<String> resultList = Lists.newArrayList();
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
         TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-        boolean isLast = CommonUtils.isEmpty(content);
+        if (leaders.isEmpty()) {
+            return Lists.newArrayList();
+        }
+        int offset = 10;
+        if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST) && CommonUtils.isNumeric(content)) {
+            int total = Integer.parseInt(content);
+            if (total > 0)
+                offset = total / leaders.size();
+        }
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
             String leadBroker = metadata.leader().host();
@@ -294,16 +298,19 @@ public class KafkaTool {
             long latestOffset = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
 //            long[] latestOffsets = this.getPartitionOffsets(consumer, topic, partitionId, OffsetRequest.LatestTime());
 
-            long readOffset = earliestOffset;//this.getPartitionOffset(consumer, topic, partitionId, whichTime);
-            if (isLast && (latestOffset - 10) > readOffset) {
-                readOffset = latestOffset - 10;
+            long startOffset = earliestOffset;
+            long endOffset = latestOffset;
+            if (searchType == SearchType.LATEST && (latestOffset - offset) > startOffset) {
+                startOffset = latestOffset - offset;
+            } else if (searchType == SearchType.EARLIEST && (earliestOffset + offset) > latestOffset) {
+                endOffset = earliestOffset + offset;
             }
-            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, readOffset: {}", partitionId, earliestOffset, latestOffset, readOffset);
-            while (readOffset < latestOffset) {
+            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
+            while (startOffset < endOffset) {
                 FetchRequest req = new FetchRequestBuilder()
                         .clientId(getClientId(topic, partitionId))
                         // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-                        .addFetch(topic, partitionId, readOffset, bufferSize)
+                        .addFetch(topic, partitionId, startOffset, bufferSize)
                         .build();
                 FetchResponse resp = consumer.fetch(req);
                 kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
@@ -318,34 +325,41 @@ public class KafkaTool {
                 int msgCount = 0;
                 for (MessageAndOffset messageAndOffset : msgSet) {
                     long currentOffset = messageAndOffset.offset();
-                    if (currentOffset < readOffset) {
-                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, readOffset);
+                    if (currentOffset < startOffset) {
+                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, startOffset);
                         continue;
                     }
-                    readOffset = messageAndOffset.nextOffset();
+                    startOffset = messageAndOffset.nextOffset();
                     ByteBuffer payload = messageAndOffset.message().payload();
 
                     byte[] bytes = new byte[payload.limit()];
                     payload.get(bytes);
                     String msg = new String(bytes);
-                    if (isLast || (CommonUtils.isNotEmpty(content) && msg.contains(content))) {
+                    if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
+                            || (searchType == SearchType.CONTENT && msg.contains(content))) {
 //                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), msg);
                         resultList.add(msg);
                     }
                     msgCount++;
                 }
-                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, readOffset);
+                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, startOffset);
             }
             consumer.close();
         }
         return resultList;
     }
 
-    public List<String> searchTopicProtostuffContent(String topic, String content, Class<?> clazz) {
+    public List<String> searchTopicProtostuffContent(String topic, String content, Class<?> clazz, SearchType searchType) {
         List<String> resultList = Lists.newArrayList();
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
         TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-        boolean isLast = CommonUtils.isEmpty(content);
+
+        int offset = 10;
+        if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST) && CommonUtils.isNumeric(content)) {
+            int total = Integer.parseInt(content);
+            if (total > 0)
+                offset = total / leaders.size();
+        }
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
             String leadBroker = metadata.leader().host();
@@ -356,16 +370,19 @@ public class KafkaTool {
             long latestOffset = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
 //            long[] latestOffsets = this.getPartitionOffsets(consumer, topic, partitionId, OffsetRequest.LatestTime());
 
-            long readOffset = earliestOffset;//this.getPartitionOffset(consumer, topic, partitionId, whichTime);
-            if (isLast && (latestOffset - 10) > readOffset) {
-                readOffset = latestOffset - 10;
+            long startOffset = earliestOffset;
+            long endOffset = latestOffset;
+            if (searchType == SearchType.LATEST && (latestOffset - offset) > startOffset) {
+                startOffset = latestOffset - offset;
+            } else if (searchType == SearchType.EARLIEST && (earliestOffset + offset) > latestOffset) {
+                endOffset = earliestOffset + offset;
             }
-            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, readOffset: {}", partitionId, earliestOffset, latestOffset, readOffset);
-            while (readOffset < latestOffset) {
+            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
+            while (startOffset < endOffset) {
                 FetchRequest req = new FetchRequestBuilder()
                         .clientId(getClientId(topic, partitionId))
                         // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-                        .addFetch(topic, partitionId, readOffset, bufferSize)
+                        .addFetch(topic, partitionId, startOffset, bufferSize)
                         .build();
                 FetchResponse resp = consumer.fetch(req);
                 kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
@@ -380,24 +397,30 @@ public class KafkaTool {
                 int msgCount = 0;
                 for (MessageAndOffset messageAndOffset : msgSet) {
                     long currentOffset = messageAndOffset.offset();
-                    if (currentOffset < readOffset) {
-                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, readOffset);
+                    if (currentOffset < startOffset) {
+                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, startOffset);
                         continue;
                     }
-                    readOffset = messageAndOffset.nextOffset();
+                    startOffset = messageAndOffset.nextOffset();
                     ByteBuffer payload = messageAndOffset.message().payload();
 
                     byte[] bytes = new byte[payload.limit()];
                     payload.get(bytes);
+                    String json;
                     Object o = deSerialize(bytes, clazz);
-                    String json = JsonUtils.toJson(o);
-                    if (isLast || json.contains(content)) {
+                    if (o == null) {
+                        json = new String(bytes);
+                    } else {
+                        json = JsonUtils.toJson(o);
+                    }
+                    if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
+                            || (searchType == SearchType.CONTENT && json.contains(content))) {
 //                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), json);
                         resultList.add(json);
                     }
                     msgCount++;
                 }
-                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, readOffset);
+                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, startOffset);
             }
             consumer.close();
         }

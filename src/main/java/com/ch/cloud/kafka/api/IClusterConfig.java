@@ -17,4 +17,6 @@ public interface IClusterConfig {
     PageResult<ClusterConfigInfo> findPageBy(int pageNum, int pageSize, ClusterConfigInfo record);
 
     BaseResult<ClusterConfigInfo> findListBy(ClusterConfigInfo record);
+
+    BaseResult<String> getTopics(ClusterConfigInfo record);
 }

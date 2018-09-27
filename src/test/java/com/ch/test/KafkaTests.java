@@ -140,7 +140,8 @@ public class KafkaTests {
 //        System.out.println(partOffset);
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
 //        kafkaTool.getTopicContent(topic);
-        o = kafkaTool.searchTopicStringContent(topic, null);
+//        o = kafkaTool.searchTopicStringContent(topic, "100", KafkaTool.SearchType.LATEST);
+        o = kafkaTool.searchTopicStringContent(topic, "666666756345", KafkaTool.SearchType.CONTENT);
 //        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
 //        try {
 //            Class<?> clazz = JarUtils.loadClassForJar("file:C:\\Users\\01370603\\.gradle\\caches\\modules-2\\files-2.1\\com.sf.omcs\\omcs-output\\1.2.SP1-SNAPSHOT\\3aba13c4a55c6ed7b6ee079f560c1df50034aecf\\omcs-output-1.2.SP1-SNAPSHOT.jar", "com.sf.omcs.output.dto.russian.plan.PlanLineRequireInfoDto");
