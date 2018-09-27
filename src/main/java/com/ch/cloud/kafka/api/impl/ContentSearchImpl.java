@@ -38,8 +38,8 @@ public class ContentSearchImpl implements IContentSearch {
     private ClusterConfigService clusterConfigService;
     @Autowired
     private TopicExtService topicExtService;
-
-    private static Map<String, Class<?>> clazzMap = Maps.newHashMap();
+    //加载过不用重新加载类对象
+    private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
 
     @Override
     public BaseResult<String> search(TopicExtInfo record) {
