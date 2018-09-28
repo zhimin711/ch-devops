@@ -51,20 +51,6 @@ public class TopicManager {
         }
     }
 
-    /**
-     * 创建主题（采用TopicCommand的方式）
-     *
-     * @param config String s = "--zookeeper localhost:2181 --create --topic kafka-action " +
-     *               "  --partitions 3 --replication-factor 1" +
-     *               "  --if-not-exists --config max.message.bytes=204800 --config flush.messages=2";
-     *               执行：TopicManager.createTopic(s);
-     */
-    public static void createTopicByCommand(String config) {
-        String[] args = config.split(" ");
-        System.out.println(Arrays.toString(args));
-        TopicCommand.main(args);
-    }
-
     /*
      *查看所有主题
      *kafka-topics.sh --zookeeper localhost:2181 --list
@@ -87,6 +73,38 @@ public class TopicManager {
             close(zkClient);
         }
         return topics;
+    }
+
+    /**
+     * 创建主题（采用TopicCommand的方式）
+     *
+     * @param config String s = "--zookeeper localhost:2181 --create --topic kafka-action " +
+     *               "  --partitions 3 --replication-factor 1" +
+     *               "  --if-not-exists --config max.message.bytes=204800 --config flush.messages=2";
+     *               执行：TopicManager.createTopic(s);
+     */
+    public static void createTopicByCommand(String config) {
+        String[] args = config.split(" ");
+        System.out.println(Arrays.toString(args));
+        TopicCommand.main(args);
+    }
+
+    /**
+     * @param zkUrl
+     * @param topic
+     * @return
+     */
+    public static boolean exists(String zkUrl, String topic) {
+        ZkClient zkClient = null;
+        try {
+            zkClient = new ZkClient(zkUrl);
+            return AdminUtils.topicExists(zkClient, topic);
+        } catch (Exception e) {
+            logger.error("zk connect or fetch topics error!");
+        } finally {
+            close(zkClient);
+        }
+        return false;
     }
 
     /**
