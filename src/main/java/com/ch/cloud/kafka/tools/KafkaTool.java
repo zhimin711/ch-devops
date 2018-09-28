@@ -437,7 +437,6 @@ public class KafkaTool {
             } catch (InstantiationException | IllegalAccessException var5) {
                 logger.error("deSerialize error, Class=" + clazz, var5);
             }
-
             return t;
         } else {
             return null;

@@ -69,7 +69,7 @@ public class ContentSearchImpl implements IContentSearch {
                 if (clazz == null) {
                     if (CommonUtils.isEmpty(topicExt.getClassFile())) {
                         clazz = Class.forName(topicExt.getClassName());
-                    } else {
+                    } else {//加载过不用重新加载类对象
                         String prefix = "file:" + libsDir;
                         clazz = JarUtils.loadClassForJar(prefix + File.separator + record.getClassFile(), topicExt.getClassName());
                     }
