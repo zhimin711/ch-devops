@@ -43,12 +43,13 @@ dependencies {
 //    compile fileTree(dir: "$projectDir/libs", include: ['*.jar'])
 
     //私有相关包
-    compile("com.ch:ch-core:${chVersion}")
+    compile("com.ch:ch-core:${chVersion}") {
+        exclude group: 'com.google.guava'
+    }
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    compile group: 'com.google.guava', name: 'guava', version: '21.0'
 
-//    compile("com.ch:ch-helper:${chVersion}")
-    compile("com.ch:ch-jdbc-mybatis:${chVersion}")
-    compile("com.ch:ch-shiro:${chVersion}")
-
+//    compile 'com.google.guava:guava:18.0'
     //spring boot相关包
     compile 'org.springframework.boot:spring-boot-starter'
     compile 'org.springframework.boot:spring-boot-starter-web', {
@@ -63,7 +64,6 @@ dependencies {
     //数据源相关包
     compile 'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1'
     compile "mysql:mysql-connector-java:5.1.30"
-
 
 //     https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     compile 'org.apache.kafka:kafka-clients:0.8.2.0', {
@@ -94,6 +94,13 @@ dependencies {
     compile group: 'io.protostuff', name: 'protostuff-core', version: '1.6.0'
     // https://mvnrepository.com/artifact/io.protostuff/protostuff-runtime
     compile group: 'io.protostuff', name: 'protostuff-runtime', version: '1.6.0'
+
+    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger2
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+
+
 }
 dependencyManagement {
     imports {

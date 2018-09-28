@@ -1,6 +1,5 @@
 package com.ch.cloud.kafka.pojo;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 

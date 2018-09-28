@@ -1,8 +1,8 @@
 package com.ch.cloud.kafka.service.impl;
 
-import com.alibaba.dubbo.config.annotation.Service;
 import com.ch.cloud.kafka.service.ITestService;
 import com.ch.utils.DateUtils;
+import org.springframework.stereotype.Service;
 
 //import com.ch.cloud.kafka.mapper.TestMapper;
 

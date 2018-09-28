@@ -1,12 +1,6 @@
 spring:
   application:
     name: ch-kafka
-  datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://grdtest-m.dbsit.sfdc.com.cn:3306/grdtest
-    username: grdtest
-    password: admin123
   thymeleaf:
     mode: HTML5
     cache: false
@@ -14,10 +8,6 @@ spring:
     multipart:
       max-file-size: 20MB
 #ZooKeeper
-dubbo:
-  registry:
-    address: 10.202.107.137:2181
-    version: 1.0.0
 logging:
   config: classpath:config/logback.xml
   path: logs/${spring.application.name}
@@ -26,5 +16,4 @@ logging:
       ch: debug
 share:
   path:
-    upload: share/${spring.application.name}/upload
     libs: /mnt/share/common/libs
