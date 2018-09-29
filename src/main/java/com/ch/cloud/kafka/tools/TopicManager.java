@@ -75,6 +75,31 @@ public class TopicManager {
         return topics;
     }
 
+    /*
+     *查看主题
+     */
+    public static List<String> findTopic(String zkUrl, String topic) {
+        ZkClient zkClient = null;
+        List<String> topics = Lists.newArrayList();
+        try {
+            zkClient = new ZkClient(zkUrl);
+            Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
+            Iterator<String> iterator = topicSeq.iterator();
+            while (iterator.hasNext()) {
+                String t = iterator.next();
+                if (t.contains(topic)) {
+                    logger.debug("topic: {}", t);
+                    topics.add(t);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("zk connect or find topic error!");
+        } finally {
+            close(zkClient);
+        }
+        return topics;
+    }
+
     /**
      * 创建主题（采用TopicCommand的方式）
      *

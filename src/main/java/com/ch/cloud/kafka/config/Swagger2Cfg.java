@@ -34,7 +34,7 @@ public class Swagger2Cfg {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 //页面标题
-                .title("Spring Boot 测试使用 Swagger2 构建RESTFUL API")
+                .title("Kafka RESTFUL API")
                 //创建人
                 .contact(new Contact("CHAO YUN", "http://www.chaoyun.com", ""))
                 //版本号

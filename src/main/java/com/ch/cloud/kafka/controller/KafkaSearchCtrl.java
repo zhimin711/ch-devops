@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * 描述：com.ch.cloud.kafka.controller
  *
@@ -26,12 +28,23 @@ public class KafkaSearchCtrl {
 
     @ApiOperation(value = "主题搜索", notes = "主题搜索接口")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "zkUrl", value = "zk地址", required = true, dataType = "string"),
-            @ApiImplicitParam(name = "topic", value = "主题", required = true, dataType = "string")
+            @ApiImplicitParam(name = "zkUrl", value = "zk地址", required = true, dataType = "string")
+            , @ApiImplicitParam(name = "topic", value = "主题", required = true, dataType = "string")
     })
     @PostMapping("/topic/search")
-    public HttpResult<Boolean> topicSearch(String zkUrl, String topic) {
-        boolean isExists = TopicManager.exists(zkUrl,topic);
+    public HttpResult<String> topicSearch(String zkUrl, String topic) {
+        List<String> topics = TopicManager.findTopic(zkUrl, topic);
+        return new HttpResult<>(topics);
+    }
+
+    @ApiOperation(value = "主题校验(是否存在)", notes = "主题校验接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "zkUrl", value = "zk地址", required = true, dataType = "string")
+            , @ApiImplicitParam(name = "topic", value = "主题", required = true, dataType = "string")
+    })
+    @PostMapping("/topic/exists")
+    public HttpResult<Boolean> topicExists(String zkUrl, String topic) {
+        boolean isExists = TopicManager.exists(zkUrl, topic);
         return new HttpResult<>(isExists);
     }
 }
