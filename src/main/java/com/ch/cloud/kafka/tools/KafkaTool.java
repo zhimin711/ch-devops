@@ -3,6 +3,7 @@ package com.ch.cloud.kafka.tools;
 import com.ch.err.ErrorCode;
 import com.ch.err.InvalidArgumentException;
 import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
 import com.ch.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import io.protostuff.ProtostuffIOUtil;
@@ -275,7 +276,7 @@ public class KafkaTool {
 
     }
 
-    public List<String> searchTopicStringContent(String topic, String content, SearchType searchType) {
+    public List<String> searchTopicStringContent(String topic, String content, SearchType searchType, Class<?> clazz) {
         List<String> resultList = Lists.newArrayList();
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
         TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
@@ -338,7 +339,12 @@ public class KafkaTool {
                     if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
                             || (searchType == SearchType.CONTENT && msg.contains(content))) {
 //                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), msg);
-                        resultList.add(msg);
+                        if (clazz != null) {
+                            Object record = JsonUtils.fromJson(msg, clazz);
+                            resultList.add(JsonUtils.toJsonDateFormat(record, DateUtils.Pattern.DATETIME_CN));
+                        } else {
+                            resultList.add(msg);
+                        }
                     }
                     msgCount++;
                 }
@@ -411,7 +417,7 @@ public class KafkaTool {
                     if (o == null) {
                         json = new String(bytes);
                     } else {
-                        json = JsonUtils.toJson(o);
+                        json = JsonUtils.toJsonDateFormat(o, DateUtils.Pattern.DATETIME_CN);
                     }
                     if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
                             || (searchType == SearchType.CONTENT && json.contains(content))) {

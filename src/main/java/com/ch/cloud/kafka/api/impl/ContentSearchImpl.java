@@ -14,6 +14,8 @@ import com.ch.type.Status;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JarUtils;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ import java.util.Map;
 @Service
 @com.alibaba.dubbo.config.annotation.Service
 public class ContentSearchImpl implements IContentSearch {
+
+    private Logger logger = LoggerFactory.getLogger(ContentSearchImpl.class);
 
     @Value("${share.path.libs}")
     private String libsDir;
@@ -62,34 +66,44 @@ public class ContentSearchImpl implements IContentSearch {
                 return new BaseResult<>(ErrorCode.ARGS, "搜索条数不能超过1000！");
             }
         }
-
-        if (ContentType.from(topicExt.getType()) == ContentType.PROTO_STUFF) {
-            try {
-                Class<?> clazz = clazzMap.get(topicExt.getClassName());
-                if (clazz == null) {
-                    if (CommonUtils.isEmpty(topicExt.getClassFile())) {
-                        clazz = Class.forName(topicExt.getClassName());
-                    } else {//加载过不用重新加载类对象
-                        String prefix = "file:" + libsDir;
-                        clazz = JarUtils.loadClassForJar(prefix + File.separator + record.getClassFile(), topicExt.getClassName());
-                    }
-                    clazzMap.put(topicExt.getClassName(), clazz);
-                }
+        ContentType contentType = ContentType.from(topicExt.getType());
+        ;
+        try {
+            if (contentType == ContentType.PROTO_STUFF) {
+                Class<?> clazz = loadClazz(record.getClassFile(), topicExt.getClassName());
                 List<String> records = kafkaTool.searchTopicProtostuffContent(record.getTopicName(), record.getDescription(), clazz, searchType);
                 return new BaseResult<>(records);
-            } catch (MalformedURLException | ClassNotFoundException e) {
-                e.printStackTrace();
-                return new BaseResult<>(ErrorCode.ARGS, "序列化类：" + topicExt.getClassName() + "不存在！");
-            }
-        } else {
-            try {
-                List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), searchType);
+            } else {
+                Class<?> clazz = null;
+                if (contentType == ContentType.JSON && CommonUtils.isNotEmpty(topicExt.getClassName())) {
+                    clazz = loadClazz(record.getClassFile(), topicExt.getClassName());
+                }
+                List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), searchType, clazz);
                 return new BaseResult<>(records);
-            } catch (Exception ignored) {
-
             }
+
+        } catch (Exception ignored) {
+
         }
         return new BaseResult<>(Status.FAILED);
     }
 
+    private Class<?> loadClazz(String path, String className) {
+        try {
+            Class<?> clazz = clazzMap.get(className);
+            if (clazz == null) {
+                if (CommonUtils.isEmpty(className)) {
+                    clazz = Class.forName(className);
+                } else {//加载过不用重新加载类对象
+                    String prefix = "file:" + libsDir;
+                    clazz = JarUtils.loadClassForJar(prefix + File.separator + path, className);
+                }
+                clazzMap.put(className, clazz);
+            }
+            return clazz;
+        } catch (MalformedURLException | ClassNotFoundException e) {
+            logger.error("load class to deSerialize error!", e);
+        }
+        return null;
+    }
 }
