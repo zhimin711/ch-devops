@@ -4,6 +4,7 @@ import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.TopicCommand;
+import kafka.api.TopicMetadata;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
@@ -35,7 +36,6 @@ public class TopicManager {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(config.getZookeeper());
-            System.out.println(config);
             if (!AdminUtils.topicExists(zkClient, config.getTopicName())) {
                 AdminUtils.createTopic(zkClient, config.getTopicName(), config.getPartitions(),
                         config.getReplicationFactor(), config.getProperties());
@@ -152,5 +152,23 @@ public class TopicManager {
         if (zkClient != null) {
             zkClient.close();
         }
+    }
+
+    public void getInfo(String zkUrl, String topic) {
+        ZkClient zkClient = null;
+        try {
+            zkClient = new ZkClient(zkUrl);
+
+            TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkClient);
+            kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
+            meta.partitionsMetadata().forEach(r -> {
+
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(zkClient);
+        }
+
     }
 }

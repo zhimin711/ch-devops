@@ -62,12 +62,11 @@ public class ContentSearchImpl implements IContentSearch {
         }
         if ((searchType == KafkaTool.SearchType.EARLIEST || searchType == KafkaTool.SearchType.LATEST) && CommonUtils.isNumeric(record.getDescription())) {
             long size = Long.valueOf(record.getDescription());
-            if (size > 1000) {
+            if (size > 10000) {
                 return new BaseResult<>(ErrorCode.ARGS, "搜索条数不能超过1000！");
             }
         }
         ContentType contentType = ContentType.from(topicExt.getType());
-        ;
         try {
             if (contentType == ContentType.PROTO_STUFF) {
                 Class<?> clazz = loadClazz(record.getClassFile(), topicExt.getClassName());
