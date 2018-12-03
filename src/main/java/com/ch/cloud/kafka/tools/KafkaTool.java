@@ -323,6 +323,11 @@ public class KafkaTool {
                     continue;
                 }
                 ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
+                if (!msgSet.iterator().hasNext()) {
+                    logger.warn("Fetching data from start:{} empty!", startOffset);
+                    startOffset++;
+                    continue;
+                }
                 int msgCount = 0;
                 for (MessageAndOffset messageAndOffset : msgSet) {
                     long currentOffset = messageAndOffset.offset();
@@ -383,7 +388,7 @@ public class KafkaTool {
             } else if (searchType == SearchType.EARLIEST && (earliestOffset + offset) > latestOffset) {
                 endOffset = earliestOffset + offset;
             }
-            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
+            logger.info("info\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
             while (startOffset < endOffset) {
                 FetchRequest req = new FetchRequestBuilder()
                         .clientId(getClientId(topic, partitionId))
@@ -400,6 +405,11 @@ public class KafkaTool {
                     continue;
                 }
                 ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
+                if (!msgSet.iterator().hasNext()) {
+                    logger.warn("Fetching data from start:{} empty!", startOffset);
+                    startOffset++;
+                    continue;
+                }
                 int msgCount = 0;
                 for (MessageAndOffset messageAndOffset : msgSet) {
                     long currentOffset = messageAndOffset.offset();
@@ -426,7 +436,7 @@ public class KafkaTool {
                     }
                     msgCount++;
                 }
-                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, startOffset);
+                logger.info("result\t=====> count:{}, read last offset: {}", msgCount, startOffset);
             }
             consumer.close();
         }
