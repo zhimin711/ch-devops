@@ -88,13 +88,14 @@ public class ContentSearchImpl implements IContentSearch {
     }
 
     private Class<?> loadClazz(String path, String className) {
+        String prefix = "file:" + libsDir;
+        logger.debug("load class file path: {}/{}", prefix, path);
         try {
             Class<?> clazz = clazzMap.get(className);
             if (clazz == null) {
                 if (CommonUtils.isEmpty(className)) {
                     clazz = Class.forName(className);
                 } else {//加载过不用重新加载类对象
-                    String prefix = "file:" + libsDir;
                     clazz = JarUtils.loadClassForJar(prefix + File.separator + path, className);
                 }
                 clazzMap.put(className, clazz);
