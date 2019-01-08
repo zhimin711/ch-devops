@@ -1,12 +1,16 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.pojo.TopicConfig;
+import com.ch.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.TopicCommand;
 import kafka.api.TopicMetadata;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.exception.ZkMarshallingError;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
+import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
@@ -154,13 +158,23 @@ public class TopicManager {
         }
     }
 
-    public void getInfo(String zkUrl, String topic) {
+    public static void getInfo(String zkUrl, String topic) {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(zkUrl);
-
+            zkClient.setZkSerializer(new ZkSerializer() {
+                @Override
+                public byte[] serialize(Object o) throws ZkMarshallingError {
+                    return JsonUtils.toJson(o).getBytes(Charsets.UTF_8);
+                }
+                @Override
+                public Object deserialize(byte[] bytes) throws ZkMarshallingError {
+                    return new String(bytes, Charsets.UTF_8);
+                }
+            });
             TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkClient);
             kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
+
             meta.partitionsMetadata().forEach(r -> {
 
             });

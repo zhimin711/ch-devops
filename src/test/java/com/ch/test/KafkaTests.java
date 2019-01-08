@@ -1,9 +1,8 @@
 package com.ch.test;
 
 import com.ch.cloud.kafka.tools.KafkaManager;
-import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
-import com.ch.utils.JarUtils;
+import com.ch.cloud.kafka.tools.TopicManager;
 import kafka.api.OffsetRequest;
 import kafka.api.OffsetResponse;
 import kafka.api.PartitionOffsetRequestInfo;
@@ -16,7 +15,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.Test;
 
-import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -141,7 +139,7 @@ public class KafkaTests {
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
 //        kafkaTool.getTopicContent(topic);
 //        o = kafkaTool.searchTopicStringContent(topic, "100", KafkaTool.SearchType.LATEST);
-        o = kafkaTool.searchTopicStringContent(topic, "666666756345", KafkaTool.SearchType.CONTENT);
+        o = kafkaTool.searchTopicStringContent(topic, "666666756345", KafkaTool.SearchType.CONTENT, null);
 //        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
 //        try {
 //            Class<?> clazz = JarUtils.loadClassForJar("file:C:\\Users\\01370603\\.gradle\\caches\\modules-2\\files-2.1\\com.sf.omcs\\omcs-output\\1.2.SP1-SNAPSHOT\\3aba13c4a55c6ed7b6ee079f560c1df50034aecf\\omcs-output-1.2.SP1-SNAPSHOT.jar", "com.sf.omcs.output.dto.russian.plan.PlanLineRequireInfoDto");
@@ -153,4 +151,8 @@ public class KafkaTests {
         System.out.println(o);
     }
 
+    @Test
+    public void getTopicInfo() {
+       TopicManager.getInfo(zk2,"SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
+    }
 }
