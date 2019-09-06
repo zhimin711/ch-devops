@@ -1,8 +1,7 @@
 package com.ch.cloud.kafka.api;
 
-import com.ch.cloud.kafka.pojo.ContentQuery;
 import com.ch.cloud.kafka.pojo.TopicExtInfo;
-import com.ch.result.BaseResult;
+import com.ch.result.Result;
 
 /**
  * @author 01370603
@@ -10,5 +9,5 @@ import com.ch.result.BaseResult;
  */
 public interface IContentSearch {
 
-    BaseResult<String> search(TopicExtInfo record);
+    Result<String> search(TopicExtInfo record);
 }

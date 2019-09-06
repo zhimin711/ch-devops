@@ -27,6 +27,8 @@ public class KafkaTests {
     final String zk = "10.202.34.30:2182/kafka/st";
     //test bus
     final String zk2 = "10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus";
+    //test bus
+    final String zk3 = "10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/other";
     //dev sfst
     final String servers = "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093";
     //test sfst
@@ -130,16 +132,17 @@ public class KafkaTests {
 
     @Test
     public void test() {
-        KafkaTool kafkaTool = new KafkaTool(zk2);
+        KafkaTool kafkaTool = new KafkaTool(zk3);
         String topic = "GROUND_DEV_LOG_02";
         topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
 //        topic = "SHIVA_OMCS_RUSSIAN_PLANNING_REQUIRE_INFO";
+        topic = "SHIVA_OMCS_RUSSIAN_TEMP_REQUIRE_INFO";
 //        Map<Integer, Long> partOffset = kafkaTool.getTopicOffset(topic, -1);
 //        System.out.println(partOffset);
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
 //        kafkaTool.getTopicContent(topic);
 //        o = kafkaTool.searchTopicStringContent(topic, "100", KafkaTool.SearchType.LATEST);
-        o = kafkaTool.searchTopicStringContent(topic, "666666756345", KafkaTool.SearchType.CONTENT, null);
+        o = kafkaTool.searchTopicStringContent(topic, "19091110269569", KafkaTool.SearchType.CONTENT, null);
 //        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
 //        try {
 //            Class<?> clazz = JarUtils.loadClassForJar("file:C:\\Users\\01370603\\.gradle\\caches\\modules-2\\files-2.1\\com.sf.omcs\\omcs-output\\1.2.SP1-SNAPSHOT\\3aba13c4a55c6ed7b6ee079f560c1df50034aecf\\omcs-output-1.2.SP1-SNAPSHOT.jar", "com.sf.omcs.output.dto.russian.plan.PlanLineRequireInfoDto");

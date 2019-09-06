@@ -1,8 +1,8 @@
 package com.ch.cloud.kafka.api;
 
 import com.ch.cloud.kafka.pojo.TopicExtInfo;
-import com.ch.result.BaseResult;
 import com.ch.result.PageResult;
+import com.ch.result.Result;
 
 /**
  * @author 01370603
@@ -10,12 +10,12 @@ import com.ch.result.PageResult;
  */
 public interface ITopicExt {
 
-    BaseResult<Long> save(TopicExtInfo record);
+    Result<Long> save(TopicExtInfo record);
 
-    BaseResult<Long> update(TopicExtInfo record);
+    Result<Long> update(TopicExtInfo record);
 
     PageResult<TopicExtInfo> findPageBy(int pageNum, int pageSize, TopicExtInfo record);
 
-    BaseResult<TopicExtInfo> findListBy(TopicExtInfo record);
+    Result<TopicExtInfo> findListBy(TopicExtInfo record);
 
 }

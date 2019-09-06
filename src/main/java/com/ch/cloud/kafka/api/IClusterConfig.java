@@ -1,8 +1,8 @@
 package com.ch.cloud.kafka.api;
 
 import com.ch.cloud.kafka.pojo.ClusterConfigInfo;
-import com.ch.result.BaseResult;
 import com.ch.result.PageResult;
+import com.ch.result.Result;
 
 /**
  * @author 01370603
@@ -10,13 +10,13 @@ import com.ch.result.PageResult;
  */
 public interface IClusterConfig {
 
-    BaseResult<Long> save(ClusterConfigInfo record);
+    Result<Long> save(ClusterConfigInfo record);
 
-    BaseResult<Long> update(ClusterConfigInfo record);
+    Result<Long> update(ClusterConfigInfo record);
 
     PageResult<ClusterConfigInfo> findPageBy(int pageNum, int pageSize, ClusterConfigInfo record);
 
-    BaseResult<ClusterConfigInfo> findListBy(ClusterConfigInfo record);
+    Result<ClusterConfigInfo> findListBy(ClusterConfigInfo record);
 
-    BaseResult<String> getTopics(ClusterConfigInfo record);
+    Result<String> getTopics(ClusterConfigInfo record);
 }

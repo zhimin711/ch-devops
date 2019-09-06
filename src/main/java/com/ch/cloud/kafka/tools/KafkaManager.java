@@ -1,21 +1,22 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.utils.JsonUtils;
+import com.ch.utils.JSONUtils;
 import com.google.common.collect.Maps;
 import kafka.cluster.Broker;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.collection.Iterator;
 import scala.collection.Seq;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
+ * Kafka管理工具
  * @author 01370603
  * @date 2018/9/19 16:36
  */
@@ -36,12 +37,11 @@ public class KafkaManager {
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
                 public byte[] serialize(Object o) throws ZkMarshallingError {
-                    return JsonUtils.toJson(o).getBytes(Charsets.UTF_8);
+                    return JSONUtils.toJson(o).getBytes(StandardCharsets.UTF_8);
                 }
-
                 @Override
                 public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-                    return new String(bytes, Charsets.UTF_8);
+                    return new String(bytes, StandardCharsets.UTF_8);
                 }
             });
             Seq<Broker> brokersInCluster = ZkUtils.getAllBrokersInCluster(zkClient);

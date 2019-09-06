@@ -4,8 +4,8 @@ buildscript {
     }
     repositories {
         mavenLocal()
+        maven { url property('mavenUrl') }
         mavenCentral()
-//        maven { url 'http://127.0.0.1:8081/repository/maven-public/' }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -89,6 +89,9 @@ dependencies {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
     /* dubbo service jar end*/
     // https://mvnrepository.com/artifact/io.protostuff/protostuff-core
     compile group: 'io.protostuff', name: 'protostuff-core', version: '1.6.0'

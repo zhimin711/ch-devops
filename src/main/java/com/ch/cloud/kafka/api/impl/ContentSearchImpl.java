@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.api.impl;
 
+import com.ch.Status;
 import com.ch.cloud.kafka.api.IContentSearch;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
@@ -8,9 +9,8 @@ import com.ch.cloud.kafka.pojo.TopicExtInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.TopicExtService;
 import com.ch.cloud.kafka.tools.KafkaTool;
-import com.ch.err.ErrorCode;
-import com.ch.result.BaseResult;
-import com.ch.type.Status;
+import com.ch.e.CoreError;
+import com.ch.result.Result;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JarUtils;
 import com.google.common.collect.Maps;
@@ -46,7 +46,7 @@ public class ContentSearchImpl implements IContentSearch {
     private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
 
     @Override
-    public BaseResult<String> search(TopicExtInfo record) {
+    public Result<String> search(TopicExtInfo record) {
         BtClusterConfig config = clusterConfigService.findByClusterName(record.getClusterName());
         BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
 
@@ -55,7 +55,7 @@ public class ContentSearchImpl implements IContentSearch {
         if ("0".equals(record.getType())) {
             searchType = KafkaTool.SearchType.CONTENT;
             if (CommonUtils.isEmpty(record.getDescription())) {
-                return new BaseResult<>(ErrorCode.NON_NULL, "搜索内容不能为空！");
+                return new Result<>(CoreError.NON_NULL, "搜索内容不能为空！");
             }
         } else if ("2".equals(record.getType())) {
             searchType = KafkaTool.SearchType.EARLIEST;
@@ -63,7 +63,7 @@ public class ContentSearchImpl implements IContentSearch {
         if ((searchType == KafkaTool.SearchType.EARLIEST || searchType == KafkaTool.SearchType.LATEST) && CommonUtils.isNumeric(record.getDescription())) {
             long size = Long.valueOf(record.getDescription());
             if (size > 10000) {
-                return new BaseResult<>(ErrorCode.ARGS, "搜索条数不能超过1000！");
+                return new Result<>(CoreError.ARGS, "搜索条数不能超过1000！");
             }
         }
         ContentType contentType = ContentType.from(topicExt.getType());
@@ -71,20 +71,20 @@ public class ContentSearchImpl implements IContentSearch {
             if (contentType == ContentType.PROTO_STUFF) {
                 Class<?> clazz = loadClazz(record.getClassFile(), topicExt.getClassName());
                 List<String> records = kafkaTool.searchTopicProtostuffContent(record.getTopicName(), record.getDescription(), clazz, searchType);
-                return new BaseResult<>(records);
+                return new Result<>(records);
             } else {
                 Class<?> clazz = null;
                 if (contentType == ContentType.JSON && CommonUtils.isNotEmpty(topicExt.getClassName())) {
                     clazz = loadClazz(record.getClassFile(), topicExt.getClassName());
                 }
                 List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), searchType, clazz);
-                return new BaseResult<>(records);
+                return new Result<>(records);
             }
 
         } catch (Exception ignored) {
 
         }
-        return new BaseResult<>(Status.FAILED);
+        return new Result<>(Status.FAILED);
     }
 
     private Class<?> loadClazz(String path, String className) {

@@ -1,10 +1,10 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.err.ErrorCode;
-import com.ch.err.InvalidArgumentException;
+import com.ch.e.CoreError;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.JsonUtils;
+import com.ch.utils.ExceptionUtils;
+import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
@@ -37,9 +37,13 @@ public class KafkaTool {
         CONTENT, EARLIEST, LATEST
     }
 
+    public enum ContentType {
+        STRING, JSON, PROTOSTUFF
+    }
+
     public KafkaTool(String zkUrl) {
         if (CommonUtils.isEmpty(zkUrl)) {
-            throw new InvalidArgumentException(ErrorCode.ARGS);
+            throw ExceptionUtils.create(CoreError.ARGS);
         }
         brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
     }
@@ -58,7 +62,7 @@ public class KafkaTool {
 
     public Map<Integer, Long> getTopicOffset(String topic, long whichTime) {
         HashMap<Integer, Long> offsets = new HashMap<>();
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
+        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
             String leadBroker = metadata.leader().host();
@@ -80,7 +84,7 @@ public class KafkaTool {
      */
     public void getTopicContextOffset(String topic, long whichTime) {
         logger.info("\t\t=====> getTopicContextOffset: {}", whichTime);
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
+        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
             String leadBroker = metadata.leader().host();
@@ -135,19 +139,7 @@ public class KafkaTool {
      * @return
      */
     private long getPartitionOffset(SimpleConsumer consumer, String topic, int partition, long whichTime) {
-        TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
-        Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<>();
-        // PartitionOffsetRequestInfo(long time, int maxNumOffsets)
-        // 中的第二个参数maxNumOffsets，没弄明白是什么意思，但是测试后发现传入1 时返回whichTime 对应的offset，传入2 返回一个包含最大和最小offset的元组
-        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));
-        kafka.javaapi.OffsetRequest request = new kafka.javaapi.OffsetRequest(requestInfo, OffsetRequest.CurrentVersion(), consumer.clientId());
-        OffsetResponse resp = consumer.getOffsetsBefore(request.underlying());
-        kafka.javaapi.OffsetResponse response = new kafka.javaapi.OffsetResponse(resp);
-        if (response.hasError()) {
-            logger.error("Error fetching data Offset Data the Broker. Reason:{}", response.errorCode(topic, partition));
-            return 0;
-        }
-        long[] offsets = response.offsets(topic, partition);
+        long[] offsets = getPartitionOffsets(consumer, topic, partition, whichTime);
         return offsets[0];
     }
 
@@ -182,8 +174,8 @@ public class KafkaTool {
      * @param topic topic
      * @return
      */
-    private TreeMap<Integer, kafka.javaapi.PartitionMetadata> findLeader(Map<String, Integer> bootstraps, String topic) {
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> map = new TreeMap<>();
+    private Map<Integer, kafka.javaapi.PartitionMetadata> findLeader(Map<String, Integer> bootstraps, String topic) {
+        Map<Integer, kafka.javaapi.PartitionMetadata> map = new TreeMap<>();
         for (Map.Entry<String, Integer> bootstrap : bootstraps.entrySet()) {
             SimpleConsumer consumer = null;
             try {
@@ -226,7 +218,7 @@ public class KafkaTool {
      * @return
      */
     public void getTopicContent(String topic) {
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
+        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
 
         Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
         for (int partitionId : leaders.keySet()) {
@@ -277,170 +269,11 @@ public class KafkaTool {
     }
 
     public List<String> searchTopicStringContent(String topic, String content, SearchType searchType, Class<?> clazz) {
-        List<String> resultList = Lists.newArrayList();
-        Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-        if (leaders.isEmpty()) {
-            return Lists.newArrayList();
-        }
-        int offset = 10;
-        if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST) && CommonUtils.isNumeric(content)) {
-            int total = Integer.parseInt(content);
-            if (total > 0)
-                offset = total / leaders.size();
-        }
-        for (int partitionId : leaders.keySet()) {
-            kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
-            String leadBroker = metadata.leader().host();
-            int leadPort = metadata.leader().port();
-            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, getClientId(topic, partitionId));
-
-            long earliestOffset = earliestOffsetMap.get(partitionId);
-            long latestOffset = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
-//            long[] latestOffsets = this.getPartitionOffsets(consumer, topic, partitionId, OffsetRequest.LatestTime());
-
-            long startOffset = earliestOffset;
-            long endOffset = latestOffset;
-            if (searchType == SearchType.LATEST && (latestOffset - offset) > startOffset) {
-                startOffset = latestOffset - offset;
-            } else if (searchType == SearchType.EARLIEST && (earliestOffset + offset) > latestOffset) {
-                endOffset = earliestOffset + offset;
-            }
-            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
-            while (startOffset < endOffset) {
-                FetchRequest req = new FetchRequestBuilder()
-                        .clientId(getClientId(topic, partitionId))
-                        // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-                        .addFetch(topic, partitionId, startOffset, bufferSize)
-                        .build();
-                FetchResponse resp = consumer.fetch(req);
-                kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
-                if (response.hasError()) {
-                    // Something went wrong!
-//                ErrorMapping.maybeThrowException();
-                    short code = response.errorCode(topic, partitionId);
-                    logger.error("Error fetching data from the Broker:{} Reason: {}", leadBroker, code);
-                    continue;
-                }
-                ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
-                if (!msgSet.iterator().hasNext()) {
-                    logger.warn("Fetching data from start:{} empty!", startOffset);
-                    startOffset++;
-                    continue;
-                }
-                int msgCount = 0;
-                for (MessageAndOffset messageAndOffset : msgSet) {
-                    long currentOffset = messageAndOffset.offset();
-                    if (currentOffset < startOffset) {
-                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, startOffset);
-                        continue;
-                    }
-                    startOffset = messageAndOffset.nextOffset();
-                    ByteBuffer payload = messageAndOffset.message().payload();
-
-                    byte[] bytes = new byte[payload.limit()];
-                    payload.get(bytes);
-                    String msg = new String(bytes);
-                    if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
-                            || (searchType == SearchType.CONTENT && msg.contains(content))) {
-//                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), msg);
-                        if (clazz != null) {
-                            Object record = JsonUtils.fromJson(msg, clazz);
-                            resultList.add(JsonUtils.toJsonDateFormat(record, DateUtils.Pattern.DATETIME_CN));
-                        } else {
-                            resultList.add(msg);
-                        }
-                    }
-                    msgCount++;
-                }
-                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, startOffset);
-            }
-            consumer.close();
-        }
-        return resultList;
+        return searchTopicContent(ContentType.STRING, searchType, topic, content, clazz);
     }
 
     public List<String> searchTopicProtostuffContent(String topic, String content, Class<?> clazz, SearchType searchType) {
-        List<String> resultList = Lists.newArrayList();
-        Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
-        TreeMap<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-
-        int offset = 10;
-        if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST) && CommonUtils.isNumeric(content)) {
-            int total = Integer.parseInt(content);
-            if (total > 0)
-                offset = total / leaders.size();
-        }
-        for (int partitionId : leaders.keySet()) {
-            kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
-            String leadBroker = metadata.leader().host();
-            int leadPort = metadata.leader().port();
-            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, getClientId(topic, partitionId));
-
-            long earliestOffset = earliestOffsetMap.get(partitionId);
-            long latestOffset = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
-//            long[] latestOffsets = this.getPartitionOffsets(consumer, topic, partitionId, OffsetRequest.LatestTime());
-
-            long startOffset = earliestOffset;
-            long endOffset = latestOffset;
-            if (searchType == SearchType.LATEST && (latestOffset - offset) > startOffset) {
-                startOffset = latestOffset - offset;
-            } else if (searchType == SearchType.EARLIEST && (earliestOffset + offset) > latestOffset) {
-                endOffset = earliestOffset + offset;
-            }
-            logger.info("info\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
-            while (startOffset < endOffset) {
-                FetchRequest req = new FetchRequestBuilder()
-                        .clientId(getClientId(topic, partitionId))
-                        // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-                        .addFetch(topic, partitionId, startOffset, bufferSize)
-                        .build();
-                FetchResponse resp = consumer.fetch(req);
-                kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
-                if (response.hasError()) {
-                    // Something went wrong!
-//                ErrorMapping.maybeThrowException();
-                    short code = response.errorCode(topic, partitionId);
-                    logger.error("Error fetching data from the Broker:{} Reason: {}", leadBroker, code);
-                    continue;
-                }
-                ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
-                if (!msgSet.iterator().hasNext()) {
-                    logger.warn("Fetching data from start:{} empty!", startOffset);
-                    startOffset++;
-                    continue;
-                }
-                int msgCount = 0;
-                for (MessageAndOffset messageAndOffset : msgSet) {
-                    long currentOffset = messageAndOffset.offset();
-                    if (currentOffset < startOffset) {
-                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, startOffset);
-                        continue;
-                    }
-                    startOffset = messageAndOffset.nextOffset();
-                    ByteBuffer payload = messageAndOffset.message().payload();
-
-                    byte[] bytes = new byte[payload.limit()];
-                    payload.get(bytes);
-                    String json;
-                    Object o = deSerialize(bytes, clazz);
-                    if (o == null) {
-                        json = new String(bytes);
-                    } else {
-                        json = JsonUtils.toJsonDateFormat(o, DateUtils.Pattern.DATETIME_CN);
-                    }
-                    if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
-                            || (searchType == SearchType.CONTENT && json.contains(content))) {
-//                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), json);
-                        resultList.add(json);
-                    }
-                    msgCount++;
-                }
-                logger.info("result\t=====> count:{}, read last offset: {}", msgCount, startOffset);
-            }
-            consumer.close();
-        }
-        return resultList;
+        return searchTopicContent(ContentType.PROTOSTUFF, searchType, topic, content, clazz);
     }
 
     private <T> T deSerialize(byte[] data, Class<T> clazz) {
@@ -459,4 +292,100 @@ public class KafkaTool {
         }
     }
 
+
+    public List<String> searchTopicContent(ContentType contentType, SearchType searchType, String topic, String content, Class<?> clazz) {
+        List<String> resultList = Lists.newArrayList();
+        Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
+        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
+
+        int offset = 10;
+        if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST) && CommonUtils.isNumeric(content)) {
+            int total = Integer.parseInt(content);
+            if (total > 0)
+                offset = total / leaders.size();
+        }
+        for (int partitionId : leaders.keySet()) {
+            kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
+            String leadBroker = metadata.leader().host();
+            int leadPort = metadata.leader().port();
+            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, getClientId(topic, partitionId));
+            try {
+                long earliestOffset = earliestOffsetMap.get(partitionId);
+                long latestOffset = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
+//            long[] latestOffsets = this.getPartitionOffsets(consumer, topic, partitionId, OffsetRequest.LatestTime());
+
+                long startOffset = earliestOffset;
+                long endOffset = latestOffset;
+                if (searchType == SearchType.LATEST && (latestOffset - offset) > startOffset) {
+                    startOffset = latestOffset - offset;
+                } else if (searchType == SearchType.EARLIEST && (earliestOffset + offset) > latestOffset) {
+                    endOffset = earliestOffset + offset;
+                }
+                logger.info("info\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partitionId, earliestOffset, latestOffset, startOffset, endOffset);
+                while (startOffset < endOffset) {
+                    FetchRequest req = new FetchRequestBuilder()
+                            .clientId(getClientId(topic, partitionId))
+                            // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
+                            .addFetch(topic, partitionId, startOffset, bufferSize)
+                            .build();
+                    FetchResponse resp = consumer.fetch(req);
+                    kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
+                    if (response.hasError()) {
+                        // Something went wrong! ErrorMapping.maybeThrowException();
+                        short code = response.errorCode(topic, partitionId);
+                        logger.error("Error fetching data from the Broker:{} Reason: {}", leadBroker, code);
+                        continue;
+                    }
+                    ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
+                    if (!msgSet.iterator().hasNext()) {
+                        logger.warn("Fetching data from start:{} empty!", startOffset);
+                        startOffset++;
+                        continue;
+                    }
+                    int msgCount = 0;
+                    for (MessageAndOffset messageAndOffset : msgSet) {
+                        long currentOffset = messageAndOffset.offset();
+                        if (currentOffset < startOffset) {
+                            logger.error("Found an old offset: {}, Expecting: {}", currentOffset, startOffset);
+                            continue;
+                        }
+                        startOffset = messageAndOffset.nextOffset();
+                        ByteBuffer payload = messageAndOffset.message().payload();
+
+                        byte[] bytes = new byte[payload.limit()];
+                        payload.get(bytes);
+                        String msg;
+                        if (contentType == ContentType.JSON) {
+                            msg = new String(bytes);
+                            if (clazz != null) {
+                                msg = JSONUtils.toJsonDateFormat(JSONUtils.fromJson(msg, clazz), DateUtils.Pattern.DATETIME_CN);
+                            }
+                        } else if (contentType == ContentType.PROTOSTUFF) {
+                            Object o = deSerialize(bytes, clazz);
+                            if (o == null) {
+                                msg = new String(bytes);
+                            } else {
+                                msg = JSONUtils.toJsonDateFormat(o, DateUtils.Pattern.DATETIME_CN);
+                            }
+                        } else {
+                            msg = new String(bytes);
+                            if (clazz != null) {
+                                msg = JSONUtils.toJsonDateFormat(JSONUtils.fromJson(msg, clazz), DateUtils.Pattern.DATETIME_CN);
+                            }
+                        }
+                        if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
+                                || (searchType == SearchType.CONTENT && msg.contains(content))) {
+//                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), json);
+                            resultList.add(msg);
+                        }
+                        msgCount++;
+                    }
+                    logger.info("result\t=====> count:{}, read last offset: {}", msgCount, startOffset);
+                }
+            } finally {
+                consumer.close();
+            }
+        }
+        return resultList;
+    }
 }

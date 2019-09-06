@@ -1,12 +1,12 @@
 package com.ch.cloud.kafka.api.impl;
 
+import com.ch.Status;
 import com.ch.cloud.kafka.api.ITopicExt;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.TopicExtInfo;
 import com.ch.cloud.kafka.service.TopicExtService;
-import com.ch.result.BaseResult;
 import com.ch.result.PageResult;
-import com.ch.type.Status;
+import com.ch.result.Result;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,19 +26,19 @@ public class TopicExtImpl implements ITopicExt {
     TopicExtService topicExtService;
 
     @Override
-    public BaseResult<Long> save(TopicExtInfo record) {
+    public Result<Long> save(TopicExtInfo record) {
         BtTopicExt r = new BtTopicExt();
         BeanUtils.copyProperties(record, r, "id");
         topicExtService.save(r);
-        return new BaseResult<>(r.getId());
+        return new Result<>(r.getId());
     }
 
     @Override
-    public BaseResult<Long> update(TopicExtInfo record) {
+    public Result<Long> update(TopicExtInfo record) {
         BtTopicExt r = new BtTopicExt();
         BeanUtils.copyProperties(record, r);
         topicExtService.update(r);
-        return new BaseResult<>(Status.SUCCESS);
+        return new Result<>(Status.SUCCESS);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class TopicExtImpl implements ITopicExt {
     }
 
     @Override
-    public BaseResult<TopicExtInfo> findListBy(TopicExtInfo record) {
+    public Result<TopicExtInfo> findListBy(TopicExtInfo record) {
         BtTopicExt r = new BtTopicExt();
         BeanUtils.copyProperties(record, r);
         List<BtTopicExt> list = topicExtService.find(r);
@@ -64,7 +64,7 @@ public class TopicExtImpl implements ITopicExt {
             BeanUtils.copyProperties(e, info);
             return info;
         }).collect(Collectors.toList());
-        return new BaseResult<>(records);
+        return new Result<>(records);
     }
 
 }

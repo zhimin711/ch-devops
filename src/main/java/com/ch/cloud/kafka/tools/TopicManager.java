@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.pojo.TopicConfig;
-import com.ch.utils.JsonUtils;
+import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.TopicCommand;
@@ -165,7 +165,7 @@ public class TopicManager {
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
                 public byte[] serialize(Object o) throws ZkMarshallingError {
-                    return JsonUtils.toJson(o).getBytes(Charsets.UTF_8);
+                    return JSONUtils.toJson(o).getBytes(Charsets.UTF_8);
                 }
                 @Override
                 public Object deserialize(byte[] bytes) throws ZkMarshallingError {

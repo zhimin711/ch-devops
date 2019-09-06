@@ -6,7 +6,7 @@ import com.ch.cloud.kafka.pojo.ClusterConfigInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.cloud.kafka.tools.TopicManager;
-import com.ch.result.BaseResult;
+import com.ch.result.Result;
 import com.ch.result.PageResult;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
@@ -29,19 +29,19 @@ public class ClusterConfigImpl implements IClusterConfig {
     private ClusterConfigService clusterConfigService;
 
     @Override
-    public BaseResult<Long> save(ClusterConfigInfo record) {
+    public Result<Long> save(ClusterConfigInfo record) {
         BtClusterConfig r = new BtClusterConfig();
         BeanUtils.copyProperties(record, r);
         clusterConfigService.save(r);
-        return new BaseResult<>(r.getId());
+        return new Result<>(r.getId());
     }
 
     @Override
-    public BaseResult<Long> update(ClusterConfigInfo record) {
+    public Result<Long> update(ClusterConfigInfo record) {
         BtClusterConfig r = new BtClusterConfig();
         BeanUtils.copyProperties(record, r);
         clusterConfigService.update(r);
-        return new BaseResult<Long>(r.getId());
+        return new Result<Long>(r.getId());
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ClusterConfigImpl implements IClusterConfig {
     }
 
     @Override
-    public BaseResult<ClusterConfigInfo> findListBy(ClusterConfigInfo record) {
+    public Result<ClusterConfigInfo> findListBy(ClusterConfigInfo record) {
         BtClusterConfig r = new BtClusterConfig();
         BeanUtils.copyProperties(record, r);
         List<BtClusterConfig> list = clusterConfigService.find(r);
@@ -67,13 +67,13 @@ public class ClusterConfigImpl implements IClusterConfig {
             BeanUtils.copyProperties(e, info);
             return info;
         }).collect(Collectors.toList());
-        return new BaseResult<ClusterConfigInfo>(records);
+        return new Result<ClusterConfigInfo>(records);
     }
 
     @Override
-    public BaseResult<String> getTopics(ClusterConfigInfo record) {
+    public Result<String> getTopics(ClusterConfigInfo record) {
         BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
         List<String> list = TopicManager.getAllTopics(cluster.getZookeeper());
-        return new BaseResult<>(list);
+        return new Result<>(list);
     }
 }

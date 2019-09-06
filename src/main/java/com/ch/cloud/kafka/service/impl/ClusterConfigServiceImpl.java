@@ -5,7 +5,7 @@ import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.mybatis.service.BaseService;
-import com.ch.utils.JsonUtils;
+import com.ch.utils.JSONUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.common.Mapper;
@@ -30,14 +30,14 @@ public class ClusterConfigServiceImpl extends BaseService<Long, BtClusterConfig>
     @Override
     public int save(BtClusterConfig record) {
         Map<String, Integer> brokers = KafkaManager.getAllBrokersInCluster(record.getZookeeper());
-        record.setBrokers(JsonUtils.toJson(brokers));
+        record.setBrokers(JSONUtils.toJson(brokers));
         return super.save(record);
     }
 
     @Override
     public int update(BtClusterConfig record) {
         Map<String, Integer> brokers = KafkaManager.getAllBrokersInCluster(record.getZookeeper());
-        record.setBrokers(JsonUtils.toJson(brokers));
+        record.setBrokers(JSONUtils.toJson(brokers));
         return super.update(record);
     }
 
