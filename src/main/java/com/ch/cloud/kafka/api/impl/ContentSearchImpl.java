@@ -10,6 +10,7 @@ import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.TopicExtService;
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.e.CoreError;
+import com.ch.pool.DefaultThreadPool;
 import com.ch.result.Result;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JarUtils;
@@ -77,6 +78,12 @@ public class ContentSearchImpl implements IContentSearch {
                 if (contentType == ContentType.JSON && CommonUtils.isNotEmpty(topicExt.getClassName())) {
                     clazz = loadClazz(record.getClassFile(), topicExt.getClassName());
                 }
+                KafkaTool.SearchType finalSearchType = searchType;
+                Class<?> finalClazz = clazz;
+//                DefaultThreadPool.exe(() -> {
+//                    List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), finalSearchType, finalClazz);
+//
+//                });
                 List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), searchType, clazz);
                 return new Result<>(records);
             }

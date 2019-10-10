@@ -14,6 +14,9 @@ import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -375,7 +378,7 @@ public class KafkaTool {
                         }
                         if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
                                 || (searchType == SearchType.CONTENT && msg.contains(content))) {
-//                        logger.info("message\t=====>{}: {}", messageAndOffset.offset(), json);
+                            logger.info("message\t=====>{}: {}", messageAndOffset.offset(), msg);
                             resultList.add(msg);
                         }
                         msgCount++;
@@ -388,4 +391,6 @@ public class KafkaTool {
         }
         return resultList;
     }
+
+
 }

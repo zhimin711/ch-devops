@@ -67,6 +67,7 @@ public class TopicManager {
         String[] args = config.split(" ");
         System.out.println(Arrays.toString(args));
         TopicCommand.main(args);
+
     }
 
     /*
