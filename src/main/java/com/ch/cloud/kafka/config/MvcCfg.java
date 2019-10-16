@@ -9,8 +9,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableWebMvc
-//@AutoConfigureAfter(MyBatisScannerCfg.class)
-//@ComponentScan("com.ch.cloud.kafka.controller")
 public class MvcCfg {
 
 //    @Bean

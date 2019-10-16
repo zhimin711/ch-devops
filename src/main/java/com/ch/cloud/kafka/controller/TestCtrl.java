@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.cloud.kafka.service.ITestService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @version 1.0
  * @since 1.8
  */
+@Api(value="/test", tags="测试接口模块")
 @RestController
 @RequestMapping("test")
 public class TestCtrl {
