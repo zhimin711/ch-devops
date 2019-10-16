@@ -1,105 +1,99 @@
-buildscript {
-    ext {
-        springBootVersion = '1.4.3.RELEASE'
-    }
-    repositories {
-        mavenLocal()
-        maven { url property('mavenUrl') }
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath 'se.transmode.gradle:gradle-docker:1.2'
-    }
+plugins {
+    id 'org.springframework.boot' version '2.1.5.RELEASE'
+    id 'java'
 }
-group 'com.ch'
+apply plugin: 'io.spring.dependency-management'
+//apply from: 'buildApi.gradle'
+//apply from: 'mybatisGenerator.gradle'
+
+group 'com.ch.cloud'
 version '1.0.0-SNAPSHOT'
 
-apply plugin: 'java'
-apply plugin: 'org.springframework.boot'
-apply from: 'buildApi.gradle'
-apply from: 'mybatisGenerator.gradle'
-
-springBoot {
-    mainClass = "com.ch.cloud.kafka.KafkaApplication"
-}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-[compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"
 
 ext {
-    springBootVersion = '1.4.3.RELEASE'
-    chVersion = '1.0.1-SNAPSHOT'
+//	springCloudVersion = 'Edgware.RELEASE' //Greenwich.RC1\Finchley.SR2\Edgware.SR5\Camden.SR3
+    springCloudVersion = 'Greenwich.RELEASE'
+    springOauth2 = '2.3.4.RELEASE'
+    alicloudVersion = '0.9.0.RELEASE' //0.2.1.RELEASE,0.9.0.RELEASE
+    chVersion = '1.0.3-SNAPSHOT' //0.2.1.RELEASE
 }
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenLocal()
+//    maven { url "http://nexus.sf-express.com/nexus/content/groups/public/" }
+    jcenter()
     mavenCentral()
-//    maven { url 'http://nexus.sf-express.com/nexus/content/groups/public/' }
+    maven { url "https://repo.spring.io/milestone" }
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-//    compile fileTree(dir: "$projectDir/libs", include: ['*.jar'])
 
     //私有相关包
-    compile("com.ch:ch-core:${chVersion}")
-
-//    compile("com.ch:ch-helper:${chVersion}")
-    compile("com.ch:ch-jdbc-mybatis:${chVersion}")
-    compile("com.ch:ch-shiro:${chVersion}")
+    implementation("com.ch:ch-core:${chVersion}")
+//    implementation("com.ch:ch-helper:${chVersion}")
+    implementation("com.ch:ch-mybatis:${chVersion}")
 
     //spring boot相关包
-    compile 'org.springframework.boot:spring-boot-starter'
-    compile 'org.springframework.boot:spring-boot-starter-web', {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web', {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
 
-//    compile 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    compile 'org.springframework.boot:spring-boot-starter-jetty'
-    compile 'org.springframework.boot:spring-boot-starter-redis'
+//    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-jetty'
+//    implementation 'org.springframework.boot:spring-boot-starter-redis'
 
     //数据源相关包
-    compile 'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1'
-    compile "mysql:mysql-connector-java:5.1.30"
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1'
+    implementation "mysql:mysql-connector-java:5.1.30"
 
 
 //     https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
-    compile 'org.apache.kafka:kafka-clients:0.8.2.0', {
+    implementation 'org.apache.kafka:kafka-clients:0.8.2.0', {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
-//    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.0'
+//    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.0'
 
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka
-    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.0', {
+    implementation group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.0', {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
-
+    compile 'io.springfox:springfox-swagger2:2.8.0'
+    compile 'com.github.xiaoymin:swagger-bootstrap-ui:1.9.1'
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
-    compile('org.springframework.kafka:spring-kafka:1.0.0.RELEASE')
+//    implementation('org.springframework.kafka:spring-kafka:2+')
 
-    /* dubbo微服务依赖包 dubbo service jar start*/
-    compile('com.alibaba:dubbo:2.5.3') {
-        exclude group: 'org.springframework', module: 'spring'
-    }
-    compile('com.github.sgroschupf:zkclient:0.1') {
-        exclude group: 'log4j', module: 'log4j'
-        exclude group: 'org.slf4j'
-    }
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 
     /* dubbo service jar end*/
     // https://mvnrepository.com/artifact/io.protostuff/protostuff-core
-    compile group: 'io.protostuff', name: 'protostuff-core', version: '1.6.0'
+    implementation group: 'io.protostuff', name: 'protostuff-core', version: '1.6.0'
     // https://mvnrepository.com/artifact/io.protostuff/protostuff-runtime
-    compile group: 'io.protostuff', name: 'protostuff-runtime', version: '1.6.0'
+    implementation group: 'io.protostuff', name: 'protostuff-runtime', version: '1.6.0'
+    //win系统会导致Controller与Service层实例不一致
+    runtimeOnly('org.springframework.boot:spring-boot-devtools')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    annotationProcessor 'org.projectlombok:lombok'
+
+//    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation "org.springframework.cloud:spring-cloud-starter-alibaba-nacos-config:${alicloudVersion}"
+    implementation "org.springframework.cloud:spring-cloud-starter-alibaba-nacos-discovery:${alicloudVersion}"
+    implementation "org.springframework.cloud:spring-cloud-starter-alibaba-sentinel:${alicloudVersion}"
 }
+
 dependencyManagement {
     imports {
-        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Camden.SR3'
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }

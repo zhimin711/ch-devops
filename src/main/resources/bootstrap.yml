@@ -1,0 +1,22 @@
+spring:
+  devtools:
+    restart:
+      enabled: true
+#      additional-exclude: src/main/java
+      additional-paths: src/main/java
+      exclude: static/**,assets/**,templates/**
+  application:
+    name: ch-kafka
+  profiles:
+    active: sf
+  main:
+    allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 10.202.10.66:8848
+        namespace: ${nacos.namespace:}
+      config:
+        server-addr: 10.202.10.66:8848
+        namespace: ${nacos.namespace:}
+        shared-dataids: ch-kafka.yml #,ch-sentinel.properties

@@ -29,11 +29,13 @@ public class KafkaTests {
 
     //dev sfst
     final String zk = "10.202.34.30:2182/kafka/st";
+    final String zk_dev_1 = "10.202.34.28:2182,10.202.34.29:2182,10.202.34.30:2182/kafka/other";
     final String zk4 = "100.80.129.164:2181/kafka/o2o_dds_kscs_ud7nr3lf01";
     //test bus
     final String zk2 = "10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus";
     //test bus
     final String zk3 = "10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/other";
+    final String zk5 = "10.203.248.16:2181,10.203.248.17:2181,10.203.248.18:2181,10.203.248.19:2181,10.203.248.20:2181/kafka/airacpcore";
     //dev sfst
     final String servers = "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093";
     //test sfst
@@ -141,18 +143,19 @@ public class KafkaTests {
 
     @Test
     public void test() {
-        KafkaTool kafkaTool = new KafkaTool(zk4);
-        String topic = "GROUND_DEV_LOG_02";
-        topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
+        KafkaTool kafkaTool = new KafkaTool(zk_dev_1);
+        String topic = "GRD_DEV_01370603_01";
+//        topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
 //        topic = "SHIVA_OMCS_RUSSIAN_PLANNING_REQUIRE_INFO";
-        topic = "SHIVA_OMCS_RUSSIAN_TEMP_REQUIRE_INFO";
-        topic = "KSCS_SEND_REQUIRE";
+//        topic = "SHIVA_OMCS_RUSSIAN_TEMP_REQUIRE_INFO";
+//        topic = "KSCS_SEND_REQUIRE";
 //        Map<Integer, Long> partOffset = kafkaTool.getTopicOffset(topic, -1);
 //        System.out.println(partOffset);
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
 //        kafkaTool.getTopicContent(topic);
 //        o = kafkaTool.searchTopicStringContent(topic, "100", KafkaTool.SearchType.LATEST);
-        o = kafkaTool.searchTopicStringContent(topic, "72019100810000057", KafkaTool.SearchType.CONTENT, null);
+        o = kafkaTool.searchTopicStringContent(topic, "10", KafkaTool.SearchType.LATEST, null);
+//        o = kafkaTool.searchTopicStringContent(topic, "111", KafkaTool.SearchType.LATEST, null);
 //        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
 //        try {
 //            Class<?> clazz = JarUtils.loadClassForJar("file:C:\\Users\\01370603\\.gradle\\caches\\modules-2\\files-2.1\\com.sf.omcs\\omcs-output\\1.2.SP1-SNAPSHOT\\3aba13c4a55c6ed7b6ee079f560c1df50034aecf\\omcs-output-1.2.SP1-SNAPSHOT.jar", "com.sf.omcs.output.dto.russian.plan.PlanLineRequireInfoDto");
@@ -176,16 +179,16 @@ public class KafkaTests {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, servers5);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
 //        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put("schema.registry.url", schemaUrl);//schema.registry.url指向射麻的存储位置
         String topic = "KSCS_SEND_REQUIRE";
-        Producer<String, String> producer = new KafkaProducer<>(props);
+        Producer<String, byte[]> producer = new KafkaProducer<>(props);
         //不断生成消息并发送
-        String msg = "{\"applyDay\":\"4\",\"arriveTm\":1570516734048,\"bizType\":92,\"capacityLoad\":1.5,\"conveyanceType\":5,\"createTm\":1570516734048,\"creator\":\"O2O-DDS-KSCS\",\"crossDays\":0,\"cvyName\":\"755HAJ755HA01(二程接驳)\",\"departTm\":1570516734048,\"destCoordinate\":\"125.123456,35.2364565\",\"destNotZoneAddr\":\"深圳上号\",\"destZoneCode\":\"J755HA01\",\"effectDate\":1570516734048,\"invalidDate\":1570516734048,\"isStopOver\":0,\"lastestArriveTm\":1570516734048,\"lastestReachTm\":1570516734048,\"lineCode\":\"sch755HA01D\",\"lineDistance\":350.6,\"lineId\":72019100810000057,\"linePassZoneInfoGroundDtos\":[{\"arriveBatchDate\":1570516734048,\"arriveTm\":1570516734048,\"crossDays\":0,\"departTm\":1570516734048,\"jobType\":1,\"lastestArriveTm\":1570516734048,\"lineDistance\":0.0,\"linePassZoneId\":234758083695435782,\"lineRequireId\":72019100810000057,\"mainLineRequireId\":72019100810000057,\"passCoordinate\":\"125.123456,35.2364565\",\"passNotZoneAddr\":\"深圳上号\",\"passZoneCode\":\"755HA\",\"sortNum\":1,\"version\":1570706701618,\"waitTm\":5},{\"arriveBatchDate\":1570516734048,\"arriveTm\":1570516734048,\"crossDays\":0,\"departTm\":1570516734048,\"jobType\":2,\"lastestArriveTm\":1570516734048,\"lineDistance\":350.6,\"linePassZoneId\":234758083695435783,\"lineRequireId\":72019100810000057,\"mainLineRequireId\":72019100810000057,\"passCoordinate\":\"125.123456,35.2364565\",\"passNotZoneAddr\":\"深圳上号\",\"passZoneCode\":\"J755HA01\",\"sortNum\":2,\"version\":1570706701618,\"waitTm\":5}],\"lineRequireDate\":1570516734048,\"lineRequireId\":72019100810000057,\"mainLineRequireId\":72019100810000057,\"params\":{\"mobilePhone\":\"13500001111\",\"idCard\":\"453000000003211\",\"price\":\"232.1\"},\"planArriveTm\":1570516734048,\"requireType\":21,\"sendBatchDate\":1570516734048,\"sendWorkDay\":\"2\",\"srcCoordinate\":\"125.123456,35.2364565\",\"srcNotZoneAddr\":\"深圳上号\",\"srcZoneCode\":\"755HA\",\"transoportLevel\":4,\"type\":2,\"vehicleType\":\"厢式运输车\",\"version\":1570706701618}";
+        String msg = "{\"applyDay\":\"5\",\"arriveTm\":1570516734048,\"bizType\":92,\"capacityLoad\":1.5,\"conveyanceType\":5,\"createTm\":1570516734048,\"creator\":\"O2O-DDS-KSCS\",\"crossDays\":0,\"cvyName\":\"755HAJ755HA01(二程接驳)\",\"departTm\":1570516734048,\"destCoordinate\":\"125.123456,35.2364565\",\"destNotZoneAddr\":\"深圳上号\",\"destZoneCode\":\"J755HA01\",\"effectDate\":1570516734048,\"invalidDate\":1570516734048,\"isStopOver\":0,\"lastestArriveTm\":1570516734048,\"lastestReachTm\":1570516734048,\"lineCode\":\"sch755HA01D\",\"lineDistance\":350.6,\"lineId\":72019100810000057,\"linePassZoneInfoGroundDtos\":[{\"arriveBatchDate\":1570516734048,\"arriveTm\":1570516734048,\"crossDays\":0,\"departTm\":1570516734048,\"jobType\":1,\"lastestArriveTm\":1570516734048,\"lineDistance\":0.0,\"linePassZoneId\":234758083695435782,\"lineRequireId\":72019100810000057,\"mainLineRequireId\":72019100810000057,\"passCoordinate\":\"125.123456,35.2364565\",\"passNotZoneAddr\":\"深圳上号\",\"passZoneCode\":\"755HA\",\"sortNum\":1,\"version\":1570706701618,\"waitTm\":5},{\"arriveBatchDate\":1570516734048,\"arriveTm\":1570516734048,\"crossDays\":0,\"departTm\":1570516734048,\"jobType\":2,\"lastestArriveTm\":1570516734048,\"lineDistance\":350.6,\"linePassZoneId\":234758083695435783,\"lineRequireId\":72019100810000057,\"mainLineRequireId\":72019100810000057,\"passCoordinate\":\"125.123456,35.2364565\",\"passNotZoneAddr\":\"深圳上号\",\"passZoneCode\":\"J755HA01\",\"sortNum\":2,\"version\":1570706701618,\"waitTm\":5}],\"lineRequireDate\":1570516734048,\"lineRequireId\":72019100810000057,\"mainLineRequireId\":72019100810000057,\"params\":{\"mobilePhone\":\"13500001111\",\"idCard\":\"453000000003211\",\"price\":\"232.1\"},\"planArriveTm\":1570516734048,\"requireType\":21,\"sendBatchDate\":1570516734048,\"sendWorkDay\":\"2\",\"srcCoordinate\":\"125.123456,35.2364565\",\"srcNotZoneAddr\":\"深圳上号\",\"srcZoneCode\":\"755HA\",\"transoportLevel\":4,\"type\":2,\"vehicleType\":\"厢式运输车\",\"version\":1570706701618}";
 
-        ProducerRecord<String, String> record = new ProducerRecord<>(topic, null, msg);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, null, msg.getBytes());
         producer.send(record);//将customer作为消息的值发送出去，KafkaAvroSerializer会处理剩下的事情
 
         Thread.sleep(5000);

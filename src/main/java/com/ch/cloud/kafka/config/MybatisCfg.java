@@ -14,6 +14,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.TransactionManagementConfigurer;
+import tk.mybatis.spring.annotation.MapperScan;
 
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -28,7 +29,9 @@ import java.util.Properties;
  */
 @Configuration
 @EnableTransactionManagement
-public class MybatisCfg implements TransactionManagementConfigurer{
+@MapperScan(basePackages = {"com.ch.cloud.kafka.**.mapper"},
+        properties = {"mappers=tk.mybatis.mapper.common.Mapper,tk.mybatis.mapper.common.special.InsertListMapper"})
+public class MybatisCfg {
 
     @Autowired
     private DataSource dataSource;
@@ -68,8 +71,4 @@ public class MybatisCfg implements TransactionManagementConfigurer{
         return new SqlSessionTemplate(sqlSessionFactory);
     }
 
-    @Override
-    public PlatformTransactionManager annotationDrivenTransactionManager() {
-        return new DataSourceTransactionManager(dataSource);
-    }
 }

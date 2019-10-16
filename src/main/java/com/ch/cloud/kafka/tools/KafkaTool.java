@@ -1,6 +1,6 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.e.CoreError;
+import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
@@ -46,7 +46,7 @@ public class KafkaTool {
 
     public KafkaTool(String zkUrl) {
         if (CommonUtils.isEmpty(zkUrl)) {
-            throw ExceptionUtils.create(CoreError.ARGS);
+            throw ExceptionUtils.create(PubError.ARGS);
         }
         brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
     }
