@@ -1,43 +1,59 @@
 package com.ch.cloud.kafka.pojo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import springfox.documentation.annotations.ApiIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+@ApiModel("Kafka 主题配置信息")
+
 public class TopicExtInfo implements Serializable {
+
+
+    private static final long serialVersionUID = 1L;
     /**
      * 主键
      */
+    @ApiModelProperty(value = "ID", hidden = true)
     private Long id;
 
     /**
      * 集群名称
      */
+    @ApiModelProperty("集群名称")
     private String clusterName;
 
     /**
      * 主题名称
      */
+    @ApiModelProperty("主题名称")
     private String topicName;
 
     /**
      * 存储类型：STRING, JSON, PROTO_STUFF
      */
+    @ApiModelProperty("存储类型")
     private String type;
 
     /**
      * 类文件
      */
+    @ApiModelProperty("类文件")
     private String classFile;
 
     /**
      * 类名称
      */
+    @ApiModelProperty("类名称")
     private String className;
 
     /**
      * 描述
      */
+    @ApiModelProperty("描述")
     private String description;
 
     /**
@@ -48,24 +64,26 @@ public class TopicExtInfo implements Serializable {
     /**
      * 创建时间
      */
+    @ApiModelProperty(hidden = true)
     private Date createAt;
 
     /**
      * 创建人
      */
+    @ApiModelProperty(hidden = true)
     private String createBy;
 
     /**
      * 更新时间
      */
+    @ApiModelProperty(hidden = true)
     private Date updateAt;
 
     /**
      * 更新人
      */
+    @ApiModelProperty(hidden = true)
     private String updateBy;
-
-    private static final long serialVersionUID = 1L;
 
     /**
      * 获取主键
@@ -283,26 +301,4 @@ public class TopicExtInfo implements Serializable {
         this.updateBy = updateBy;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(" [");
-        sb.append("Hash = ").append(hashCode());
-        sb.append(", id=").append(id);
-        sb.append(", clusterName=").append(clusterName);
-        sb.append(", topicName=").append(topicName);
-        sb.append(", type=").append(type);
-        sb.append(", classFile=").append(classFile);
-        sb.append(", className=").append(className);
-        sb.append(", description=").append(description);
-        sb.append(", status=").append(status);
-        sb.append(", createAt=").append(createAt);
-        sb.append(", createBy=").append(createBy);
-        sb.append(", updateAt=").append(updateAt);
-        sb.append(", updateBy=").append(updateBy);
-        sb.append(", serialVersionUID=").append(serialVersionUID);
-        sb.append("]");
-        return sb.toString();
-    }
 }

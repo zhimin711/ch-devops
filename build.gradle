@@ -84,7 +84,7 @@ dependencies {
     // https://mvnrepository.com/artifact/io.protostuff/protostuff-runtime
     implementation group: 'io.protostuff', name: 'protostuff-runtime', version: '1.6.0'
     //win系统会导致Controller与Service层实例不一致
-    runtimeOnly('org.springframework.boot:spring-boot-devtools')
+//    runtimeOnly('org.springframework.boot:spring-boot-devtools')
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     annotationProcessor 'org.projectlombok:lombok'
 

@@ -31,7 +31,7 @@ import java.util.Properties;
 @EnableTransactionManagement
 @MapperScan(basePackages = {"com.ch.cloud.kafka.**.mapper"},
         properties = {"mappers=tk.mybatis.mapper.common.Mapper,tk.mybatis.mapper.common.special.InsertListMapper"})
-public class MybatisCfg {
+public class MybatisConfig {
 
     @Autowired
     private DataSource dataSource;

@@ -1,7 +1,6 @@
-package com.ch.cloud.kafka.api.impl;
+package com.ch.cloud.kafka.controller;
 
 import com.ch.Status;
-import com.ch.cloud.kafka.api.IContentSearch;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentType;
@@ -30,9 +29,9 @@ import java.util.Map;
  * @date 2018/9/25 10:02
  */
 @Service
-public class ContentSearchImpl implements IContentSearch {
+public class ContentSearchController {
 
-    private Logger logger = LoggerFactory.getLogger(ContentSearchImpl.class);
+    private Logger logger = LoggerFactory.getLogger(ContentSearchController.class);
 
     @Value("${share.path.libs}")
     private String libsDir;
@@ -44,7 +43,6 @@ public class ContentSearchImpl implements IContentSearch {
     //加载过不用重新加载类对象
     private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
 
-    @Override
     public Result<String> search(TopicExtInfo record) {
         BtClusterConfig config = clusterConfigService.findByClusterName(record.getClusterName());
         BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());

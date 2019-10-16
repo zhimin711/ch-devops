@@ -9,6 +9,9 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +24,16 @@ import java.util.stream.Collectors;
  * @author 01370603
  * @date 2018/9/25 20:29
  */
+@Api(tags = "KAFKA主题配置模块")
 @RestController
-@RequestMapping("topic/ext")
-public class TopicExtController {
+@RequestMapping("topic")
+public class TopicConfigController {
 
     @Autowired
     TopicExtService topicExtService;
 
-    @ApiOperation(value = "刷新Token", notes = "只需要在请求头中附带token即可，无需任何参数")
-    @PostMapping("save")
+    @ApiOperation(value = "新增扩展信息", notes = "")
+    @PostMapping("ext")
     public Result<Long> save(TopicExtInfo record) {
         BtTopicExt r = new BtTopicExt();
         BeanUtils.copyProperties(record, r, "id");
@@ -37,7 +41,9 @@ public class TopicExtController {
         return Result.success(r.getId());
     }
 
-    public Result<Long> update(TopicExtInfo record) {
+    @ApiOperation(value = "修改扩展信息", notes = "")
+    @PostMapping("ext/{id}")
+    public Result<Long> update(@PathVariable Long id, TopicExtInfo record) {
         BtTopicExt r = new BtTopicExt();
         BeanUtils.copyProperties(record, r);
         topicExtService.update(r);
@@ -45,8 +51,13 @@ public class TopicExtController {
     }
 
     @ApiOperation(value = "分页查询", notes = "只需要在请求头中附带token即可，无需任何参数")
-    @GetMapping("{pageNum}/{pageSize}")
-    public PageResult<TopicExtInfo> findPageBy(@PathVariable  int pageNum,@PathVariable  int pageSize, TopicExtInfo record) {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "pageNum", value = "页码", required = true),
+            @ApiImplicitParam(name = "pageSize", value = "分页大小", required = true),
+            @ApiImplicitParam(name = "record", value = "查询条件", paramType = "query")
+    })
+    @GetMapping("ext/{pageNum}/{pageSize}")
+    public PageResult<TopicExtInfo> findPageBy(@PathVariable int pageNum, @PathVariable int pageSize, TopicExtInfo record) {
         return ResultUtils.wrapPage(() -> {
             BtTopicExt r = new BtTopicExt();
             BeanUtils.copyProperties(record, r);
@@ -62,19 +73,5 @@ public class TopicExtController {
 
     }
 
-    public Result<TopicExtInfo> findListBy(TopicExtInfo record) {
-        return ResultUtils.wrapList(() -> {
-            BtTopicExt r = new BtTopicExt();
-            BeanUtils.copyProperties(record, r);
-            List<BtTopicExt> list = topicExtService.find(r);
-            List<TopicExtInfo> records = list.stream().map(e -> {
-                TopicExtInfo info = new TopicExtInfo();
-                BeanUtils.copyProperties(e, info);
-                return info;
-            }).collect(Collectors.toList());
-
-            return records;
-        });
-    }
 
 }

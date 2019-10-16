@@ -2,7 +2,10 @@ package com.ch.cloud.kafka.controller;
 
 import com.ch.cloud.kafka.service.ITestService;
 import io.swagger.annotations.Api;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,12 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(value="/test", tags="测试接口模块")
 @RestController
 @RequestMapping("test")
-public class TestCtrl {
+public class TestController {
 
 //    @Autowired
     ITestService testService;
 
-    @RequestMapping("save")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "configName", value = "策略匹配url", required = true),
+            @ApiImplicitParam(name = "configUrl", value = "策略匹配url", required = true),
+            @ApiImplicitParam(name = "assetsId", value = "资产ID", required = true)
+    })
+    @ApiOperation(value = "保存", notes = "")
+    @PostMapping("save")
     public String save() {
         int c = testService.save("Sys-demo");
         return "========>" + c;
