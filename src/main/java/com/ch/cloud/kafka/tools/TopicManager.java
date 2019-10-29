@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.pojo.TopicConfig;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
@@ -75,6 +76,14 @@ public class TopicManager {
      *kafka-topics.sh --zookeeper localhost:2181 --list
      */
     public static List<String> getAllTopics(String zkUrl) {
+        return getTopicsByName(zkUrl, null);
+    }
+
+    /*
+     *查看所有主题
+     *kafka-topics.sh --zookeeper localhost:2181 --list
+     */
+    public static List<String> getTopicsByName(String zkUrl, String topicName) {
         ZkClient zkClient = null;
         List<String> topics = Lists.newArrayList();
         try {
@@ -84,7 +93,11 @@ public class TopicManager {
             while (iterator.hasNext()) {
                 String topic = iterator.next();
                 logger.debug("topic: {}", topic);
-                topics.add(topic);
+                if (CommonUtils.isNotEmpty(topicName)) {
+                    if(topic.contains(topicName)) topics.add(topic);
+                } else {
+                    topics.add(topic);
+                }
             }
         } catch (Exception e) {
             logger.error("zk connect or fetch topics error!");
@@ -168,6 +181,7 @@ public class TopicManager {
                 public byte[] serialize(Object o) throws ZkMarshallingError {
                     return JSONUtils.toJson(o).getBytes(Charsets.UTF_8);
                 }
+
                 @Override
                 public Object deserialize(byte[] bytes) throws ZkMarshallingError {
                     return new String(bytes, Charsets.UTF_8);

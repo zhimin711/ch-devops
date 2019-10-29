@@ -3,6 +3,8 @@ package com.ch.cloud.kafka.service;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.mybatis.service.IService;
 
+import java.util.List;
+
 /**
  * @author 01370603
  * @date 2018/9/25 18:20
@@ -10,4 +12,6 @@ import com.ch.mybatis.service.IService;
 public interface ClusterConfigService extends IService<Long, BtClusterConfig> {
 
     BtClusterConfig findByClusterName(String cluster);
+
+    List<BtClusterConfig> findEnabled();
 }

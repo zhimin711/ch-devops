@@ -2,6 +2,7 @@ package com.ch.cloud.kafka;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  * 描述：com.ch.cloud.kafka
@@ -12,9 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 1.8
  */
 @SpringBootApplication
-//@Configuration
-//@EnableAutoConfiguration
-//@EnableDiscoveryClient
+@EnableDiscoveryClient
 public class KafkaApplication {
     public static void main(String[] args) {
         SpringApplication.run(KafkaApplication.class, args);
