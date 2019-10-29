@@ -3,7 +3,6 @@ package com.ch.cloud.kafka.controller;
 import com.ch.Constants;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.pojo.ClusterConfigInfo;
 import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.TopicExtService;
@@ -21,8 +20,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * @author 01370603

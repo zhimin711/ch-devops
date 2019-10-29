@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
@@ -14,9 +15,6 @@ import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,55 +79,27 @@ public class KafkaTool {
     /**
      * 获取指定 topic 的所有分区 offset
      *
-     * @param topic     主题
-     * @param whichTime 要获取offset的时间,-1 最新，-2 最早
+     * @param topic 主题
      * @return
      */
-    public void getTopicContextOffset(String topic, long whichTime) {
-        logger.info("\t\t=====> getTopicContextOffset: {}", whichTime);
+    public List<PartitionInfo> getTopicPartitions(String topic) {
+        List<PartitionInfo> partitions = Lists.newArrayList();
         Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
         for (int partitionId : leaders.keySet()) {
             kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
-            String leadBroker = metadata.leader().host();
-            int leadPort = metadata.leader().port();
-            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, getClientId(topic, partitionId));
-            long readOffset = this.getPartitionOffset(consumer, topic, partitionId, whichTime);
-            logger.info("info\t\t=====> partition: {} readOffset: {}", partitionId, readOffset);
-            FetchRequest req = new FetchRequestBuilder()
-                    .clientId(getClientId(topic, partitionId))
-                    // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-                    .addFetch(topic, partitionId, readOffset, bufferSize ^ 2)
-                    .build();
-            FetchResponse resp = consumer.fetch(req);
-            kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
-            if (response.hasError()) {
-                // Something went wrong!
-                short code = response.errorCode(topic, partitionId);
-                logger.error("Error fetching data from the Broker:{} Reason: {}", leadBroker, code);
-                continue;
-            }
-            ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
-            int msgCount = 0;
-            long lastOffset = 0;
-            for (MessageAndOffset messageAndOffset : msgSet) {
-                long currentOffset = messageAndOffset.offset();
-                if (currentOffset < readOffset) {
-                    logger.error("Found an old offset: {}, Expecting: {}", currentOffset, readOffset);
-                    continue;
-                }
-                readOffset = messageAndOffset.nextOffset();
-                ByteBuffer payload = messageAndOffset.message().payload();
-
-                byte[] bytes = new byte[payload.limit()];
-                payload.get(bytes);
-//                logger.info("message\t=====>{}: {}", messageAndOffset.offset(), new String(bytes));
-                msgCount++;
-                lastOffset = currentOffset;
-            }
-            logger.info("result\t\t=====> count:{}, last offset: {}", msgCount, lastOffset);
-            consumer.close();
+            PartitionInfo info = new PartitionInfo();
+            info.setId(partitionId);
+            info.setHost(metadata.leader().host());
+            info.setPort(metadata.leader().port());
+            SimpleConsumer consumer = new SimpleConsumer(info.getHost(), info.getPort(), timeout, bufferSize, getClientId(topic, partitionId));
+            long partitionOffset1 = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.EarliestTime());
+            long partitionOffset2 = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
+            info.setBegin(partitionOffset1);
+            info.setEnd(partitionOffset2);
+            info.setTotal(partitionOffset2 - partitionOffset1);
+            partitions.add(info);
         }
-
+        return partitions;
     }
 
     /**
@@ -159,8 +129,10 @@ public class KafkaTool {
         TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
         Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<>();
         // PartitionOffsetRequestInfo(long time, int maxNumOffsets)
-        // 中的第二个参数maxNumOffsets，没弄明白是什么意思，但是测试后发现传入1 时返回whichTime 对应的offset，传入2 返回一个包含最大和最小offset的元组
-        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 2));
+        // 第二个参数maxNumOffsets
+        // 1 时返回whichTime 对应的offset，
+        // 2 返回一个包含最大和最小offset的元组
+        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));
         kafka.javaapi.OffsetRequest request = new kafka.javaapi.OffsetRequest(requestInfo, OffsetRequest.CurrentVersion(), consumer.clientId());
         OffsetResponse resp = consumer.getOffsetsBefore(request.underlying());
         kafka.javaapi.OffsetResponse response = new kafka.javaapi.OffsetResponse(resp);

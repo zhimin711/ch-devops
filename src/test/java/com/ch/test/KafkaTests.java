@@ -1,8 +1,10 @@
 package com.ch.test;
 
+import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.cloud.kafka.tools.TopicManager;
+import com.ch.utils.JSONUtils;
 import kafka.api.OffsetRequest;
 import kafka.api.OffsetResponse;
 import kafka.api.PartitionOffsetRequestInfo;
@@ -169,10 +171,18 @@ public class KafkaTests {
 
     @Test
     public void getTopicInfo() {
-       TopicManager.getInfo(zk2,"SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
+        TopicManager.getInfo(zk2, "SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
     }
 
 
+    @Test
+    public void testOffsets() {
+        KafkaTool kafkaTool = new KafkaTool(zk2);
+        String topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
+
+        List<PartitionInfo> partitions = kafkaTool.getTopicPartitions(topic);
+        System.out.println(JSONUtils.toJson(partitions));
+    }
 
     @Test
     public void testSend() throws InterruptedException {
