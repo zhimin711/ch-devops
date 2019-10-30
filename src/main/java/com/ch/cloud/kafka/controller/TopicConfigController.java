@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class TopicConfigController {
 
     @Autowired
-    TopicExtService topicExtService;
+    private TopicExtService topicExtService;
     @Autowired
     private ClusterConfigService clusterConfigService;
 

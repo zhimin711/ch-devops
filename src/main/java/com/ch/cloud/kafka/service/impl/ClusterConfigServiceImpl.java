@@ -6,6 +6,7 @@ import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.mybatis.service.BaseService;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,9 @@ public class ClusterConfigServiceImpl extends BaseService<Long, BtClusterConfig>
 
     @Override
     public BtClusterConfig findByClusterName(String cluster) {
+        if (CommonUtils.isEmpty(cluster)) {
+            return null;
+        }
         BtClusterConfig q = new BtClusterConfig();
         q.setClusterName(cluster);
         return clusterConfigMapper.selectOne(q);

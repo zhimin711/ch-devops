@@ -1,6 +1,9 @@
 package com.ch.test;
 
+import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
+import com.ch.cloud.kafka.pojo.SearchType;
+import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.cloud.kafka.tools.TopicManager;
@@ -18,7 +21,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.Test;
 
 import java.util.*;
@@ -182,6 +184,13 @@ public class KafkaTests {
 
         List<PartitionInfo> partitions = kafkaTool.getTopicPartitions(topic);
         System.out.println(JSONUtils.toJson(partitions));
+    }
+
+    @Test
+    public void testContentTool() {
+        KafkaContentTool kafkaTool = new KafkaContentTool(zk2,"SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
+
+        kafkaTool.searchTopicContent2(ContentType.JSON, SearchType.LATEST,100,"19101510245766",null);
     }
 
     @Test

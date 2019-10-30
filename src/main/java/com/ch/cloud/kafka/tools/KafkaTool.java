@@ -1,15 +1,14 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
+import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
-import io.protostuff.ProtostuffIOUtil;
-import io.protostuff.Schema;
-import io.protostuff.runtime.RuntimeSchema;
 import kafka.api.*;
 import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
@@ -36,10 +35,6 @@ public class KafkaTool {
 
     public enum SearchType {
         CONTENT, EARLIEST, LATEST
-    }
-
-    public enum ContentType {
-        STRING, JSON, PROTOSTUFF
     }
 
     public KafkaTool(String zkUrl) {
@@ -248,25 +243,8 @@ public class KafkaTool {
     }
 
     public List<String> searchTopicProtostuffContent(String topic, String content, Class<?> clazz, SearchType searchType) {
-        return searchTopicContent(ContentType.PROTOSTUFF, searchType, topic, content, clazz);
+        return searchTopicContent(ContentType.PROTO_STUFF, searchType, topic, content, clazz);
     }
-
-    private <T> T deSerialize(byte[] data, Class<T> clazz) {
-        if (clazz != null && data != null) {
-            Schema<T> schema = RuntimeSchema.getSchema(clazz);
-            T t = null;
-            try {
-                t = clazz.newInstance();
-                ProtostuffIOUtil.mergeFrom(data, t, schema);
-            } catch (InstantiationException | IllegalAccessException var5) {
-                logger.error("deSerialize error, Class=" + clazz, var5);
-            }
-            return t;
-        } else {
-            return null;
-        }
-    }
-
 
     public List<String> searchTopicContent(ContentType contentType, SearchType searchType, String topic, String content, Class<?> clazz) {
         List<String> resultList = Lists.newArrayList();
@@ -335,8 +313,8 @@ public class KafkaTool {
                             if (clazz != null) {
                                 msg = JSONUtils.toJsonDateFormat(JSONUtils.fromJson(msg, clazz), DateUtils.Pattern.DATETIME_CN);
                             }
-                        } else if (contentType == ContentType.PROTOSTUFF) {
-                            Object o = deSerialize(bytes, clazz);
+                        } else if (contentType == ContentType.PROTO_STUFF) {
+                            Object o = KafkaSerializeUtils.deSerialize(bytes, clazz);
                             if (o == null) {
                                 msg = new String(bytes);
                             } else {

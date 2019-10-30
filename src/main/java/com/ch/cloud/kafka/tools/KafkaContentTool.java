@@ -1,22 +1,21 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
+import com.ch.cloud.kafka.pojo.SearchType;
+import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
+import com.ch.pool.DefaultThreadPool;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
-import io.protostuff.ProtostuffIOUtil;
-import io.protostuff.Schema;
-import io.protostuff.runtime.RuntimeSchema;
 import kafka.api.*;
 import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -25,9 +24,8 @@ import java.util.*;
  * @author 01370603
  * @date 2018/9/21 15:48
  */
+@Slf4j
 public class KafkaContentTool {
-
-    private Logger logger = LoggerFactory.getLogger(KafkaContentTool.class);
 
     private int timeout = 100000;
     private int bufferSize = 64 * 1024;
@@ -38,13 +36,7 @@ public class KafkaContentTool {
 
     private List<PartitionInfo> partitions;
 
-    public enum SearchType {
-        CONTENT, EARLIEST, LATEST
-    }
-
-    public enum ContentType {
-        STRING, JSON, PROTOSTUFF
-    }
+    private long total;
 
     public KafkaContentTool(String zkUrl, String topic) {
         if (CommonUtils.isEmpty(zkUrl)) {
@@ -53,6 +45,15 @@ public class KafkaContentTool {
         brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
         this.topic = topic;
         partitions = getTopicPartitions();
+    }
+
+
+    private String getClientId() {
+        return "Client_" + topic;
+    }
+
+    private String getClientId(int partition) {
+        return "Client_" + topic + "_" + partition;
     }
 
     /**
@@ -76,6 +77,7 @@ public class KafkaContentTool {
                 info.setBegin(partitionOffset1);
                 info.setEnd(partitionOffset2);
                 info.setTotal(partitionOffset2 - partitionOffset1);
+                total += info.getTotal();
                 partitions.add(info);
                 consumer.close();
             } catch (Exception ignored) {
@@ -104,7 +106,7 @@ public class KafkaContentTool {
         OffsetResponse resp = consumer.getOffsetsBefore(request.underlying());
         kafka.javaapi.OffsetResponse response = new kafka.javaapi.OffsetResponse(resp);
         if (response.hasError()) {
-            logger.error("Error fetching data Offset Data the Broker. Reason:{}", response.errorCode(topic, partition));
+            log.error("Error fetching data Offset Data the Broker. Reason:{}", response.errorCode(topic, partition));
             return 0;
         }
         return response.offsets(topic, partition)[0];
@@ -117,8 +119,8 @@ public class KafkaContentTool {
      */
     private Map<Integer, kafka.javaapi.PartitionMetadata> findLeader(Map<String, Integer> bootstraps) {
         Map<Integer, kafka.javaapi.PartitionMetadata> map = new TreeMap<>();
+        SimpleConsumer consumer = null;
         for (Map.Entry<String, Integer> bootstrap : bootstraps.entrySet()) {
-            SimpleConsumer consumer = null;
             try {
                 consumer = new SimpleConsumer(bootstrap.getKey(), bootstrap.getValue(), timeout, bufferSize, getClientId());
                 List<String> topics = Collections.singletonList(topic);
@@ -134,7 +136,7 @@ public class KafkaContentTool {
                     }
                 }
             } catch (Exception e) {
-                logger.error("Error communicating with Broker [{}] to find Leader for [{}] Reason: ", bootstrap, topic, e);
+                log.error("Error communicating with Broker [{}] to find Leader for [{}] Reason: ", bootstrap, topic, e);
             } finally {
                 if (consumer != null)
                     consumer.close();
@@ -143,13 +145,110 @@ public class KafkaContentTool {
         return map;
     }
 
-    private String getClientId() {
-        return "Client_" + topic;
+
+    public List<String> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+        List<String> resultList = Lists.newArrayList();
+        if (total > 200000 && searchType == SearchType.ALL) {
+            DefaultThreadPool.exe(() -> {
+//                List<String> records = searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), finalSearchType, finalClazz);
+
+            });
+        } else if (searchType != SearchType.ALL && searchSize > 2000) {
+
+        }
+
+        return resultList;
     }
 
-    private String getClientId(int partition) {
-        return "Client_" + topic + "_" + partition;
-    }
+    public List<String> searchTopicContent2(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+        log.info("{} message total: {}", topic, total);
+        List<String> resultList = Lists.newArrayList();
+        int partitionSearchSize = 10;
+        if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST)) {
+            if (searchSize > 0)
+                partitionSearchSize = searchSize / partitions.size();
+        }
+        for (PartitionInfo partition : partitions) {
+            SimpleConsumer consumer = new SimpleConsumer(partition.getHost(), partition.getPort(), timeout, bufferSize, getClientId(partition.getId()));
+            try {
+                long startOffset = partition.getBegin();
+                long endOffset = partition.getEnd();
+                if (searchType == SearchType.LATEST && (partition.getEnd() - partitionSearchSize) > startOffset) {
+                    startOffset = partition.getEnd() - partitionSearchSize;
+                } else if (searchType == SearchType.EARLIEST && (partition.getBegin() + partitionSearchSize) > partition.getEnd()) {
+                    endOffset = partition.getBegin() + partitionSearchSize;
+                }
+                log.info("info\t=====> partition: {}, earliestOffset: {}, latestOffset: {}, startOffset: {}, endOffset: {}", partition.getId(), partition.getBegin(), partition.getEnd(), startOffset, endOffset);
+                while (startOffset < endOffset) {
+                    FetchRequest req = new FetchRequestBuilder()
+                            .clientId(getClientId(partition.getId()))
+                            // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
+                            .addFetch(topic, partition.getId(), startOffset, bufferSize)
+                            .build();
+                    FetchResponse resp = consumer.fetch(req);
+                    kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
+                    if (response.hasError()) {
+                        // Something went wrong! ErrorMapping.maybeThrowException();
+                        short code = response.errorCode(topic, partition.getId());
+                        log.error("Error fetching data from the Broker:{} Reason: {}", partition.getHost(), code);
+                        continue;
+                    }
+                    ByteBufferMessageSet msgSet = response.messageSet(topic, partition.getId());
+                    if (!msgSet.iterator().hasNext()) {
+                        log.warn("Fetching data from start:{} empty!", startOffset);
+                        startOffset++;
+                        continue;
+                    }
+                    int msgCount = 0;
+                    for (MessageAndOffset messageAndOffset : msgSet) {
+                        long currentOffset = messageAndOffset.offset();
+                        if (currentOffset < startOffset) {
+                            log.error("Found an old offset: {}, Expecting: {}", currentOffset, startOffset);
+                            continue;
+                        }
+                        startOffset = messageAndOffset.nextOffset();
+                        ByteBuffer payload = messageAndOffset.message().payload();
 
+                        byte[] bytes = new byte[payload.limit()];
+                        payload.get(bytes);
+                        String msg;
+                        if (contentType == ContentType.JSON) {
+                            msg = new String(bytes);
+                            if (clazz != null) {
+                                msg = JSONUtils.toJson(JSONUtils.fromJson(msg, clazz));
+                            }
+                        } else if (contentType == ContentType.PROTO_STUFF) {
+                            Object o = KafkaSerializeUtils.deSerialize(bytes, clazz);
+                            if (o == null) {
+                                msg = new String(bytes);
+                            } else {
+                                msg = JSONUtils.toJson(o);
+                            }
+                        } else {
+                            msg = new String(bytes);
+                            if (clazz != null) {
+                                msg = JSONUtils.toJson(JSONUtils.fromJson(msg, clazz));
+                            }
+                        }
+                        if (((CommonUtils.isEmpty(content) || msg.contains(content))
+                                && (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST))
+                                || (searchType == SearchType.ALL && msg.contains(content))) {
+                            log.info("message\t=====>{} : {}", messageAndOffset.offset(), msg);
+                            resultList.add(msg);
+                            if (resultList.size() > 1000) {
+                                log.warn("{} search size > 1000 return!", topic);
+                                return resultList;
+                            }
+                        }
+                        msgCount++;
+                    }
+                    log.info("result\t=====> count:{}, read last offset: {}", msgCount, startOffset);
+                }
+            } finally {
+                consumer.close();
+            }
+        }
+        return resultList;
+    }
 
 }

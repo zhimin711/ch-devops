@@ -1,40 +1,41 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.Status;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentQuery;
 import com.ch.cloud.kafka.pojo.ContentType;
+import com.ch.cloud.kafka.pojo.SearchType;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.TopicExtService;
-import com.ch.cloud.kafka.tools.KafkaTool;
+import com.ch.cloud.kafka.tools.KafkaContentTool;
+import com.ch.cloud.kafka.tools.TopicManager;
+import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
+import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.JarUtils;
-import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.ch.utils.ExceptionUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author 01370603
  * @date 2018/9/25 10:02
  */
+
+@Api(tags = "KAFKA消息搜索模块")
 @RestController
 @RequestMapping("content")
 public class ContentSearchController {
-
-    private Logger logger = LoggerFactory.getLogger(ContentSearchController.class);
 
     @Value("${share.path.libs}")
     private String libsDir;
@@ -43,75 +44,58 @@ public class ContentSearchController {
     private ClusterConfigService clusterConfigService;
     @Autowired
     private TopicExtService topicExtService;
-    //加载过不用重新加载类对象
-    private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
 
+    @ApiOperation(value = "消息搜索")
     @GetMapping("search")
     public Result<String> search(ContentQuery record) {
-        BtClusterConfig config = clusterConfigService.findByClusterName(record.getCluster());
-        BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getCluster(), record.getTopic());
-
-        KafkaTool kafkaTool = new KafkaTool(config.getZookeeper());
-        KafkaTool.SearchType searchType = KafkaTool.SearchType.LATEST;
-        if ("0".equals(record.getType())) {
-            searchType = KafkaTool.SearchType.CONTENT;
-            if (CommonUtils.isEmpty(record.getContent())) {
-                return Result.error(PubError.NON_NULL, "全量搜索，内容不能为空！");
+        return ResultUtils.wrapList(() -> {
+            BtClusterConfig config = clusterConfigService.findByClusterName(record.getCluster());
+            if (config == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS, record.getCluster() + "集群配置不存在!");
             }
-        } else if ("2".equals(record.getType())) {
-            searchType = KafkaTool.SearchType.EARLIEST;
-        }
-        if ((searchType == KafkaTool.SearchType.EARLIEST || searchType == KafkaTool.SearchType.LATEST) && CommonUtils.isNumeric(record.getContent())) {
-            long size = Long.valueOf(record.getContent());
-            if (size > 10000) {
-                return Result.error(PubError.ARGS, "搜索条数不能超过1000！");
+            BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getCluster(), record.getTopic());
+            if (topicExt == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS, record.getCluster() + ":" + record.getTopic() + "主题配置不存在！");
             }
-        }
-        kafkaTool.getEarliestOffset(topicExt.getTopicName());
-        ContentType contentType = ContentType.from(topicExt.getType());
-        try {
-            if (contentType == ContentType.PROTO_STUFF) {
-                Class<?> clazz = loadClazz(topicExt.getClassFile(), topicExt.getClassName());
-                List<String> records = kafkaTool.searchTopicProtostuffContent(topicExt.getTopicName(), record.getContent(), clazz, searchType);
-                return Result.success(records);
-            } else {
-                Class<?> clazz = null;
-                if (contentType == ContentType.JSON && CommonUtils.isNotEmpty(topicExt.getClassName())) {
-                    clazz = loadClazz(topicExt.getClassFile(), topicExt.getClassName());
-                }
-                KafkaTool.SearchType finalSearchType = searchType;
-                Class<?> finalClazz = clazz;
-//                DefaultThreadPool.exe(() -> {
-//                    List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), finalSearchType, finalClazz);
-//
-//                });
-                List<String> records = kafkaTool.searchTopicStringContent(topicExt.getTopicName(), record.getContent(), searchType, clazz);
-                return Result.success(records);
+            SearchType searchType = SearchType.ALL;
+            if ("1".equals(record.getType())) {
+                searchType = SearchType.LATEST;
+            } else if ("2".equals(record.getType())) {
+                searchType = SearchType.EARLIEST;
             }
-
-        } catch (Exception ignored) {
-
-        }
-        return new Result<>(Status.FAILED);
+            if (searchType == SearchType.ALL && CommonUtils.isEmpty(record.getContent())) {
+                throw ExceptionUtils.create(PubError.NOT_ALLOWED, "全量搜索，内容不能为空！");
+            }
+            if ((searchType == SearchType.EARLIEST || searchType == SearchType.LATEST)
+                    && CommonUtils.isEmpty(record.getContent()) && record.getLimit() > 1000) {
+                throw ExceptionUtils.create(PubError.NOT_ALLOWED, "无内容搜索量不能超过1000！");
+            }
+            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), topicExt.getTopicName());
+            ContentType contentType = ContentType.from(topicExt.getType());
+            Class<?> clazz = null;
+            if (CommonUtils.isNotEmpty(topicExt.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicExt.getClassFile(), topicExt.getClassName());
+            }
+            return contentTool.searchTopicContent2(contentType, searchType, record.getLimit(), record.getContent(), clazz);
+        });
     }
 
-    private Class<?> loadClazz(String path, String className) {
-        String prefix = "file:" + libsDir;
-        logger.debug("load class file path: {}/{}", prefix, path);
-        try {
-            Class<?> clazz = clazzMap.get(className);
-            if (clazz == null) {
-                if (CommonUtils.isEmpty(className)) {
-                    clazz = Class.forName(className);
-                } else {//加载过不用重新加载类对象
-                    clazz = JarUtils.loadClassForJar(prefix + File.separator + path, className);
-                }
-                clazzMap.put(className, clazz);
-            }
-            return clazz;
-        } catch (MalformedURLException | ClassNotFoundException e) {
-            logger.error("load class to deSerialize error!", e);
-        }
-        return null;
+    @GetMapping("clusters")
+    public Result<BtClusterConfig> getClusters() {
+        return ResultUtils.wrapList(() -> clusterConfigService.findEnabled());
     }
+
+    @GetMapping("topics")
+    public Result<BtTopicExt> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
+                                                 @RequestParam("topicName") String topicName) {
+        return ResultUtils.wrapList(() -> {
+            BtClusterConfig cluster = clusterConfigService.findByClusterName(clusterName);
+            if (cluster == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS);
+            }
+            return topicExtService.findByClusterLikeTopic(cluster.getClusterName(), topicName);
+        });
+
+    }
+
 }
