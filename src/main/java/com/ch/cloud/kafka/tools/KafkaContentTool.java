@@ -22,6 +22,10 @@ import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.ByteBuffer;
@@ -300,5 +304,28 @@ public class KafkaContentTool {
 
     public Long getSearchId() {
         return searchId;
+    }
+
+    public void send(String content) {
+
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+//        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+//        props.put("schema.registry.url", schemaUrl);//schema.registry.url指向射麻的存储位置
+        Producer<String, byte[]> producer = new KafkaProducer<>(props);
+        //不断生成消息并发送
+
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, null, content.getBytes());
+        producer.send(record);//将customer作为消息的值发送出去，KafkaAvroSerializer会处理剩下的事情
+        producer.close();
+    }
+
+    private String getServers() {
+        List<String> servers = Lists.newArrayList();
+        brokers.forEach((k, v) -> servers.add(k + ":" + v));
+        return servers.stream().reduce((r, e) -> r.concat("," + e)).get();
     }
 }

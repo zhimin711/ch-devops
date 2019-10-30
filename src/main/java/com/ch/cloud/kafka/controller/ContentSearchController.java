@@ -4,6 +4,7 @@ import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentQuery;
+import com.ch.cloud.kafka.pojo.ContentSearchDto;
 import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.SearchType;
 import com.ch.cloud.kafka.service.ClusterConfigService;
@@ -107,6 +108,23 @@ public class ContentSearchController {
     @GetMapping("search/{sid}")
     public Result<String> getSearchStatus(@PathVariable Long sid) {
         return ResultUtils.wrapFail(() -> contentSearchService.find(sid).getStatus());
+    }
+
+    @PostMapping("send")
+    public Result<Integer> sendMessage(@RequestBody ContentSearchDto content) {
+        return ResultUtils.wrapFail(() -> {
+            BtClusterConfig config = clusterConfigService.findByClusterName(content.getCluster());
+            if (config == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS, content.getCluster() + "集群配置不存在!");
+            }
+            BtTopicExt topicExt = topicExtService.findByClusterAndTopic(content.getCluster(), content.getTopic());
+            if (topicExt == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS, content.getCluster() + ":" + content.getTopic() + "主题配置不存在！");
+            }
+            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
+            contentTool.send(content.getContent());
+            return 1;
+        });
     }
 
 }
