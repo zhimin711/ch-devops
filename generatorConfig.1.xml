@@ -11,11 +11,11 @@
         <!-- 格式化XML代码-->
         <property name="xmlFormatter" value="org.mybatis.generator.api.dom.DefaultXmlFormatter"/>
         <!-- generate entity时，生成serialVersionUID -->
-        <plugin type="org.mybatis.generator.plugins.SerializablePlugin" />
+        <!--<plugin type="org.mybatis.generator.plugins.SerializablePlugin" />-->
         <!-- 这个插件只会增加字符串字段映射到一个JDBC字符的方法 -->
         <plugin type="org.mybatis.generator.plugins.CaseInsensitiveLikePlugin" />
         <!-- genenat entity时,生成toString -->
-        <plugin type="org.mybatis.generator.plugins.ToStringPlugin" />
+        <!--<plugin type="org.mybatis.generator.plugins.ToStringPlugin" />-->
         <!-- <plugin type="tk.mybatis.mapper.generator.MapperPlugin"> -->
         <plugin type="com.ch.generator.mybatis.TkMapperPluginExtend">
             <property name="mappers" value="tk.mybatis.mapper.common.Mapper"/>
@@ -27,7 +27,7 @@
             <!--<property name="suppressDate" value="true"/>-->
             <!--<property name="suppressAllComments" value="true"/>-->
             <!-- <property name="suppressJpa" value="true"/> -->
-            <!--<property name="suppressSwagger" value="false"/>-->
+            <property name="suppressSwagger" value="true"/>
         </commentGenerator>
 
         <jdbcConnection driverClass="${driverClass}"

@@ -1,8 +1,14 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.StatusS;
+import com.ch.cloud.kafka.model.BtContentRecord;
+import com.ch.cloud.kafka.model.BtContentSearch;
+import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.pojo.SearchType;
+import com.ch.cloud.kafka.service.IContentRecordService;
+import com.ch.cloud.kafka.service.IContentSearchService;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
@@ -16,6 +22,7 @@ import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -30,13 +37,28 @@ public class KafkaContentTool {
     private int timeout = 100000;
     private int bufferSize = 64 * 1024;
 
+    private String cluster;
     private String topic;
+
+    private Long searchId;
 
     private Map<String, Integer> brokers;
 
     private List<PartitionInfo> partitions;
 
     private long total;
+
+
+    public KafkaContentTool(String zookeeper, String cluster, String topic) {
+        if (CommonUtils.isEmpty(zookeeper)) {
+            throw ExceptionUtils.create(PubError.ARGS);
+        }
+        this.cluster = cluster;
+        this.topic = topic;
+
+        brokers = KafkaManager.getAllBrokersInCluster(zookeeper);
+        partitions = getTopicPartitions();
+    }
 
     public KafkaContentTool(String zkUrl, String topic) {
         if (CommonUtils.isEmpty(zkUrl)) {
@@ -146,23 +168,32 @@ public class KafkaContentTool {
     }
 
 
-    public List<String> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
-        List<String> resultList = Lists.newArrayList();
+    public List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         if (total > 200000 && searchType == SearchType.ALL) {
+            BtContentSearch record = new BtContentSearch();
+            record.setCluster(cluster);
+            record.setTopic(topic);
+            record.setType(searchType.name());
+            record.setSize(searchSize);
+            record.setContent(content);
+            record.setStatus(StatusS.BEGIN);
+            contentSearchService.save(record);
+            searchId = record.getId();
             DefaultThreadPool.exe(() -> {
-//                List<String> records = searchTopicStringContent(topicExt.getTopicName(), record.getDescription(), finalSearchType, finalClazz);
-
+                contentSearchService.start(searchId);
+                List<BtContentRecord> list1 = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
+                contentRecordService.batchSave(list1);
+                contentSearchService.end(searchId, "1");
             });
-        } else if (searchType != SearchType.ALL && searchSize > 2000) {
-
+        } else {
+            return searchTopicContent2(contentType, searchType, searchSize, content, clazz);
         }
-
-        return resultList;
+        return Lists.newArrayList();
     }
 
-    public List<String> searchTopicContent2(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+    public List<BtContentRecord> searchTopicContent2(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         log.info("{} message total: {}", topic, total);
-        List<String> resultList = Lists.newArrayList();
+        List<BtContentRecord> resultList = Lists.newArrayList();
         int partitionSearchSize = 10;
         if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST)) {
             if (searchSize > 0)
@@ -234,7 +265,12 @@ public class KafkaContentTool {
                                 && (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST))
                                 || (searchType == SearchType.ALL && msg.contains(content))) {
                             log.info("message\t=====>{} : {}", messageAndOffset.offset(), msg);
-                            resultList.add(msg);
+                            BtContentRecord record = new BtContentRecord();
+                            record.setSid(searchId);
+                            record.setPartitionId(partition.getId());
+                            record.setMessageOffset(currentOffset);
+                            record.setContent(msg);
+                            resultList.add(record);
                             if (resultList.size() > 1000) {
                                 log.warn("{} search size > 1000 return!", topic);
                                 return resultList;
@@ -251,4 +287,18 @@ public class KafkaContentTool {
         return resultList;
     }
 
+    private IContentSearchService contentSearchService;
+    private IContentRecordService contentRecordService;
+
+    public void setContentSearchService(IContentSearchService contentSearchService) {
+        this.contentSearchService = contentSearchService;
+    }
+
+    public void setContentRecordService(IContentRecordService contentRecordService) {
+        this.contentRecordService = contentRecordService;
+    }
+
+    public Long getSearchId() {
+        return searchId;
+    }
 }
