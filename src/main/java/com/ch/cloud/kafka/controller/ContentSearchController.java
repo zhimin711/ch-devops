@@ -106,7 +106,7 @@ public class ContentSearchController {
 
     @GetMapping("search/{sid}")
     public Result<String> getSearchStatus(@PathVariable Long sid) {
-        return ResultUtils.wrapFail(() -> "0");
+        return ResultUtils.wrapFail(() -> contentSearchService.find(sid).getStatus());
     }
 
 }
