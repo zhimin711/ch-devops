@@ -3,30 +3,29 @@ package com.ch.cloud.kafka.controller;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.pojo.ContentQuery;
-import com.ch.cloud.kafka.pojo.ContentSearchDto;
-import com.ch.cloud.kafka.pojo.ContentType;
-import com.ch.cloud.kafka.pojo.SearchType;
+import com.ch.cloud.kafka.pojo.*;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.cloud.kafka.service.IContentSearchService;
 import com.ch.cloud.kafka.service.TopicExtService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.ExceptionUtils;
+import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author 01370603
@@ -53,15 +52,12 @@ public class ContentSearchController {
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
     public Result<BtContentRecord> search(ContentQuery record) {
-        return ResultUtils.wrapList(() -> {
-            BtClusterConfig config = clusterConfigService.findByClusterName(record.getCluster());
-            if (config == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS, record.getCluster() + "集群配置不存在!");
-            }
-            BtTopicExt topicExt = topicExtService.findByClusterAndTopic(record.getCluster(), record.getTopic());
-            if (topicExt == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS, record.getCluster() + ":" + record.getTopic() + "主题配置不存在！");
-            }
+        TopicDto topicExt = check(record.getCluster(), record.getTopic());
+
+        KafkaContentTool contentTool = new KafkaContentTool(topicExt.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
+        contentTool.setContentSearchService(contentSearchService);
+        contentTool.setContentRecordService(contentRecordService);
+        Result<BtContentRecord> res = ResultUtils.wrapList(() -> {
             SearchType searchType = SearchType.ALL;
             if ("1".equals(record.getType())) {
                 searchType = SearchType.LATEST;
@@ -75,9 +71,6 @@ public class ContentSearchController {
                     && CommonUtils.isEmpty(record.getContent()) && record.getLimit() > 1000) {
                 throw ExceptionUtils.create(PubError.NOT_ALLOWED, "无内容搜索量不能超过1000！");
             }
-            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
-            contentTool.setContentSearchService(contentSearchService);
-            contentTool.setContentRecordService(contentRecordService);
             ContentType contentType = ContentType.from(topicExt.getType());
             Class<?> clazz = null;
             if (CommonUtils.isNotEmpty(topicExt.getClassName())) {
@@ -85,6 +78,10 @@ public class ContentSearchController {
             }
             return contentTool.searchTopicContent(contentType, searchType, record.getLimit(), record.getContent(), clazz);
         });
+        if (contentTool.isAsync()) {
+            res.setCode(contentTool.getSearchId() + "");
+        }
+        return res;
     }
 
     @GetMapping("clusters")
@@ -113,18 +110,25 @@ public class ContentSearchController {
     @PostMapping("send")
     public Result<Integer> sendMessage(@RequestBody ContentSearchDto content) {
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig config = clusterConfigService.findByClusterName(content.getCluster());
-            if (config == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS, content.getCluster() + "集群配置不存在!");
-            }
-            BtTopicExt topicExt = topicExtService.findByClusterAndTopic(content.getCluster(), content.getTopic());
-            if (topicExt == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS, content.getCluster() + ":" + content.getTopic() + "主题配置不存在！");
-            }
-            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
+            TopicDto topicExt = check(content.getCluster(), content.getTopic());
+            KafkaContentTool contentTool = new KafkaContentTool(topicExt.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
             contentTool.send(content.getContent());
             return 1;
         });
     }
 
+    private TopicDto check(String cluster, String topic) {
+        BtClusterConfig config = clusterConfigService.findByClusterName(cluster);
+        if (config == null) {
+            throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
+        }
+        BtTopicExt topicExt = topicExtService.findByClusterAndTopic(cluster, topic);
+        if (topicExt == null) {
+            throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
+        }
+        TopicDto dto = new TopicDto();
+        BeanUtils.copyProperties(topicExt, dto);
+        dto.setZookeeper(config.getZookeeper());
+        return dto;
+    }
 }

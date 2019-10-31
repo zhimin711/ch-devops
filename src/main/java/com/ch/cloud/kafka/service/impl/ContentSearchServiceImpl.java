@@ -28,11 +28,11 @@ public class ContentSearchServiceImpl extends BaseService<Long, BtContentSearch>
 
     @Override
     public int start(Long id) {
-        return 0;
+        return contentSearchMapper.start(id);
     }
 
     @Override
     public int end(Long id, String status) {
-        return 0;
+        return contentSearchMapper.end(id, status);
     }
 }

@@ -52,6 +52,7 @@ public class KafkaContentTool {
 
     private long total;
 
+    private boolean async = false;
 
     public KafkaContentTool(String zookeeper, String cluster, String topic) {
         if (CommonUtils.isEmpty(zookeeper)) {
@@ -173,16 +174,10 @@ public class KafkaContentTool {
 
 
     public List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+        saveSearch(searchType, searchSize, content);
+        List<BtContentRecord> list = Lists.newArrayList();
         if (total > 200000 && searchType == SearchType.ALL) {
-            BtContentSearch record = new BtContentSearch();
-            record.setCluster(cluster);
-            record.setTopic(topic);
-            record.setType(searchType.name());
-            record.setSize(searchSize);
-            record.setContent(content);
-            record.setStatus(StatusS.BEGIN);
-            contentSearchService.save(record);
-            searchId = record.getId();
+            async = true;
             DefaultThreadPool.exe(() -> {
                 contentSearchService.start(searchId);
                 List<BtContentRecord> list1 = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
@@ -190,9 +185,23 @@ public class KafkaContentTool {
                 contentSearchService.end(searchId, "1");
             });
         } else {
-            return searchTopicContent2(contentType, searchType, searchSize, content, clazz);
+            contentSearchService.start(searchId);
+            list = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
+            contentSearchService.end(searchId, "1");
         }
-        return Lists.newArrayList();
+        return list;
+    }
+
+    private void saveSearch(SearchType searchType, int searchSize, String content) {
+        BtContentSearch record = new BtContentSearch();
+        record.setCluster(cluster);
+        record.setTopic(topic);
+        record.setType(searchType.name());
+        record.setSize(searchSize);
+        record.setContent(content);
+        record.setStatus(StatusS.BEGIN);
+        contentSearchService.save(record);
+        searchId = record.getId();
     }
 
     public List<BtContentRecord> searchTopicContent2(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
@@ -327,5 +336,9 @@ public class KafkaContentTool {
         List<String> servers = Lists.newArrayList();
         brokers.forEach((k, v) -> servers.add(k + ":" + v));
         return servers.stream().reduce((r, e) -> r.concat("," + e)).get();
+    }
+
+    public boolean isAsync() {
+        return async;
     }
 }
