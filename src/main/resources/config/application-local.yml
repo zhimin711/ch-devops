@@ -1,3 +1,6 @@
+server:
+  port: 7003
+
 spring:
   application:
     name: ch-kafka
@@ -20,9 +23,6 @@ spring:
   thymeleaf:
     mode: HTML5
     cache: false
-  http:
-    multipart:
-      max-file-size: 20MB
 logging:
   config: classpath:config/logback.xml
   path: logs/${spring.application.name}
@@ -33,4 +33,4 @@ logging:
 share:
   path:
     upload: share/${spring.application.name}/upload
-    libs: /nfsc/TRTMS_GROUND/ch/common/libs
+    libs: D:\\mnt\\share\\common\\libs

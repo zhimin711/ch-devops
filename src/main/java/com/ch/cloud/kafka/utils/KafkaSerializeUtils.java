@@ -24,7 +24,7 @@ public class KafkaSerializeUtils {
     //加载过不用重新加载类对象
     private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
 
-    public static  <T> T deSerialize(byte[] data, Class<T> clazz) {
+    public static <T> T deSerialize(byte[] data, Class<T> clazz) {
         if (clazz != null && data != null) {
             Schema<T> schema = RuntimeSchema.getSchema(clazz);
             T t = null;
@@ -46,9 +46,12 @@ public class KafkaSerializeUtils {
         try {
             Class<?> clazz = clazzMap.get(className);
             if (clazz == null) {
-                if (CommonUtils.isEmpty(className)) {
+
+                try {//先从加载器加载类
                     clazz = Class.forName(className);
-                } else {//加载过不用重新加载类对象
+                } catch (ClassNotFoundException ignored) {
+                }
+                if (clazz == null) {//加载器类不存在，从Jar文件加载
                     clazz = JarUtils.loadClassForJar(prefix + path, className);
                 }
                 clazzMap.put(className, clazz);

@@ -13,6 +13,7 @@ import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
 import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
@@ -269,7 +270,7 @@ public class KafkaContentTool {
                             if (o == null) {
                                 msg = new String(bytes);
                             } else {
-                                msg = JSONUtils.toJson(o);
+                                msg = JSONUtils.toJsonDateFormat(o, DateUtils.Pattern.DATETIME_CN);
                             }
                         } else {
                             msg = new String(bytes);
