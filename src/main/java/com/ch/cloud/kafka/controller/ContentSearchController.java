@@ -2,6 +2,7 @@ package com.ch.cloud.kafka.controller;
 
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtContentRecord;
+import com.ch.cloud.kafka.model.BtContentSearch;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.*;
 import com.ch.cloud.kafka.service.ClusterConfigService;
@@ -15,7 +16,6 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.ExceptionUtils;
-import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -24,8 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author 01370603
@@ -108,11 +106,26 @@ public class ContentSearchController {
     }
 
     @PostMapping("send")
-    public Result<Integer> sendMessage(@RequestBody ContentSearchDto content) {
+    public Result<Integer> sendMessage(@RequestBody ContentSearchDto searchDto) {
         return ResultUtils.wrapFail(() -> {
-            TopicDto topicExt = check(content.getCluster(), content.getTopic());
+            if(CommonUtils.isEmpty(searchDto.getContent())){
+                throw ExceptionUtils.create(PubError.NON_NULL, "发送消息不能为空!");
+            }
+            TopicDto topicExt = check(searchDto.getCluster(), searchDto.getTopic());
             KafkaContentTool contentTool = new KafkaContentTool(topicExt.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
-            contentTool.send(content.getContent());
+            contentTool.send(searchDto.getContent());
+            return 1;
+        });
+    }
+
+
+    @PutMapping("resend/{sid}")
+    public Result<Integer> resendMessage(@PathVariable Long sid, @RequestBody String content) {
+        return ResultUtils.wrapFail(() -> {
+            BtContentSearch searchRecord = contentSearchService.find(sid);
+            BtClusterConfig config = clusterConfigService.findByClusterName(searchRecord.getCluster());
+            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), searchRecord.getCluster(), searchRecord.getTopic());
+            contentTool.send(content);
             return 1;
         });
     }
