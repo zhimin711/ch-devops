@@ -178,7 +178,7 @@ public class KafkaContentTool {
     public List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         saveSearch(searchType, searchSize, content);
         List<BtContentRecord> list = Lists.newArrayList();
-        if (total > 100000 && searchType == SearchType.ALL) {
+        if (total > 200000 && searchType == SearchType.ALL) {
             async = true;
             DefaultThreadPool.exe(() -> {
                 contentSearchService.start(searchId);
