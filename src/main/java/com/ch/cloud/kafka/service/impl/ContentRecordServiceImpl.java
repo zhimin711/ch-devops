@@ -4,10 +4,12 @@ import com.ch.cloud.kafka.mapper.BtContentRecordMapper;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.mybatis.service.BaseService;
+import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.common.Mapper;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * decs:
@@ -24,5 +26,15 @@ public class ContentRecordServiceImpl extends BaseService<Long, BtContentRecord>
     @Override
     protected Mapper<BtContentRecord> getMapper() {
         return btContentRecordMapper;
+    }
+
+    @Override
+    public List<BtContentRecord> findBySid(Long sid) {
+        if (sid == null) {
+            return Lists.newArrayList();
+        }
+        BtContentRecord record = new BtContentRecord();
+        record.setSid(sid);
+        return btContentRecordMapper.select(record);
     }
 }

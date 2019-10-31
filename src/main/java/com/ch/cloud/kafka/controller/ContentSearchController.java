@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.controller;
 
+import com.ch.Constants;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtContentSearch;
@@ -49,12 +50,14 @@ public class ContentSearchController {
 
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
-    public Result<BtContentRecord> search(ContentQuery record) {
+    public Result<BtContentRecord> search(ContentQuery record,
+                                          @RequestHeader(Constants.TOKEN_USER) String username) {
         TopicDto topicExt = check(record.getCluster(), record.getTopic());
 
         KafkaContentTool contentTool = new KafkaContentTool(topicExt.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
         contentTool.setContentSearchService(contentSearchService);
         contentTool.setContentRecordService(contentRecordService);
+        contentTool.setUsername(username);
         Result<BtContentRecord> res = ResultUtils.wrapList(() -> {
             SearchType searchType = SearchType.ALL;
             if ("1".equals(record.getType())) {
@@ -100,15 +103,20 @@ public class ContentSearchController {
 
     }
 
-    @GetMapping("search/{sid}")
+    @GetMapping("search/{sid}/status")
     public Result<String> getSearchStatus(@PathVariable Long sid) {
         return ResultUtils.wrapFail(() -> contentSearchService.find(sid).getStatus());
+    }
+
+    @GetMapping("search/{sid}/records")
+    public Result<BtContentRecord> getSearchRecords(@PathVariable Long sid) {
+        return ResultUtils.wrapList(() -> contentRecordService.findBySid(sid));
     }
 
     @PostMapping("send")
     public Result<Integer> sendMessage(@RequestBody ContentSearchDto searchDto) {
         return ResultUtils.wrapFail(() -> {
-            if(CommonUtils.isEmpty(searchDto.getContent())){
+            if (CommonUtils.isEmpty(searchDto.getContent())) {
                 throw ExceptionUtils.create(PubError.NON_NULL, "发送消息不能为空!");
             }
             TopicDto topicExt = check(searchDto.getCluster(), searchDto.getTopic());

@@ -44,6 +44,8 @@ public class KafkaContentTool {
     private String cluster;
     private String topic;
 
+    private String username;
+
     private Long searchId;
 
     private Map<String, Integer> brokers;
@@ -176,18 +178,18 @@ public class KafkaContentTool {
     public List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         saveSearch(searchType, searchSize, content);
         List<BtContentRecord> list = Lists.newArrayList();
-        if (total > 200000 && searchType == SearchType.ALL) {
+        if (total > 100000 && searchType == SearchType.ALL) {
             async = true;
             DefaultThreadPool.exe(() -> {
                 contentSearchService.start(searchId);
                 List<BtContentRecord> list1 = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
                 contentRecordService.batchSave(list1);
-                contentSearchService.end(searchId, "1");
+                contentSearchService.end(searchId, "2");
             });
         } else {
             contentSearchService.start(searchId);
             list = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
-            contentSearchService.end(searchId, "1");
+            contentSearchService.end(searchId, "2");
         }
         return list;
     }
@@ -200,6 +202,7 @@ public class KafkaContentTool {
         record.setSize(searchSize);
         record.setContent(content);
         record.setStatus(StatusS.BEGIN);
+        record.setCreateBy(username);
         contentSearchService.save(record);
         searchId = record.getId();
     }
@@ -340,5 +343,9 @@ public class KafkaContentTool {
 
     public boolean isAsync() {
         return async;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
