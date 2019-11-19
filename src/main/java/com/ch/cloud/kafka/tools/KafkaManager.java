@@ -1,11 +1,14 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.e.PubError;
+import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Maps;
 import kafka.cluster.Broker;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
+import org.I0Itec.zkclient.exception.ZkTimeoutException;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,7 @@ import java.util.Map;
 
 /**
  * Kafka管理工具
+ *
  * @author 01370603
  * @date 2018/9/19 16:36
  */
@@ -32,18 +36,20 @@ public class KafkaManager {
         ZkClient zkClient = null;
         Map<String, Integer> brokers = Maps.newHashMap();
         try {
-            zkClient = new ZkClient(zkUrl);
+            zkClient = new ZkClient(zkUrl, 30000);
 
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
                 public byte[] serialize(Object o) throws ZkMarshallingError {
                     return JSONUtils.toJson(o).getBytes(StandardCharsets.UTF_8);
                 }
+
                 @Override
                 public Object deserialize(byte[] bytes) throws ZkMarshallingError {
                     return new String(bytes, StandardCharsets.UTF_8);
                 }
             });
+
             Seq<Broker> brokersInCluster = ZkUtils.getAllBrokersInCluster(zkClient);
             Iterator<Broker> iterator = brokersInCluster.iterator();
             while (iterator.hasNext()) {
@@ -51,8 +57,10 @@ public class KafkaManager {
                 logger.info("broker host: {}, port: {}.", broker.host(), broker.port());
                 brokers.put(broker.host(), broker.port());
             }
+        } catch (ZkTimeoutException e) {
+            ExceptionUtils._throw(PubError.CONNECT, "连接错误，请稍后重试...", e);
         } catch (Exception e) {
-            logger.error("zk connect or fetch brokers error!");
+            logger.error("zk fetch brokers error!", e);
         } finally {
             close(zkClient);
         }
