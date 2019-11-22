@@ -63,7 +63,8 @@ public class KafkaTests {
 //        TopicManager.listTopicAllConfig("10.202.34.30:2182/kafka/st");
 //        TopicManager.listTopicAllConfig("10.202.24.5:2181,10.202.24.6:2181,10.202.24.7:2181/kafka/bus");
 //        TopicManager.listTopicAllConfig(zk2);
-        KafkaManager.getAllBrokersInCluster(zk4);
+//        KafkaManager.getAllBrokersInCluster(zk4);
+        TopicManager.getInfo(zk2,"SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
     }
 
     @Test

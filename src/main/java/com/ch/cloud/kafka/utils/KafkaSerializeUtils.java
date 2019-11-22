@@ -1,15 +1,19 @@
 package com.ch.cloud.kafka.utils;
 
 import com.ch.utils.CommonUtils;
+import com.ch.utils.JSONUtils;
 import com.ch.utils.JarUtils;
 import com.google.common.collect.Maps;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import lombok.extern.slf4j.Slf4j;
+import org.I0Itec.zkclient.exception.ZkMarshallingError;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -61,5 +65,20 @@ public class KafkaSerializeUtils {
             log.error("load class to deSerialize error!", e);
         }
         return null;
+    }
+
+
+    public static ZkSerializer jsonZk(){
+        return new ZkSerializer() {
+            @Override
+            public byte[] serialize(Object o) throws ZkMarshallingError {
+                return JSONUtils.toJson(o).getBytes(StandardCharsets.UTF_8);
+            }
+
+            @Override
+            public Object deserialize(byte[] bytes) throws ZkMarshallingError {
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+        };
     }
 }

@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
@@ -38,17 +39,7 @@ public class KafkaManager {
         try {
             zkClient = new ZkClient(zkUrl, 30000);
 
-            zkClient.setZkSerializer(new ZkSerializer() {
-                @Override
-                public byte[] serialize(Object o) throws ZkMarshallingError {
-                    return JSONUtils.toJson(o).getBytes(StandardCharsets.UTF_8);
-                }
-
-                @Override
-                public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-                    return new String(bytes, StandardCharsets.UTF_8);
-                }
-            });
+            zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
 
             Seq<Broker> brokersInCluster = ZkUtils.getAllBrokersInCluster(zkClient);
             Iterator<Broker> iterator = brokersInCluster.iterator();

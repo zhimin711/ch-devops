@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.pojo.TopicConfig;
+import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
@@ -8,6 +9,7 @@ import kafka.admin.AdminUtils;
 import kafka.admin.TopicCommand;
 import kafka.api.TopicMetadata;
 import kafka.utils.ZkUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
@@ -19,6 +21,7 @@ import scala.collection.Iterator;
 import scala.collection.Map;
 import scala.collection.Seq;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,9 +31,8 @@ import java.util.Properties;
  * @author 01370603
  * @date 2018/9/19 16:36
  */
+@Slf4j
 public class TopicManager {
-
-    private final static Logger logger = LoggerFactory.getLogger(TopicManager.class);
 
     /*
     创建主题
@@ -44,13 +46,13 @@ public class TopicManager {
             if (!AdminUtils.topicExists(zkClient, config.getTopicName())) {
                 AdminUtils.createTopic(zkClient, config.getTopicName(), config.getPartitions(),
                         config.getReplicationFactor(), config.getProperties());
-                logger.info("messages:successful create!");
+                log.info("messages:successful create!");
             } else {
-                logger.error(config.getTopicName() + " is exits!");
+                log.error(config.getTopicName() + " is exits!");
             }
 
         } catch (Exception e) {
-            logger.error("zk connect or topic create error!");
+            log.error("zk connect or topic create error!");
         } finally {
             close(zkClient);
         }
@@ -92,15 +94,15 @@ public class TopicManager {
             Iterator<String> iterator = topicSeq.iterator();
             while (iterator.hasNext()) {
                 String topic = iterator.next();
-                logger.debug("topic: {}", topic);
+                log.debug("topic: {}", topic);
                 if (CommonUtils.isNotEmpty(topicName)) {
-                    if(topic.contains(topicName)) topics.add(topic);
+                    if (topic.contains(topicName)) topics.add(topic);
                 } else {
                     topics.add(topic);
                 }
             }
         } catch (Exception e) {
-            logger.error("zk connect or fetch topics error!");
+            log.error("zk connect or fetch topics error!");
         } finally {
             close(zkClient);
         }
@@ -116,11 +118,17 @@ public class TopicManager {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(zkUrl);
+            zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
             //先取得原始的参数，然后添加新的参数同时去除需要去除的参数
             Properties oldProperties = AdminUtils.fetchTopicConfig(zkClient, topicName);
-            properties.putAll(new HashMap<>(oldProperties));
+            if (!oldProperties.isEmpty()) {
+                properties.putAll(new HashMap<>(oldProperties));
+            }
+            // 增加topic级别属性
+            properties.put("min.cleanable.dirty.ratio", "0.3");
+            // 删除topic级别属性
             properties.remove("max.message.bytes");
-            AdminUtils.changeTopicConfig(zkClient, topicName, properties);
+//            AdminUtils.changeTopicConfig(zkClient, topicName, properties);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -176,25 +184,17 @@ public class TopicManager {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(zkUrl);
-            zkClient.setZkSerializer(new ZkSerializer() {
-                @Override
-                public byte[] serialize(Object o) throws ZkMarshallingError {
-                    return JSONUtils.toJson(o).getBytes(Charsets.UTF_8);
-                }
+            zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
 
-                @Override
-                public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-                    return new String(bytes, Charsets.UTF_8);
-                }
-            });
             TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkClient);
             kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
 
             meta.partitionsMetadata().forEach(r -> {
 
+                log.info("{} - {}", r.replicas(), r.partitionId());
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("", e);
         } finally {
             close(zkClient);
         }
