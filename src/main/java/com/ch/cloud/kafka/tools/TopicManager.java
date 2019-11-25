@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.pojo.TopicConfig;
+import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
@@ -180,7 +181,7 @@ public class TopicManager {
         }
     }
 
-    public static void getInfo(String zkUrl, String topic) {
+    public static TopicInfo getInfo(String zkUrl, String topic) {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(zkUrl);
@@ -188,16 +189,23 @@ public class TopicManager {
 
             TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkClient);
             kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
-
-            meta.partitionsMetadata().forEach(r -> {
-
+            int partSize = meta.partitionsMetadata().size();
+            TopicInfo info = new TopicInfo();
+            info.setName(topic);
+            info.setPartitionSize(partSize);
+            if (partSize > 0) {
+                int replicaSize = meta.partitionsMetadata().get(0).replicas().size();
+                info.setReplicaSize(replicaSize);
+            }
+            /*meta.partitionsMetadata().forEach(r -> {
                 log.info("{} - {}", r.replicas(), r.partitionId());
-            });
+            });*/
+            return info;
         } catch (Exception e) {
-            log.error("", e);
+            log.error("get topic info error!", e);
         } finally {
             close(zkClient);
         }
-
+        return null;
     }
 }
