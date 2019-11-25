@@ -50,11 +50,14 @@ public class ContentSearchController {
 
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
-    public Result<BtContentRecord> search(ContentQuery record,
+    public Result<?> search(ContentQuery record,
                                           @RequestHeader(Constants.TOKEN_USER) String username) {
-        TopicDto topicExt = check(record.getCluster(), record.getTopic());
-
-        KafkaContentTool contentTool = new KafkaContentTool(topicExt.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
+        Result<TopicDto> res1 = ResultUtils.wrapFail(() -> check(record.getCluster(), record.getTopic()));
+        if (res1.isEmpty()) {
+            return res1;
+        }
+        TopicDto topicDto = res1.get();
+        KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
         contentTool.setContentSearchService(contentSearchService);
         contentTool.setContentRecordService(contentRecordService);
         contentTool.setUsername(username);
@@ -72,10 +75,10 @@ public class ContentSearchController {
                     && CommonUtils.isEmpty(record.getContent()) && record.getLimit() > 1000) {
                 throw ExceptionUtils.create(PubError.NOT_ALLOWED, "无内容搜索量不能超过1000！");
             }
-            ContentType contentType = ContentType.from(topicExt.getType());
+            ContentType contentType = ContentType.from(topicDto.getType());
             Class<?> clazz = null;
-            if (CommonUtils.isNotEmpty(topicExt.getClassName())) {
-                clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicExt.getClassFile(), topicExt.getClassName());
+            if (CommonUtils.isNotEmpty(topicDto.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicDto.getClassFile(), topicDto.getClassName());
             }
             return contentTool.searchTopicContent(contentType, searchType, record.getLimit(), record.getContent(), clazz);
         });
