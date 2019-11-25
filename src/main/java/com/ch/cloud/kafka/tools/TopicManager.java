@@ -4,7 +4,6 @@ import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.TopicCommand;
@@ -12,17 +11,13 @@ import kafka.api.TopicMetadata;
 import kafka.utils.ZkUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
-import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.apache.commons.io.Charsets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import scala.Function1;
 import scala.Tuple2;
 import scala.collection.Iterator;
 import scala.collection.Map;
 import scala.collection.Seq;
+import scala.collection.Set;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -182,30 +177,64 @@ public class TopicManager {
     }
 
     public static TopicInfo getInfo(String zkUrl, String topic) {
-        ZkClient zkClient = null;
-        try {
-            zkClient = new ZkClient(zkUrl);
-            zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
+        List<TopicInfo> infos = getInfos(zkUrl, Lists.newArrayList(topic));
+        return infos.isEmpty() ? null : infos.get(0);
+    }
 
-            TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkClient);
-            kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
-            int partSize = meta.partitionsMetadata().size();
-            TopicInfo info = new TopicInfo();
-            info.setName(topic);
-            info.setPartitionSize(partSize);
-            if (partSize > 0) {
-                int replicaSize = meta.partitionsMetadata().get(0).replicas().size();
-                info.setReplicaSize(replicaSize);
+    public static List<TopicInfo> getInfos(String zkUrl, List<String> topicNames) {
+        ZkClient zkClient = new ZkClient(zkUrl, 60000);
+        zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
+
+        List<TopicInfo> topicInfos = Lists.newArrayList();
+        topicNames.forEach(e -> {
+            try {
+                TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(e, zkClient);
+                kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
+                int partSize = meta.partitionsMetadata().size();
+                TopicInfo info = new TopicInfo();
+                info.setName(e);
+                info.setPartitionSize(partSize);
+                if (partSize > 0) {
+                    int replicaSize = meta.partitionsMetadata().get(0).replicas().size();
+                    info.setReplicaSize(replicaSize);
+                }
+                topicInfos.add(info);
+            } catch (Exception ex) {
+                log.error("get topic info error!", ex);
             }
-            /*meta.partitionsMetadata().forEach(r -> {
-                log.info("{} - {}", r.replicas(), r.partitionId());
-            });*/
-            return info;
+        });
+        close(zkClient);
+        return topicInfos;
+    }
+
+    public static List<TopicInfo> getTopics(String zkUrl) {
+        ZkClient zkClient = null;
+        List<TopicInfo> topics = Lists.newArrayList();
+        try {
+            zkClient = new ZkClient(zkUrl, 360000);
+            zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
+            Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
+            Set<TopicMetadata> topicMetadataSet = AdminUtils.fetchTopicMetadataFromZk(topicSeq.toSet(), zkClient);
+
+            Iterator<TopicMetadata> metadataIterator = topicMetadataSet.iterator();
+            while (metadataIterator.hasNext()) {
+                kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(metadataIterator.next());
+                int partSize = meta.partitionsMetadata().size();
+                TopicInfo info = new TopicInfo();
+                info.setName(meta.topic());
+                info.setPartitionSize(partSize);
+                if (partSize > 0) {
+                    int replicaSize = meta.partitionsMetadata().get(0).replicas().size();
+                    info.setReplicaSize(replicaSize);
+                }
+                topics.add(info);
+            }
         } catch (Exception e) {
-            log.error("get topic info error!", e);
+            log.error("zk connect or fetch topics error!");
         } finally {
             close(zkClient);
         }
-        return null;
+        return topics;
     }
+
 }

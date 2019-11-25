@@ -3,7 +3,6 @@ package com.ch.cloud.kafka.tools;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtContentSearch;
-import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.pojo.SearchType;
@@ -27,7 +26,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.ByteBuffer;
 import java.util.*;

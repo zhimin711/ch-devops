@@ -45,6 +45,17 @@ public class TopicDto {
     private String className;
 
     /**
+     * 分区数
+     */
+    private Integer partitionSize;
+
+    /**
+     * 复制数（备份）
+     */
+    private Integer replicaSize;
+
+
+    /**
      * 描述
      */
     @ApiModelProperty("描述")

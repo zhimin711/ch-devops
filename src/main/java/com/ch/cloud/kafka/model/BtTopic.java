@@ -1,11 +1,10 @@
 package com.ch.cloud.kafka.model;
 
-import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "bt_topic_ext")
-public class BtTopicExt implements Serializable {
+@Table(name = "bt_topic")
+public class BtTopic {
     /**
      * 主键
      */
@@ -45,13 +44,25 @@ public class BtTopicExt implements Serializable {
     private String className;
 
     /**
+     * 分区数
+     */
+    @Column(name = "PARTITION_SIZE")
+    private Integer partitionSize;
+
+    /**
+     * 复制数（备份）
+     */
+    @Column(name = "REPLICA_SIZE")
+    private Integer replicaSize;
+
+    /**
      * 描述
      */
     @Column(name = "DESCRIPTION")
     private String description;
 
     /**
-     * 状态：0. 1. 2.
+     * 状态：0.禁用 1.启用 2. 3.删除
      */
     @Column(name = "STATUS")
     private String status;
@@ -79,8 +90,6 @@ public class BtTopicExt implements Serializable {
      */
     @Column(name = "UPDATE_BY")
     private String updateBy;
-
-    private static final long serialVersionUID = 1L;
 
     /**
      * 获取主键
@@ -191,6 +200,42 @@ public class BtTopicExt implements Serializable {
     }
 
     /**
+     * 获取分区数
+     *
+     * @return PARTITION_SIZE - 分区数
+     */
+    public Integer getPartitionSize() {
+        return partitionSize;
+    }
+
+    /**
+     * 设置分区数
+     *
+     * @param partitionSize 分区数
+     */
+    public void setPartitionSize(Integer partitionSize) {
+        this.partitionSize = partitionSize;
+    }
+
+    /**
+     * 获取复制数（备份）
+     *
+     * @return REPLICA_SIZE - 复制数（备份）
+     */
+    public Integer getReplicaSize() {
+        return replicaSize;
+    }
+
+    /**
+     * 设置复制数（备份）
+     *
+     * @param replicaSize 复制数（备份）
+     */
+    public void setReplicaSize(Integer replicaSize) {
+        this.replicaSize = replicaSize;
+    }
+
+    /**
      * 获取描述
      *
      * @return DESCRIPTION - 描述
@@ -209,18 +254,18 @@ public class BtTopicExt implements Serializable {
     }
 
     /**
-     * 获取状态：0. 1. 2.
+     * 获取状态：0.禁用 1.启用 2. 3.删除
      *
-     * @return STATUS - 状态：0. 1. 2.
+     * @return STATUS - 状态：0.禁用 1.启用 2. 3.删除
      */
     public String getStatus() {
         return status;
     }
 
     /**
-     * 设置状态：0. 1. 2.
+     * 设置状态：0.禁用 1.启用 2. 3.删除
      *
-     * @param status 状态：0. 1. 2.
+     * @param status 状态：0.禁用 1.启用 2. 3.删除
      */
     public void setStatus(String status) {
         this.status = status;
@@ -296,28 +341,5 @@ public class BtTopicExt implements Serializable {
      */
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(" [");
-        sb.append("Hash = ").append(hashCode());
-        sb.append(", id=").append(id);
-        sb.append(", clusterName=").append(clusterName);
-        sb.append(", topicName=").append(topicName);
-        sb.append(", type=").append(type);
-        sb.append(", classFile=").append(classFile);
-        sb.append(", className=").append(className);
-        sb.append(", description=").append(description);
-        sb.append(", status=").append(status);
-        sb.append(", createAt=").append(createAt);
-        sb.append(", createBy=").append(createBy);
-        sb.append(", updateAt=").append(updateAt);
-        sb.append(", updateBy=").append(updateBy);
-        sb.append(", serialVersionUID=").append(serialVersionUID);
-        sb.append("]");
-        return sb.toString();
     }
 }

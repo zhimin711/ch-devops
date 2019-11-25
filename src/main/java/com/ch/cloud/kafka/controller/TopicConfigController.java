@@ -2,10 +2,11 @@ package com.ch.cloud.kafka.controller;
 
 import com.ch.Constants;
 import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.model.BtTopicExt;
+import com.ch.cloud.kafka.model.BtTopic;
 import com.ch.cloud.kafka.pojo.TopicConfig;
+import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
-import com.ch.cloud.kafka.service.TopicExtService;
+import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
@@ -21,6 +22,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author 01370603
  * @date 2018/9/25 20:29
@@ -31,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
 public class TopicConfigController {
 
     @Autowired
-    private TopicExtService topicExtService;
+    private ITopicService topicService;
     @Autowired
     private ClusterConfigService clusterConfigService;
 
@@ -42,36 +45,36 @@ public class TopicConfigController {
             @ApiImplicitParam(name = "record", value = "查询条件", paramType = "query")
     })
     @GetMapping(value = {"{num}/{size}"})
-    public PageResult<BtTopicExt> page(BtTopicExt record,
+    public PageResult<BtTopic> page(BtTopic record,
                                        @PathVariable(value = "num") int pageNum,
                                        @PathVariable(value = "size") int pageSize) {
-        PageInfo<BtTopicExt> pageInfo = topicExtService.findPage(record, pageNum, pageSize);
+        PageInfo<BtTopic> pageInfo = topicService.findPage(record, pageNum, pageSize);
         return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
 
     }
 
     @ApiOperation(value = "新增主题信息", notes = "")
     @PostMapping
-    public Result<Integer> add(@RequestBody BtTopicExt record,
+    public Result<Integer> add(@RequestBody BtTopic record,
                                @RequestHeader(Constants.TOKEN_USER) String username) {
-        BtTopicExt r = topicExtService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+        BtTopic r = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
         if (r != null) {
             return Result.error(PubError.EXISTS);
         }
         return ResultUtils.wrapFail(() -> {
             record.setCreateBy(username);
-            return topicExtService.save(record);
+            return topicService.save(record);
         });
     }
 
     @ApiOperation(value = "修改主题信息", notes = "")
     @PutMapping({"{id}"})
-    public Result<Integer> update(@PathVariable Long id, @RequestBody BtTopicExt record,
+    public Result<Integer> update(@PathVariable Long id, @RequestBody BtTopic record,
                                   @RequestHeader(Constants.TOKEN_USER) String username) {
         return ResultUtils.wrapFail(() -> {
             record.setUpdateBy(username);
             record.setUpdateAt(DateUtils.current());
-            return topicExtService.update(record);
+            return topicService.update(record);
         });
     }
 
@@ -102,7 +105,7 @@ public class TopicConfigController {
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
-            TopicManager.deleteTopic(cluster.getZookeeper(),topicName);
+            TopicManager.deleteTopic(cluster.getZookeeper(), topicName);
             TopicConfig config = new TopicConfig();
             config.setZookeeper(cluster.getZookeeper());
             config.setTopicName(topicName);
@@ -112,4 +115,19 @@ public class TopicConfigController {
             return 1;
         });
     }
+
+    @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题")
+    @PostMapping("sync")
+    public Result<Integer> syncTopics(@RequestBody BtTopic topic,
+                                      @RequestHeader(Constants.TOKEN_USER) String username) {
+        return ResultUtils.wrap(() -> {
+            BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
+            if (cluster == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS);
+            }
+            List<TopicInfo> topicList = TopicManager.getTopics(cluster.getZookeeper());
+            return topicService.saveOrUpdate(topicList, topic.getClusterName(), username);
+        });
+    }
+
 }

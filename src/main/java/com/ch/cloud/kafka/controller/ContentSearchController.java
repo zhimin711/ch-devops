@@ -4,12 +4,12 @@ import com.ch.Constants;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtContentSearch;
-import com.ch.cloud.kafka.model.BtTopicExt;
+import com.ch.cloud.kafka.model.BtTopic;
 import com.ch.cloud.kafka.pojo.*;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.cloud.kafka.service.IContentSearchService;
-import com.ch.cloud.kafka.service.TopicExtService;
+import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
@@ -42,7 +42,7 @@ public class ContentSearchController {
     @Autowired
     private ClusterConfigService clusterConfigService;
     @Autowired
-    private TopicExtService topicExtService;
+    private ITopicService topicExtService;
     @Autowired
     private IContentSearchService contentSearchService;
     @Autowired
@@ -91,8 +91,8 @@ public class ContentSearchController {
     }
 
     @GetMapping("topics")
-    public Result<BtTopicExt> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
-                                                      @RequestParam("topicName") String topicName) {
+    public Result<BtTopic> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
+                                                   @RequestParam("topicName") String topicName) {
         return ResultUtils.wrapList(() -> {
             BtClusterConfig cluster = clusterConfigService.findByClusterName(clusterName);
             if (cluster == null) {
@@ -143,7 +143,7 @@ public class ContentSearchController {
         if (config == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
         }
-        BtTopicExt topicExt = topicExtService.findByClusterAndTopic(cluster, topic);
+        BtTopic topicExt = topicExtService.findByClusterAndTopic(cluster, topic);
         if (topicExt == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
         }
