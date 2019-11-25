@@ -46,8 +46,8 @@ public class TopicConfigController {
     })
     @GetMapping(value = {"{num}/{size}"})
     public PageResult<BtTopic> page(BtTopic record,
-                                       @PathVariable(value = "num") int pageNum,
-                                       @PathVariable(value = "size") int pageSize) {
+                                    @PathVariable(value = "num") int pageNum,
+                                    @PathVariable(value = "size") int pageSize) {
         PageInfo<BtTopic> pageInfo = topicService.findPage(record, pageNum, pageSize);
         return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
 
@@ -59,12 +59,29 @@ public class TopicConfigController {
                                @RequestHeader(Constants.TOKEN_USER) String username) {
         BtTopic r = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
         if (r != null) {
-            return Result.error(PubError.EXISTS);
+            return Result.error(PubError.EXISTS, "主题已存在！");
         }
         return ResultUtils.wrapFail(() -> {
+            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
+            TopicInfo info = TopicManager.getInfo(cluster.getZookeeper(), record.getTopicName());
+            if (info == null) {
+                createTopic(cluster, record);
+            } else {
+                record.setPartitionSize(info.getPartitionSize());
+                record.setReplicaSize(info.getReplicaSize());
+            }
             record.setCreateBy(username);
             return topicService.save(record);
         });
+    }
+
+    private void createTopic(BtClusterConfig cluster, BtTopic record) {
+        TopicConfig config = new TopicConfig();
+        config.setZookeeper(cluster.getZookeeper());
+        config.setTopicName(record.getTopicName());
+        config.setPartitions(record.getPartitionSize());
+        config.setReplicationFactor(record.getReplicaSize());
+        TopicManager.createTopic(config);
     }
 
     @ApiOperation(value = "修改主题信息", notes = "")
@@ -98,20 +115,16 @@ public class TopicConfigController {
 
     @ApiOperation(value = "主题刷新", notes = "注：删除原主题数据")
     @PostMapping("refresh")
-    public Result<Integer> refreshTopic(@RequestParam("clusterName") String clusterName,
-                                        @RequestParam("topicName") String topicName) {
+    public Result<Integer> refreshTopic(@RequestBody BtTopic record) {
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(clusterName);
-            if (cluster == null) {
+            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
+            BtTopic topic = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            if (cluster == null || topic == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
-            TopicManager.deleteTopic(cluster.getZookeeper(), topicName);
-            TopicConfig config = new TopicConfig();
-            config.setZookeeper(cluster.getZookeeper());
-            config.setTopicName(topicName);
-            config.setPartitions(4);
-            config.setReplicationFactor(3);
-            TopicManager.createTopic(config);
+
+            TopicManager.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
+            createTopic(cluster, topic);
             return 1;
         });
     }
