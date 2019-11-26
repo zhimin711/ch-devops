@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.Constants;
+import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
@@ -45,6 +46,7 @@ public class ClusterConfigController {
         if (r != null) {
             return Result.error(PubError.EXISTS);
         }
+        record.setStatus(StatusS.ENABLED);
         record.setCreateBy(username);
         return ResultUtils.wrapFail(() -> clusterConfigService.save(record));
     }

@@ -12,7 +12,7 @@ public class TopicConfig {
     private String topicName;
     private int partitions = 0;
     private int replicationFactor = 0;
-    private Properties properties;
+    private Properties properties = new Properties();
 
     public String getZookeeper() {
         return zookeeper;

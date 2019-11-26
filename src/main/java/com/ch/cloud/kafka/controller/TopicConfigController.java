@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.Constants;
+import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
 import com.ch.cloud.kafka.pojo.TopicConfig;
@@ -12,6 +13,7 @@ import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
 import com.github.pagehelper.PageInfo;
@@ -58,7 +60,7 @@ public class TopicConfigController {
     public Result<Integer> add(@RequestBody BtTopic record,
                                @RequestHeader(Constants.TOKEN_USER) String username) {
         BtTopic r = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
-        if (r != null) {
+        if (r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE)) {
             return Result.error(PubError.EXISTS, "主题已存在！");
         }
         return ResultUtils.wrapFail(() -> {
@@ -71,6 +73,20 @@ public class TopicConfigController {
                 record.setReplicaSize(info.getReplicaSize());
             }
             record.setCreateBy(username);
+
+            if (r != null) { // 已删除主题重建
+                r.setPartitionSize(record.getPartitionSize());
+                r.setReplicaSize(record.getReplicaSize());
+                r.setType(record.getType());
+                r.setClassFile(record.getClassFile());
+                r.setClusterName(record.getClassName());
+                r.setDescription(record.getDescription());
+                r.setStatus(StatusS.ENABLED);
+                r.setUpdateBy(username);
+                r.setUpdateAt(DateUtils.current());
+                return topicService.update(r);
+            }
+
             return topicService.save(record);
         });
     }
@@ -95,6 +111,26 @@ public class TopicConfigController {
         });
     }
 
+    @ApiOperation(value = "删除主题信息", notes = "")
+    @DeleteMapping({"{id}"})
+    public Result<Integer> delete(@PathVariable Long id,
+                                  @RequestHeader(Constants.TOKEN_USER) String username) {
+        return ResultUtils.wrapFail(() -> {
+            BtTopic record = new BtTopic();
+            record.setId(id);
+            record.setStatus(StatusS.DELETE);
+            record.setUpdateBy(username);
+            record.setUpdateAt(DateUtils.current());
+            int c = topicService.update(record);
+            if (c > 0) {
+                BtTopic topic = topicService.find(id);
+                BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
+                TopicManager.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
+            }
+            return c;
+        });
+    }
+
     @GetMapping("clusters")
     public Result<BtClusterConfig> getClusters() {
         return ResultUtils.wrapList(() -> clusterConfigService.findEnabled());
@@ -113,7 +149,7 @@ public class TopicConfigController {
     }
 
 
-    @ApiOperation(value = "主题刷新", notes = "注：删除原主题数据")
+    @ApiOperation(value = "主题刷新", notes = "注：删除原主题数据, 主题重建信息")
     @PostMapping("refresh")
     public Result<Integer> refreshTopic(@RequestBody BtTopic record) {
         return ResultUtils.wrapFail(() -> {

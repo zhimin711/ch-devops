@@ -17,6 +17,7 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.ExceptionUtils;
+import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * @author 01370603
@@ -51,7 +53,7 @@ public class ContentSearchController {
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
     public Result<?> search(ContentQuery record,
-                                          @RequestHeader(Constants.TOKEN_USER) String username) {
+                            @RequestHeader(Constants.TOKEN_USER) String username) {
         Result<TopicDto> res1 = ResultUtils.wrapFail(() -> check(record.getCluster(), record.getTopic()));
         if (res1.isEmpty()) {
             return res1;
@@ -82,9 +84,11 @@ public class ContentSearchController {
             }
             return contentTool.searchTopicContent(contentType, searchType, record.getLimit(), record.getContent(), clazz);
         });
-        if (contentTool.isAsync()) {
-            res.setCode(contentTool.getSearchId() + "");
-        }
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("contentType", topicDto.getType());
+        extra.put("searchId", contentTool.getSearchId());
+        extra.put("searchAsync", contentTool.isAsync());
+        res.setExtra(extra);
         return res;
     }
 

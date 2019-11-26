@@ -92,6 +92,7 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
         Example.Criteria criteria = ex.createCriteria();
         ExampleUtils.dynEqual(criteria, record, "clusterName");
         ExampleUtils.dynLike(criteria, record, "topicName");
+        criteria.andNotEqualTo("status", StatusS.DELETE);
         ex.orderBy("clusterName").asc().orderBy("topicName").asc();
         List<BtTopic> records = getMapper().selectByExample(ex);
         return new PageInfo<>(records);

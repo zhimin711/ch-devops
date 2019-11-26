@@ -42,13 +42,13 @@ public class TopicManager {
             if (!AdminUtils.topicExists(zkClient, config.getTopicName())) {
                 AdminUtils.createTopic(zkClient, config.getTopicName(), config.getPartitions(),
                         config.getReplicationFactor(), config.getProperties());
-                log.info("messages:successful create!");
+                log.info("{}:successful create!", config.getTopicName());
             } else {
                 log.error(config.getTopicName() + " is exits!");
             }
 
         } catch (Exception e) {
-            log.error("zk connect or topic create error!");
+            log.error("zk connect or topic create error!", e);
         } finally {
             close(zkClient);
         }
@@ -98,7 +98,7 @@ public class TopicManager {
                 }
             }
         } catch (Exception e) {
-            log.error("zk connect or fetch topics error!");
+            log.error("zk connect or fetch topics error!" + topics, e);
         } finally {
             close(zkClient);
         }
@@ -142,7 +142,7 @@ public class TopicManager {
             zkClient = new ZkClient(zkUrl);
             AdminUtils.deleteTopic(zkClient, topic);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("delete error! => " + topic, e);
         } finally {
             close(zkClient);
         }
