@@ -17,6 +17,7 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.ExceptionUtils;
+import com.ch.utils.JSONUtils;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -126,9 +127,11 @@ public class ContentSearchController {
             if (CommonUtils.isEmpty(searchDto.getContent())) {
                 throw ExceptionUtils.create(PubError.NON_NULL, "发送消息不能为空!");
             }
-            TopicDto topicExt = check(searchDto.getCluster(), searchDto.getTopic());
-            KafkaContentTool contentTool = new KafkaContentTool(topicExt.getZookeeper(), topicExt.getClusterName(), topicExt.getTopicName());
-            contentTool.send(searchDto.getContent());
+            TopicDto topicDto = check(searchDto.getCluster(), searchDto.getTopic());
+
+            KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+
+            contentTool.send(convertContent(topicDto, searchDto.getContent()));
             return 1;
         });
     }
@@ -138,11 +141,35 @@ public class ContentSearchController {
     public Result<Integer> resendMessage(@PathVariable Long sid, @RequestBody String content) {
         return ResultUtils.wrapFail(() -> {
             BtContentSearch searchRecord = contentSearchService.find(sid);
-            BtClusterConfig config = clusterConfigService.findByClusterName(searchRecord.getCluster());
-            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), searchRecord.getCluster(), searchRecord.getTopic());
-            contentTool.send(content);
+            TopicDto topicDto = check(searchRecord.getCluster(), searchRecord.getTopic());
+
+            KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+
+            contentTool.send(convertContent(topicDto, content));
             return 1;
+//            BtClusterConfig config = clusterConfigService.findByClusterName(searchRecord.getCluster());
+//            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), searchRecord.getCluster(), searchRecord.getTopic());
+//            contentTool.send(content.getBytes());
+//            return 1;
         });
+    }
+
+    private byte[] convertContent(TopicDto topicDto, String contentMsg) {
+
+        ContentType contentType = ContentType.from(topicDto.getType());
+        if (contentType == ContentType.PROTO_STUFF) {
+            Class<?> clazz = null;
+            if (CommonUtils.isNotEmpty(topicDto.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicDto.getClassFile(), topicDto.getClassName());
+            }
+            if (clazz != null) {
+                Object obj = JSONUtils.fromJson(contentMsg, clazz);
+                if (obj != null) {
+                    return KafkaSerializeUtils.serializer(obj);
+                }
+            }
+        }
+        return contentMsg.getBytes();
     }
 
     private TopicDto check(String cluster, String topic) {

@@ -1,9 +1,9 @@
 package com.ch.cloud.kafka.utils;
 
-import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
 import com.ch.utils.JarUtils;
 import com.google.common.collect.Maps;
+import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -27,6 +26,27 @@ public class KafkaSerializeUtils {
 
     //加载过不用重新加载类对象
     private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
+
+    /**
+     * 序列化
+     *
+     * @param obj
+     * @return
+     */
+    public static <T> byte[] serializer(T obj) {
+        @SuppressWarnings("unchecked")
+        Class<T> clazz = (Class<T>) obj.getClass();
+        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+        try {
+            Schema<T> schema = RuntimeSchema.getSchema(clazz);
+            return ProtostuffIOUtil.toByteArray(obj, schema, buffer);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            buffer.clear();
+        }
+        return new byte[]{};
+    }
 
     public static <T> T deSerialize(byte[] data, Class<T> clazz) {
         if (clazz != null && data != null) {
@@ -68,7 +88,7 @@ public class KafkaSerializeUtils {
     }
 
 
-    public static ZkSerializer jsonZk(){
+    public static ZkSerializer jsonZk() {
         return new ZkSerializer() {
             @Override
             public byte[] serialize(Object o) throws ZkMarshallingError {

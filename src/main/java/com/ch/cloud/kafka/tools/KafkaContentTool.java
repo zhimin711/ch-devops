@@ -317,7 +317,7 @@ public class KafkaContentTool {
         return searchId;
     }
 
-    public void send(String content) {
+    public void send(byte[] data) {
 
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
@@ -329,7 +329,7 @@ public class KafkaContentTool {
         Producer<String, byte[]> producer = new KafkaProducer<>(props);
         //不断生成消息并发送
 
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, null, content.getBytes());
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, null, data);
         producer.send(record);//将customer作为消息的值发送出去，KafkaAvroSerializer会处理剩下的事情
         producer.close();
     }
