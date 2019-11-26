@@ -66,6 +66,7 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
             if (topic != null) {
                 topic.setPartitionSize(r.getPartitionSize());
                 topic.setReplicaSize(r.getReplicaSize());
+                topic.setStatus(StatusS.ENABLED);
                 topic.setUpdateBy(username);
                 topic.setUpdateAt(DateUtils.current());
                 c.addAndGet(getMapper().updateByPrimaryKey(topic));
@@ -75,7 +76,7 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
                 topic1.setTopicName(r.getName());
                 topic1.setPartitionSize(r.getPartitionSize());
                 topic1.setReplicaSize(r.getReplicaSize());
-                topic1.setType("JSON");
+                topic1.setType("STRING");
                 topic1.setStatus(StatusS.ENABLED);
                 topic1.setCreateBy(username);
                 topic1.setCreateAt(DateUtils.current());
