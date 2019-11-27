@@ -19,4 +19,4 @@ spring:
       config:
         server-addr: 10.202.10.66:8848
         namespace: ${nacos.namespace:}
-        shared-dataids: ch-kafka1.yml #,ch-sentinel.properties
+        shared-dataids: ch-kafka.yml #,ch-sentinel.properties
