@@ -21,6 +21,7 @@ import com.ch.utils.JSONUtils;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,7 @@ import java.util.Map;
 @Api(tags = "KAFKA消息搜索模块")
 @RestController
 @RequestMapping("content")
+@Slf4j
 public class ContentSearchController {
 
     @Value("${share.path.libs}")
@@ -164,6 +166,7 @@ public class ContentSearchController {
             }
             if (clazz != null) {
                 Object obj = JSONUtils.fromJson(contentMsg, clazz);
+                log.debug("send clazz content: {}", JSONUtils.toJson(obj));
                 if (obj != null) {
                     return KafkaSerializeUtils.serializer(obj);
                 }
