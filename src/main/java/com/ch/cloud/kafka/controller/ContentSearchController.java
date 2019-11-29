@@ -16,6 +16,7 @@ import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Maps;
@@ -165,7 +166,7 @@ public class ContentSearchController {
                 clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicDto.getClassFile(), topicDto.getClassName());
             }
             if (clazz != null) {
-                Object obj = JSONUtils.fromJson(contentMsg, clazz);
+                Object obj = JSONUtils.fromJson(contentMsg, clazz, DateUtils.Pattern.DATETIME_CN);
                 log.debug("send clazz content: {}", JSONUtils.toJson(obj));
                 if (obj != null) {
                     return KafkaSerializeUtils.serializer(obj);
