@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://www.zhaohuajike.cn:3306/dev_ch_wiki
+    username: admin
+    password: ENC(hfO3JFDCY2HB6x+j1obZOg==)
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: DatebookHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  thymeleaf:
+    mode: HTML
+    cache: false
+  kafka:
+    bootstrap-servers: 192.168.1.2:9092
+    producer:
+      batch-size: 16384
+      retries: 0
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: test-consumer-group
+      auto-offset-reset: earliest
+      enable-auto-commit: true
+      auto-commit-interval: 100
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+logging:
+  config: classpath:config/logback.xml
+  path: logs/ch-sys
+  level:
+    com:
+      ch: debug
+app:
+  share:
+    path: /mnt/share/ch-sys

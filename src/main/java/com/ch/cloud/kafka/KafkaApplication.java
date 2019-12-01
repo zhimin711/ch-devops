@@ -2,8 +2,8 @@ package com.ch.cloud.kafka;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.kafka.annotation.EnableKafka;
 
 /**
  * 描述：com.ch.cloud.kafka
@@ -13,12 +13,9 @@ import org.springframework.context.annotation.ImportResource;
  * @version 1.0
  * @since 1.8
  */
-@SpringBootApplication
-//@Configuration
-//@EnableAutoConfiguration
-@ComponentScan(basePackages = {"com.ch.cloud.kafka"})
-@ImportResource({"classpath:dubbo.xml"})
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 //@EnableDiscoveryClient
+@EnableKafka
 public class KafkaApplication {
     public static void main(String[] args) {
         SpringApplication.run(KafkaApplication.class, args);

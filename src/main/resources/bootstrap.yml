@@ -2,20 +2,16 @@ server:
   port: 8081
 spring:
   application:
-    name: ch-sys
+    name: ch-kafka
   profiles:
-    active: dev
+    active: local
   cloud:
-    config:
-#      profile: dev
-#      discovery:
-#       enabled: true
-#       serviceId: ch-server-conf
-      name: ch-sys,tx
-      uri: http://192.168.1.110/conf
-eureka:
-  client:
-#    registerWithEureka: false
-#    fetchRegistry: false
-    service-url:
-      defaultZone: http://192.168.1.110:8761/eureka/
+    nacos:
+      discovery:
+        server-addr: 192.168.1.2:8848
+        namespace: ${nacos.namespace:}
+      config:
+        server-addr: 192.168.1.2:8848
+        namespace: ${nacos.namespace:}
+        shared-dataids: ch-kafka.yml #,ch-sentinel.properties
+#        shared-dataids: ch-blog.yml
