@@ -40,11 +40,13 @@ public class ZkLockController {
     @PostMapping("/lock")
     public Result<String> lock() {
         return ResultUtils.wrapFail(() -> {
-            lock.getLock();
+//            lock.getLock();
+            lockTool.acquireLock();
             try {
                 return orderIdGenerator.generate();
             } finally {
-                lock.unLock();
+//                lock.unLock();
+                lockTool.releaseLock();
             }
         });
     }

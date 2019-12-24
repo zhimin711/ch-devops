@@ -87,23 +87,23 @@ public class LockTool {
         if (index == 0) {
             System.out.println(Thread.currentThread().getName() + " 锁获得, lockPath: " + lockPath);
             return;
-        } else {
-            // lockPath不是序号最小的节点，监控前一个节点
-            String preLockPath = lockPaths.get(index - 1);
-
-            Stat stat = zkClient.exists(LOCK_ROOT_PATH + "/" + preLockPath, watcher);
-
-            // 假如前一个节点不存在了，比如说执行完毕，或者执行节点掉线，重新获取锁
-            if (stat == null) {
-                attemptLock();
-            } else { // 阻塞当前进程，直到preLockPath释放锁，被watcher观察到，notifyAll后，重新acquireLock
-                System.out.println(" 等待前锁释放，pre lock Path：" + preLockPath);
-                synchronized (watcher) {
-                    watcher.wait();
-                }
-                attemptLock();
-            }
         }
+        // lockPath不是序号最小的节点，监控前一个节点
+        String preLockPath = lockPaths.get(index - 1);
+
+        Stat stat = zkClient.exists(LOCK_ROOT_PATH + "/" + preLockPath, watcher);
+
+        // 假如前一个节点不存在了，比如说执行完毕，或者执行节点掉线，重新获取锁
+        if (stat == null) {
+            attemptLock();
+        } else { // 阻塞当前进程，直到preLockPath释放锁，被watcher观察到，notifyAll后，重新acquireLock
+            System.out.println(" 等待前锁释放，pre lock Path：" + preLockPath);
+            synchronized (watcher) {
+                watcher.wait();
+            }
+            attemptLock();
+        }
+
     }
 
     //释放锁的原语实现
