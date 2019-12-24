@@ -2,8 +2,8 @@ package com.ch.cloud.kafka.controller;
 
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.cloud.kafka.tools.TopicManager;
-import com.ch.err.ErrorCode;
-import com.ch.result.HttpResult;
+import com.ch.e.CoreError;
+import com.ch.result.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -34,9 +34,9 @@ public class KafkaSearchCtrl {
             , @ApiImplicitParam(name = "topic", value = "主题", required = true, dataType = "string")
     })
     @PostMapping("/topic/search")
-    public HttpResult<String> topicSearch(String zkUrl, String topic) {
+    public Result<String> topicSearch(String zkUrl, String topic) {
         List<String> topics = TopicManager.findTopic(zkUrl, topic);
-        return new HttpResult<>(topics);
+        return new Result<>(topics);
     }
 
     @ApiOperation(value = "主题校验(是否存在)", notes = "主题校验接口")
@@ -45,9 +45,9 @@ public class KafkaSearchCtrl {
             , @ApiImplicitParam(name = "topic", value = "主题", required = true, dataType = "string")
     })
     @PostMapping("/topic/exists")
-    public HttpResult<Boolean> topicExists(String zkUrl, String topic) {
+    public Result<Boolean> topicExists(String zkUrl, String topic) {
         boolean isExists = TopicManager.exists(zkUrl, topic);
-        return new HttpResult<>(isExists);
+        return new Result<>(isExists);
     }
 
     @ApiOperation(value = "主题内容搜索", notes = "主题内容搜索接口")
@@ -58,11 +58,11 @@ public class KafkaSearchCtrl {
             , @ApiImplicitParam(name = "searchContent", value = "搜索内容", required = true, dataType = "string")
     })
     @PostMapping("/topic/content/search")
-    public HttpResult<String> topicContentSearch(String zkUrl, String topic
+    public Result<String> topicContentSearch(String zkUrl, String topic
             , KafkaTool.SearchType searchType, String searchContent) {
         KafkaTool kafkaTool = new KafkaTool(zkUrl);
         List<String> contentList = kafkaTool.searchTopicStringContent(topic, searchContent, searchType);
-        return new HttpResult<>(contentList);
+        return new Result<>(contentList);
     }
 
     @ApiOperation(value = "主题内容搜索2", notes = "主题内容搜索接口2")
@@ -74,16 +74,16 @@ public class KafkaSearchCtrl {
             , @ApiImplicitParam(name = "searchClass", value = "序列化类名", required = true, dataType = "string")
     })
     @PostMapping("/topic/content/search2")
-    public HttpResult<String> topicContentSearch2(String zkUrl, String topic
+    public Result<String> topicContentSearch2(String zkUrl, String topic
             , KafkaTool.SearchType searchType, String searchContent, String searchClass) {
         KafkaTool kafkaTool = new KafkaTool(zkUrl);
         try {
             Class<?> clazz = Class.forName(searchClass);
             List<String> contentList = kafkaTool.searchTopicProtostuffContent(topic, searchContent, clazz, searchType);
-            return new HttpResult<>(contentList);
+            return new Result<>(contentList);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            return new HttpResult<>(ErrorCode.NOT_EXISTS, searchClass + "不存在！");
+            return new Result<>(CoreError.NOT_EXISTS, searchClass + "不存在！");
         }
     }
 }

@@ -1,12 +1,25 @@
+server:
+  port: 8011
 spring:
-  application:
-    name: ch-kafka
   thymeleaf:
     mode: HTML5
     cache: false
   http:
     multipart:
       max-file-size: 20MB
+  redis:
+    database: 0
+    pool:
+      max-idle: 8
+      min-idle: 0
+      max-active: 8
+      max-wait: -1
+    sentinel:
+      master: SHIVA_TRTMS_GROUND_REDIS_SESSION_C01
+      nodes: trtms-ground-session1.cachesit.sfdc.com.cn:8001,trtms-ground-session2.cachesit.sfdc.com.cn:8001,trtms-ground-session3.cachesit.sfdc.com.cn:8001
+    password: zc8dn4ksoqgc*iwe
+#    redisson:
+#      config: classpath:config/redisson.json
 #ZooKeeper
 logging:
   config: classpath:config/logback.xml
@@ -17,3 +30,11 @@ logging:
 share:
   path:
     libs: /mnt/share/common/libs
+
+
+dubbo: # 无法调用docker 服务
+  registry:
+    address: 10.202.107.137:2181
+    port: -1
+
+

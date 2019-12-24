@@ -1,13 +1,13 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.utils.JsonUtils;
+import com.ch.utils.JSONUtils;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import kafka.cluster.Broker;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.collection.Iterator;
@@ -36,7 +36,7 @@ public class KafkaManager {
             zkClient.setZkSerializer(new ZkSerializer() {
                 @Override
                 public byte[] serialize(Object o) throws ZkMarshallingError {
-                    return JsonUtils.toJson(o).getBytes(Charsets.UTF_8);
+                    return JSONUtils.toJson(o).getBytes(Charsets.UTF_8);
                 }
 
                 @Override

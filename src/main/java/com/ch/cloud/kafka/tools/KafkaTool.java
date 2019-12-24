@@ -1,9 +1,9 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.err.ErrorCode;
-import com.ch.err.InvalidArgumentException;
+import com.ch.e.CoreError;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.JsonUtils;
+import com.ch.utils.ExceptionUtils;
+import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
@@ -38,7 +38,7 @@ public class KafkaTool {
 
     public KafkaTool(String zkUrl) {
         if (CommonUtils.isEmpty(zkUrl)) {
-            throw new InvalidArgumentException(ErrorCode.ARGS);
+            throw ExceptionUtils.create(CoreError.ARGS);
         }
         brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
     }
@@ -411,7 +411,7 @@ public class KafkaTool {
                     if (o == null) {
                         json = new String(bytes);
                     } else {
-                        json = JsonUtils.toJson(o);
+                        json = JSONUtils.toJson(o);
                     }
                     if (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST
                             || (searchType == SearchType.CONTENT && json.contains(content))) {
