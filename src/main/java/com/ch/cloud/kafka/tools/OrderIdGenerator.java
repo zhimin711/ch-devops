@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class OrderIdGenerator {
 
-    public static final String REDIS_ORDER_NUMBER = "order:generate:number:";
-    public static final String REDIS_ORDER_NUMBER_LOCK = "order:generate:lock";
+    private static final String REDIS_ORDER_NUMBER = "order:generate:number:";
+    private static final String REDIS_ORDER_NUMBER_LOCK = "order:generate:lock";
 
     public static final Integer REDIS_ORDER_NUMBER_TIMEOUT = 24;
 
