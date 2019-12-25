@@ -50,7 +50,7 @@ dependencies {
 
     compile 'org.springframework.boot:spring-boot-starter-data-redis'
 //    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
-//    compile 'org.redisson:redisson-spring-boot-starter:3.11.6'
+    compile 'org.redisson:redisson-spring-boot-starter:3.11.6'
 //    compile 'org.redisson:redisson:3.11.6'
 
     //数据源相关包

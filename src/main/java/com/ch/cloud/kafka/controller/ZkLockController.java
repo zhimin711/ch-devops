@@ -28,9 +28,9 @@ import java.util.List;
 @Api(value = "ZkLockController", description = "zookeeper分布式锁接口")
 public class ZkLockController {
 
-    @Autowired(required = false)
+    @Autowired
     LockTool lockTool;
-    @Autowired(required = false)
+    @Autowired
     OrderIdGenerator orderIdGenerator;
 
     @Autowired
@@ -40,14 +40,17 @@ public class ZkLockController {
     @PostMapping("/lock")
     public Result<String> lock() {
         return ResultUtils.wrapFail(() -> {
-//            lock.getLock();
-            lockTool.acquireLock();
+
+            lock.getLock();
+//            lockTool.acquireLock();
             try {
-                return orderIdGenerator.generate();
+//                return orderIdGenerator.generate("O","A");
             } finally {
-//                lock.unLock();
-                lockTool.releaseLock();
+                lock.unLock();
+//                lockTool.releaseLock();
             }
+
+            return orderIdGenerator.generate();
         });
     }
 

@@ -2,13 +2,9 @@ package com.ch.cloud.kafka.tools;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -22,9 +18,9 @@ public class ZookeeperLock implements ILock {
 
     private ZkClient zkClient;
 
-    CountDownLatch countDownLatch = null;
+    private CountDownLatch countDownLatch = null;
 
-    public String lockPath = "/lockPath";
+    private String lockPath = "/locks/ch";
 
     //获取锁
     public void getLock() {
@@ -42,15 +38,10 @@ public class ZookeeperLock implements ILock {
     @Value("${dubbo.registry.address}")
     private String zkUrl;
 
-    public void init() throws IOException {
-        zkClient = new ZkClient(zkUrl);
-    }
-
     //创建失败 进行等待
     private void waitLock() {
 
         IZkDataListener iZkDataListener = new IZkDataListener() {
-
             // 节点被删除
             public void handleDataDeleted(String arg0) {
                 if (countDownLatch != null) {
@@ -58,7 +49,6 @@ public class ZookeeperLock implements ILock {
                 }
 
             }
-
             // 节点被修改
             public void handleDataChange(String arg0, Object arg1) {
 
@@ -83,7 +73,7 @@ public class ZookeeperLock implements ILock {
 
     private boolean tryLock() {
         try {
-            init();
+            zkClient = new ZkClient(zkUrl,60000);
             zkClient.createEphemeral(lockPath);
             System.out.println("#########获取锁######");
             return true;
