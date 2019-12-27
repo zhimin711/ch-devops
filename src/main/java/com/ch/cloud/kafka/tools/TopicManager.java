@@ -42,6 +42,7 @@ public class TopicManager {
             if (!AdminUtils.topicExists(zkClient, config.getTopicName())) {
                 AdminUtils.createTopic(zkClient, config.getTopicName(), config.getPartitions(),
                         config.getReplicationFactor(), config.getProperties());
+
                 log.info("{}:successful create!", config.getTopicName());
             } else {
                 log.error(config.getTopicName() + " is exits!");
@@ -62,11 +63,24 @@ public class TopicManager {
      *               "  --if-not-exists --config max.message.bytes=204800 --config flush.messages=2";
      *               执行：TopicManager.createTopic(s);
      */
-    public static void createTopicByCommand(String config) {
-        String[] args = config.split(" ");
+    public static void createTopicByCommand(TopicConfig config) {
+        List<String> configs = Lists.newArrayList();
+        if (!config.getProperties().isEmpty()) {
+            config.getProperties().forEach((k, v) -> configs.add(" --config " + k + "=" + v));
+        }
+        String s = "--zookeeper 10.203.248.126:2181,10.203.248.127:2181,10.203.248.128:2181,10.203.248.129:2181,10.203.248.130:2181/kafka/eostbpcore" +
+                " --create --topic SHIVA_TRTMS_GROUND_PLAN_ORDER_NOTIFY2" +
+                " --partitions 3 --replication-factor 1" +
+                " --config max.message.bytes=204800 --config flush.messages=2";
+        String s1 = "--zookeeper " + config.getZookeeper() +
+                " --create --topic " + config.getTopicName() +
+                " --partitions " + config.getPartitions() + " --replication-factor " + config.getReplicationFactor();
+        if (!configs.isEmpty()) {
+            s1 += String.join(" ", configs);
+        }
+        String[] args = s1.split(" ");
         System.out.println(Arrays.toString(args));
         TopicCommand.main(args);
-
     }
 
     /*
@@ -188,6 +202,8 @@ public class TopicManager {
         List<TopicInfo> topics = Lists.newArrayList();
         topicNames.forEach(e -> {
             try {
+                boolean exists = AdminUtils.topicExists(zkClient, e);
+                if (!exists) return;
                 TopicInfo info = getTopicInfo(zkClient, e);
                 topics.add(info);
             } catch (Exception ex) {

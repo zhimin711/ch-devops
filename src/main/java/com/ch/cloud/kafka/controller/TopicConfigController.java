@@ -97,7 +97,8 @@ public class TopicConfigController {
         config.setTopicName(record.getTopicName());
         config.setPartitions(record.getPartitionSize());
         config.setReplicationFactor(record.getReplicaSize());
-        TopicManager.createTopic(config);
+//        TopicManager.createTopic(config);
+        TopicManager.createTopicByCommand(config);
     }
 
     @ApiOperation(value = "修改主题信息", notes = "")
