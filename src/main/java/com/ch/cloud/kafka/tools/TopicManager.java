@@ -31,9 +31,9 @@ import java.util.Properties;
 public class TopicManager {
 
     /*
-    创建主题
-    kafka-topics.sh --zookeeper localhost:2181 --create
-    --topic kafka-action --replication-factor 2 --partitions 3
+     * 创建主题(注：创建不成功)
+     * kafka-topics.sh --zookeeper localhost:2181 --create
+     * --topic kafka-action --replication-factor 2 --partitions 3
      */
     public static void createTopic(TopicConfig config) {
         ZkClient zkClient = null;
@@ -79,7 +79,7 @@ public class TopicManager {
             s1 += String.join(" ", configs);
         }
         String[] args = s1.split(" ");
-        System.out.println(Arrays.toString(args));
+        log.info(Arrays.toString(args));
         TopicCommand.main(args);
     }
 
