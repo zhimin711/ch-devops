@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.service.impl;
 
+import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.mapper.BtTopicMapper;
 import com.ch.cloud.kafka.model.BtTopic;
@@ -49,7 +50,7 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
 
     @Override
     public List<BtTopic> findByClusterLikeTopic(String clusterName, String topicName) {
-        Sqls sqls = Sqls.custom().andEqualTo("clusterName", clusterName);
+        Sqls sqls = Sqls.custom().andEqualTo("clusterName", clusterName).andEqualTo("status", Constants.ENABLED);
         if (CommonUtils.isNotEmpty(topicName)) {
             sqls.andLike("topicName", SQLUtils.likeAny(topicName));
         }
