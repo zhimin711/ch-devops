@@ -72,7 +72,6 @@ public class TopicConfigController {
                 record.setPartitionSize(info.getPartitionSize());
                 record.setReplicaSize(info.getReplicaSize());
             }
-            record.setCreateBy(username);
 
             if (r != null) { // 已删除主题重建
                 r.setPartitionSize(record.getPartitionSize());
@@ -86,7 +85,8 @@ public class TopicConfigController {
                 r.setUpdateAt(DateUtils.current());
                 return topicService.update(r);
             }
-
+            record.setCreateBy(username);
+            record.setStatus(StatusS.ENABLED);
             return topicService.save(record);
         });
     }

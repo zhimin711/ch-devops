@@ -190,6 +190,9 @@ public class KafkaContentTool {
             list = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
             contentSearchService.end(searchId, "2");
         }
+        if (!async) {
+            list.sort(Comparator.comparing(BtContentRecord::getMessageOffset).reversed());
+        }
         return list;
     }
 

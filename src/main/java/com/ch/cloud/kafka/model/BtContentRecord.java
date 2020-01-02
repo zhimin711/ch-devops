@@ -28,6 +28,7 @@ public class BtContentRecord {
      * 分区索引
      */
     @Column(name = "MESSAGE_OFFSET")
+    @OrderBy("desc")
     private Long messageOffset;
 
     /**
