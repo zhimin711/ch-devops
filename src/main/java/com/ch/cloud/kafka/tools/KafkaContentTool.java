@@ -173,8 +173,17 @@ public class KafkaContentTool {
         return map;
     }
 
-
-    public List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+    /**
+     * 添加同步（线程安全）
+     *
+     * @param contentType 内容类型
+     * @param searchType  搜索类型
+     * @param searchSize  搜索量
+     * @param content     搜索关键字
+     * @param clazz       类对象
+     * @return
+     */
+    public synchronized List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         saveSearch(searchType, searchSize, content);
         List<BtContentRecord> list = Lists.newArrayList();
         if (total > 200000 && searchType == SearchType.ALL) {
