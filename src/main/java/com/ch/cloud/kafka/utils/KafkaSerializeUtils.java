@@ -55,7 +55,7 @@ public class KafkaSerializeUtils {
             try {
                 t = clazz.newInstance();
                 ProtostuffIOUtil.mergeFrom(data, t, schema);
-            } catch (InstantiationException | IllegalAccessException var5) {
+            } catch (Exception var5) {
                 log.error("deSerialize error, Class=" + clazz, var5);
             }
             return t;
