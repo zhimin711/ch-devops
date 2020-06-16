@@ -28,7 +28,7 @@ configurations {
 
 repositories {
     mavenLocal()
-//    maven { url "http://nexus.sf-express.com/nexus/content/groups/public/" }
+    maven { url "http://artifactory.sf-express.com/artifactory/maven" }
     jcenter()
     mavenCentral()
     maven { url "https://repo.spring.io/milestone" }
@@ -55,6 +55,9 @@ dependencies {
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1'
     implementation "mysql:mysql-connector-java:5.1.30"
 
+    implementation 'io.dubbo.springboot:spring-boot-starter-dubbo:1.0.0'
+
+    implementation('com.sf:grd-trade-micro-client:8.2-SNAPSHOT') { transitive = false }
 
 //     https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     implementation 'org.apache.kafka:kafka-clients:0.8.2.0', {
