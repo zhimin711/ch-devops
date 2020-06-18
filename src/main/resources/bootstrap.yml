@@ -1,3 +1,7 @@
+nacos:
+  config:
+    namespace:
+    server-addr: 192.168.199.194:8848
 spring:
   devtools:
     restart:
@@ -14,9 +18,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 10.202.10.66:8848
+        server-addr: ${nacos.config.server-addr}
         namespace: ${nacos.namespace:}
       config:
-        server-addr: 10.202.10.66:8848
+        server-addr: ${nacos.config.server-addr}
         namespace: ${nacos.namespace:}
         shared-dataids: ch-kafka.yml #,ch-sentinel.properties

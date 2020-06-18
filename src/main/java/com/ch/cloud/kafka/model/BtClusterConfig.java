@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "bt_cluster_config")
+@Table(name = "bt_cluster")
 public class BtClusterConfig implements Serializable {
     /**
      * 主键
