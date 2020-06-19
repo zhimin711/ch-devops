@@ -24,5 +24,9 @@ public class DubboTests {
                 "com.sf.grd.trade.micro.dto.ddsPickG2cPush.ApiRequestParamsDto",
                 json);
         System.out.println(o);
+        o = DubboCallUtils.invoke(address, "1.0.1","com.sf.shiva.trtms.ground.require.api.TempLineService",
+                "checkCancel", "com.sf.shiva.trtms.ground.require.dto.temp.CancelRequire",
+                "{\"requireIds\":[200618010471334]}");
+        System.out.println(o);
     }
 }

@@ -180,4 +180,26 @@ public class TopicConfigController {
         });
     }
 
+
+    @ApiOperation(value = "清空所有主题", notes = "注：（删除并重建）")
+    @PostMapping("clean")
+    public Result<Integer> cleanTopics(@RequestBody BtTopic topic,
+                                       @RequestHeader(Constants.TOKEN_USER) String username) {
+        return ResultUtils.wrap(() -> {
+            BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
+            if (cluster == null) {
+                throw ExceptionUtils.create(PubError.NOT_EXISTS);
+            }
+            BtTopic p1 = new BtTopic();
+            p1.setClusterName(topic.getClusterName());
+            p1.setStatus("1");
+            List<BtTopic> topics = topicService.find(p1);
+            if (topics.isEmpty()) return 0;
+            topics.parallelStream().forEach(r -> TopicManager.deleteTopic(cluster.getZookeeper(), r.getTopicName()));
+            Thread.sleep(10000);
+            topics.parallelStream().forEach(r -> createTopic(cluster, r));
+            return topics.size();
+        });
+    }
+
 }
