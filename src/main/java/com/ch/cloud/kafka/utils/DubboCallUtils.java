@@ -5,6 +5,8 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +15,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 /**
  * decs:
@@ -115,7 +118,7 @@ public class DubboCallUtils {
         return null;
     }
 
-    public static Object invoke(String address, String version, String interfaceName, String methodName, String parameterClassName, String parameterJson) {
+    public static Object invoke(String address, String version, String interfaceName, String methodName, String parameterClassName, String... parameterJsons) {
         ReferenceConfig reference = getReferenceConfig(interfaceName, address, null, version);
         if (null != reference) {
             GenericService genericService = (GenericService) reference.get();
@@ -125,13 +128,24 @@ public class DubboCallUtils {
             }
 
             //基本类型以及Date,List,Map等不需要转换，直接调用
-            String[] parameterTypes = new String[]{parameterClassName};
+            String[] parameterTypes = parameterClassName.split(",");
 
-            Map<String, Object> params = JSON.parseObject(parameterJson);
-            params.put("class", parameterClassName);
+            if (parameterTypes.length > parameterJsons.length) {
+                log.debug("parameter length not same! {}-{}", parameterTypes.length, parameterJsons.length);
+                return null;
+            }
+
+            List<String> paramList = Lists.newArrayList(parameterJsons);
+
+            List<Object> objs = Lists.newArrayList();
+            for (int i = 0; i < parameterTypes.length; i++) {
+                Map<String, Object> params = JSON.parseObject(paramList.get(i));
+                params.put("class", parameterTypes[i]);
+                objs.add(params);
+            }
 //            paramType = getMethodParamType(interfaceName, methodName);
 //            return genericService.$invoke(methodName, getMethodParamType(interfaceName, methodName), paramObject);
-            return genericService.$invoke(methodName, parameterTypes, new Object[]{params});
+            return genericService.$invoke(methodName, parameterTypes, objs.toArray());
         }
         return null;
     }
