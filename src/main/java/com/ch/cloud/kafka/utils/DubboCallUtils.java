@@ -5,10 +5,10 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.fastjson.JSON;
+import com.ch.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
@@ -103,7 +103,7 @@ public class DubboCallUtils {
 
             String[] paramType = null;
             Object[] paramObject = null;
-            if (!CollectionUtils.isEmpty(paramList)) {
+            if (!CommonUtils.isEmpty(paramList)) {
                 paramType = new String[paramList.size()];
                 paramObject = new Object[paramList.size()];
                 for (int i = 0; i < paramList.size(); i++) {
