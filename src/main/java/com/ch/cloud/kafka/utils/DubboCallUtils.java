@@ -5,9 +5,9 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.ch.utils.CommonUtils;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,7 +15,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 /**
  * decs:
@@ -139,9 +138,13 @@ public class DubboCallUtils {
 
             List<Object> objs = Lists.newArrayList();
             for (int i = 0; i < parameterTypes.length; i++) {
-                Map<String, Object> params = JSON.parseObject(paramList.get(i));
-                params.put("class", parameterTypes[i]);
-                objs.add(params);
+                try {
+                    JSONObject jsonObject = JSON.parseObject(paramList.get(i));
+                    jsonObject.put("class", parameterTypes[i]);
+                    objs.add(jsonObject);
+                } catch (Exception e) {
+                    objs.add(paramList.get(i));
+                }
             }
 //            paramType = getMethodParamType(interfaceName, methodName);
 //            return genericService.$invoke(methodName, getMethodParamType(interfaceName, methodName), paramObject);

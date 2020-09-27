@@ -32,8 +32,16 @@ public class DubboTests {
                 "checkCancel", "com.sf.shiva.trtms.ground.require.dto.temp.CancelRequire",
                 "{\"requireIds\":[200618010471334]}");
         System.out.println(o);
-    }
 
+    }
+@Test
+public void testSupplier(){
+
+    o = DubboCallUtils.invoke(address, "1.0.1", "com.sf.shiva.trtms.ground.require.api.ISupplierDS",
+            "findThirdTypeBySupplierCode", "java.lang.String",
+            "G2C");
+    System.out.println(o);
+}
 
     @Test
     public void testCall2() {
