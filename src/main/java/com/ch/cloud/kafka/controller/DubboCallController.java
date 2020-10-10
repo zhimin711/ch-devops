@@ -23,8 +23,9 @@ public class DubboCallController {
     @ApiOperation(value = "Dubbo 调用")
     @PostMapping("call")
     public Object call(@RequestBody DubboCall2 record,
-                         @RequestHeader(Constants.TOKEN_USER) String username) {
-        return DubboCallUtils.invoke(record.getAddress(), record.getVersion(),record.getInterfaceName(),
+                       @RequestHeader(Constants.TOKEN_USER) String username) {
+        return DubboCallUtils.invoke(record.getAddress(), record.getVersion(), record.getInterfaceName(),
                 record.getMethod(), record.getParamClassName(),
-                record.getParamJson());}
+                record.getParamJson());
+    }
 }
