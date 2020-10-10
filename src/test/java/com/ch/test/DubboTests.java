@@ -14,7 +14,7 @@ public class DubboTests {
 
     String address2 = "zookeeper://10.202.107.137:2181";
 
-    String address3 = "dubbo://127.0.0.1:20880";
+    String address3 = "dubbo://100.118.86.40:20880";
 
     Object o;
 
@@ -38,7 +38,7 @@ public class DubboTests {
 public void testSupplier(){
 
     o = DubboCallUtils.invoke(address, "1.0.1", "com.sf.shiva.trtms.ground.require.api.ISupplierDS",
-            "findThirdTypeBySupplierCode", "java.lang.String",
+            "findBySupplierCode", "java.lang.String",
             "G2C");
     System.out.println(o);
 }
