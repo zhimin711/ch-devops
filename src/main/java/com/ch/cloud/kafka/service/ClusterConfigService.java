@@ -6,7 +6,7 @@ import com.ch.mybatis.service.IService;
 import java.util.List;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/25 18:20
  */
 public interface ClusterConfigService extends IService<Long, BtClusterConfig> {

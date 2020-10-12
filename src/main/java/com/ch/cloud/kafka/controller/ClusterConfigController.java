@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/25 20:29
  */
 @Api(tags = "KAFKA集群配置模块")

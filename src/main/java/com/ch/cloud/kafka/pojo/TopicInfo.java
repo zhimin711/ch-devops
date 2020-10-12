@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Properties;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/19 17:00
  */
 @Data

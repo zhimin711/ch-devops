@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.pojo;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/25 20:13
  */
 public enum ContentType {

@@ -3,7 +3,7 @@ package com.ch.cloud.kafka.pojo;
 import java.util.Properties;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/19 17:00
  */
 public class TopicConfig {

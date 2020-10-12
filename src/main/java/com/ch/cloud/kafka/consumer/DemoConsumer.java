@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/21 11:47
  */
 public class DemoConsumer {

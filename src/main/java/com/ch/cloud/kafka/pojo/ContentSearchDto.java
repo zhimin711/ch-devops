@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * ContentSearchDto 扩展对象
  * 
- * @author 01370603
+ * @author zhimin.ma
  * @date Wed Oct 30 17:38:37 CST 2019
  */
 @Data

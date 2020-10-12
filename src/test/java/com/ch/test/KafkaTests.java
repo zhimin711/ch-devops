@@ -26,7 +26,7 @@ import org.junit.Test;
 import java.util.*;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/19 17:27
  */
 public class KafkaTests {

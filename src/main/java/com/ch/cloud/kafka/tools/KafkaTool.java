@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/21 15:48
  */
 public class KafkaTool {

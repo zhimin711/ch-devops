@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Kafka管理工具
  *
- * @author 01370603
+ * @author zhimin.ma
  * @date 2018/9/19 16:36
  */
 public class KafkaManager {

@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * ContentRecordDto 扩展对象
  * 
- * @author 01370603
+ * @author zhimin.ma
  * @date Wed Oct 30 17:36:47 CST 2019
  */
 @Data

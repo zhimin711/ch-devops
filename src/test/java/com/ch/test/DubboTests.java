@@ -6,7 +6,7 @@ import org.junit.Test;
 /**
  * decs:
  *
- * @author 01370603
+ * @author zhimin.ma
  * @date 2020/6/16
  */
 public class DubboTests {
