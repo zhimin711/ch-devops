@@ -15,7 +15,7 @@ public class DubboCall2 {
 
     private String interfaceName;
     private String method;
-    private String paramJson;
+    private String[] paramJson;
     private String paramClassName;
     private String address;
     private String version;
