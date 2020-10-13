@@ -4,10 +4,10 @@ configurations {
 
 
 dependencies {
-    mybatisGenerator 'org.mybatis.generator:mybatis-generator-core:1.3.2'
-    mybatisGenerator 'mysql:mysql-connector-java:5.1.30'
-    mybatisGenerator 'tk.mybatis:mapper:3.3.8'
-    mybatisGenerator 'com.ch:ch-mybatis-generator:1.0.2-SNAPSHOT'
+    mybatisGenerator 'org.mybatis.generator:mybatis-generator-core:1.3.7'
+    mybatisGenerator 'mysql:mysql-connector-java:8.0.21'
+    mybatisGenerator 'tk.mybatis:mapper:4.1.5'
+    mybatisGenerator 'com.ch:ch-mybatis-generator:1.0.3-SNAPSHOT'
 }
 
 def dbProperties = {
