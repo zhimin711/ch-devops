@@ -13,12 +13,12 @@ import java.util.List;
 @Data
 public class DubboCall2 {
 
-    private String interfaceName;
-    private String method;
-    private String[] paramJson;
-    private String paramClassName;
     private String address;
+    private String interfaceName;
     private String version;
+    private String method;
+    private String paramClassName;
+    private String[] paramJson;
 
 
 }

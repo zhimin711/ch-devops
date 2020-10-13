@@ -126,7 +126,8 @@ public class TopicConfigController {
             if (c > 0) {
                 BtTopic topic = topicService.find(id);
                 BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
-                TopicManager.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
+                if (cluster != null)
+                    TopicManager.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
             }
             return c;
         });
