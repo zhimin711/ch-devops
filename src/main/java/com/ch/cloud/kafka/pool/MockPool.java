@@ -1,11 +1,10 @@
 package com.ch.cloud.kafka.pool;
 
+import com.google.common.collect.Sets;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * decs:
@@ -16,5 +15,13 @@ import java.util.stream.Collectors;
 @Component
 public class MockPool {
 
-    private List<ExecutorService> executors = Collections.emptyList();
+    private Set<ThreadPoolExecutor> executors = Sets.newConcurrentHashSet();
+
+    public boolean free() {
+        int c = 0;
+        for (ThreadPoolExecutor executor : executors) {
+            c += executor.getActiveCount();
+        }
+        return c < (Runtime.getRuntime().availableProcessors() / 2);
+    }
 }

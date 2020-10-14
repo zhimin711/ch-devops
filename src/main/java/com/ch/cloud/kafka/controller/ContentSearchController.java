@@ -48,7 +48,7 @@ public class ContentSearchController {
     @Autowired
     private ClusterConfigService clusterConfigService;
     @Autowired
-    private ITopicService topicExtService;
+    private ITopicService topicService;
     @Autowired
     private IContentSearchService contentSearchService;
     @Autowired
@@ -109,7 +109,7 @@ public class ContentSearchController {
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
-            return topicExtService.findByClusterLikeTopic(cluster.getClusterName(), topicName);
+            return topicService.findByClusterLikeTopic(cluster.getClusterName(), topicName);
         });
 
     }
@@ -181,7 +181,7 @@ public class ContentSearchController {
         if (config == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
         }
-        BtTopic topicExt = topicExtService.findByClusterAndTopic(cluster, topic);
+        BtTopic topicExt = topicService.findByClusterAndTopic(cluster, topic);
         if (topicExt == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
         }

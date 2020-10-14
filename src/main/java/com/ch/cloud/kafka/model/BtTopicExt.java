@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.model;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 import lombok.Data;
 
@@ -79,4 +80,7 @@ public class BtTopicExt {
      */
     @Column(name = "UPDATE_BY")
     private String updateBy;
+
+    @Transient
+    private List<BtTopicExtProp> props;
 }
