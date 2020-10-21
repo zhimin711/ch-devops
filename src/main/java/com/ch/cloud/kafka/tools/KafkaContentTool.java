@@ -16,6 +16,7 @@ import com.ch.utils.DateUtils;
 import com.ch.utils.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import kafka.api.*;
 import kafka.common.TopicAndPartition;
 import kafka.consumer.SimpleConsumer;
@@ -48,6 +49,8 @@ public class KafkaContentTool {
     private Long searchId;
 
     private Map<String, Integer> brokers;
+
+    private static final Map<String, Producer<String, byte[]>> producerMap = Maps.newConcurrentMap();
 
     private List<PartitionInfo> partitions;
 
@@ -331,19 +334,26 @@ public class KafkaContentTool {
 
     public void send(byte[] data) {
 
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+        Producer<String, byte[]> producer = producerMap.get(cluster);
+        if (producer == null) {
+            synchronized (producerMap) {
+
+                Properties props = new Properties();
+                props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
+                props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+                props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
 //        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put("schema.registry.url", schemaUrl);//schema.registry.url指向射麻的存储位置
-        Producer<String, byte[]> producer = new KafkaProducer<>(props);
+                producer = new KafkaProducer<>(props);
+                producerMap.put(cluster, producer);
+            }
+        }
         //不断生成消息并发送
 
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, null, data);
         producer.send(record);//将customer作为消息的值发送出去，KafkaAvroSerializer会处理剩下的事情
-        producer.close();
+//        producer.close();
     }
 
     private String getServers() {
