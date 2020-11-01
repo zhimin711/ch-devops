@@ -3,6 +3,8 @@ package com.ch.cloud.kafka.model;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Table(name = "bt_topic_ext_prop")
 public class BtTopicExtProp {
@@ -18,6 +20,9 @@ public class BtTopicExtProp {
      */
     @Column(name = "PID")
     private Long pid;
+
+    @Transient
+    private String uid;
 
     /**
      * 属性代码
@@ -66,4 +71,7 @@ public class BtTopicExtProp {
      */
     @Column(name = "STATUS")
     private String status;
+
+    @Transient
+    private List<BtTopicExtProp> children;
 }

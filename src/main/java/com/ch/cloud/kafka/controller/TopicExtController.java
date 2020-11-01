@@ -17,6 +17,7 @@ import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.toolkit.UUIDGenerator;
 import com.ch.utils.BeanExtUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
@@ -82,36 +83,45 @@ public class TopicExtController {
         if (clazz == null) {
             return;
         }
-        try {
-            Object obj = clazz.newInstance();
-            Map<String, Object> map = BeanExtUtils.getDeclaredFieldValueMap(obj, false);
-            List<BtTopicExtProp> props = Lists.newArrayList();
-            map.forEach((k, v) -> {
-                BtTopicExtProp prop = new BtTopicExtProp();
-                prop.setCode(k);
-                if(v!=null) prop.setType(v.getClass().getName());
-                props.add(prop);
-            });
-            record.setProps(props);
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+//            Object obj = clazz.newInstance();
+        Map<String, Object> map = BeanExtUtils.getPropertyAndType(clazz);
+        List<BtTopicExtProp> props = convert(map);
+
+        record.setProps(props);
+    }
+
+    private List<BtTopicExtProp> convert(Map<?, ?> map) {
+        List<BtTopicExtProp> props = Lists.newArrayList();
+        map.forEach((k, v) -> {
+            BtTopicExtProp prop = new BtTopicExtProp();
+            prop.setUid(UUIDGenerator.generate());
+            prop.setCode(k.toString());
+            if (v != null) {
+                if (v instanceof String) {
+                    prop.setType((String) v);
+                } else if (v instanceof Map) {
+                    prop.setType("{}");
+                    prop.setChildren(convert((Map) v));
+                }
+            }
+            props.add(prop);
+        });
+        return props;
     }
 
     @ApiOperation(value = "新增主题扩展信息", notes = "新增主题扩展信息")
     @PostMapping
-    public Result<Integer> add(@RequestBody BtTopicExt record,
+    public Result<Integer> save(@RequestBody BtTopicExt record,
                                @RequestHeader(Constants.TOKEN_USER) String username) {
         BtTopicExt r = topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username);
-        if (r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE)) {
-            return Result.error(PubError.EXISTS, "主题已存在！");
-        }
+
         return ResultUtils.wrapFail(() -> {
             BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
 
             record.setCreateBy(username);
             record.setStatus(StatusS.ENABLED);
-            return topicExtService.save(record);
+//            return topicExtService.save(record);
+            return 1;
         });
     }
 
