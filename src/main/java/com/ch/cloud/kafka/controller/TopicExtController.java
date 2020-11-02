@@ -68,24 +68,29 @@ public class TopicExtController {
                 record2.setThreadSize(4);
                 record2.setBatchSize(10);
 
-                loadTopicProps(record2);
             }
+            loadTopicProps(record2);
             return record2;
         });
     }
 
     private void loadTopicProps(BtTopicExt record) {
-        BtTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
-        if (CommonUtils.isEmpty(topicDto.getClassName())) {
-            return;
-        }
-        Class<?> clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicDto.getClassFile(), topicDto.getClassName());
-        if (clazz == null) {
-            return;
-        }
+
+        List<BtTopicExtProp> props = topicExtService.findProps(record.getId());
+
+        if (CommonUtils.isEmpty(props)) {
+            BtTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            if (CommonUtils.isEmpty(topicDto.getClassName())) {
+                return;
+            }
+            Class<?> clazz = KafkaSerializeUtils.loadClazz(libsDir + File.separator + topicDto.getClassFile(), topicDto.getClassName());
+            if (clazz == null) {
+                return;
+            }
 //            Object obj = clazz.newInstance();
-        Map<String, Object> map = BeanExtUtils.getPropertyAndType(clazz);
-        List<BtTopicExtProp> props = convert(map);
+            Map<String, Object> map = BeanExtUtils.getPropertyAndType(clazz);
+            props = convert(map);
+        }
 
         record.setProps(props);
     }
@@ -112,16 +117,36 @@ public class TopicExtController {
     @ApiOperation(value = "新增主题扩展信息", notes = "新增主题扩展信息")
     @PostMapping
     public Result<Integer> save(@RequestBody BtTopicExt record,
-                               @RequestHeader(Constants.TOKEN_USER) String username) {
-        BtTopicExt r = topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username);
+                                @RequestHeader(Constants.TOKEN_USER) String username) {
 
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
+//            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
 
-            record.setCreateBy(username);
-            record.setStatus(StatusS.ENABLED);
-//            return topicExtService.save(record);
-            return 1;
+            BtTopicExt r = topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username);
+
+            if (r != null) {
+                record.setId(r.getId());
+                record.setUpdateBy(username);
+                record.setUpdateAt(DateUtils.current());
+            } else {
+                record.setCreateBy(username);
+                record.setStatus(StatusS.ENABLED);
+            }
+            return topicExtService.save(record);
+        });
+    }
+
+    @ApiOperation(value = "生成主题数据", notes = "生成主题数据")
+    @PostMapping("mock")
+    public Result<Integer> mock(@RequestBody BtTopicExt record,
+                                @RequestHeader(Constants.TOKEN_USER) String username) {
+
+        return ResultUtils.wrapFail(() -> {
+            if (CommonUtils.isEmpty(record.getProps())) {
+                ExceptionUtils._throw(PubError.EXPIRED);
+            }
+
+            return 0;
         });
     }
 

@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.model;
 
 import javax.persistence.*;
+
 import lombok.Data;
 
 import java.util.List;
@@ -11,17 +12,26 @@ public class BtTopicExtProp {
     /**
      * 主键
      */
+    @Id
     @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 所属ID
+     * 主信息ID
+     */
+    @Column(name = "MID")
+    private Long mid;
+    /**
+     * 上级ID
      */
     @Column(name = "PID")
     private Long pid;
 
-    @Transient
+    /**
+     * 唯一ID
+     */
+    @Column(name = "UID")
     private String uid;
 
     /**

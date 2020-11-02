@@ -22,7 +22,8 @@ DROP TABLE IF EXISTS `bt_topic_ext_prop`;
 CREATE TABLE `bt_topic_ext_prop`
 (
     `ID`        BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `PID`       BIGINT(20)   NULL COMMENT '所属ID',
+    `MID`       BIGINT(20)   NULL COMMENT '主信息ID',
+    `PID`       BIGINT(20)   NULL COMMENT '上级ID',
     `UID`       VARCHAR(64)  NOT NULL COMMENT 'MOCK key',
     `CODE`      VARCHAR(50)  NOT NULL COMMENT '属性代码',
     `NAME`      VARCHAR(150) NULL COMMENT '属性名称',

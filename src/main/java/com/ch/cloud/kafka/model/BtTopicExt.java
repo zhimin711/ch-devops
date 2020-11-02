@@ -11,6 +11,7 @@ public class BtTopicExt {
     /**
      * 主键
      */
+    @Id
     @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

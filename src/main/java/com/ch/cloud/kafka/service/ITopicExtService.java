@@ -1,7 +1,10 @@
 package com.ch.cloud.kafka.service;
 
 import com.ch.cloud.kafka.model.BtTopicExt;
+import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.mybatis.service.IService;
+
+import java.util.List;
 
 /**
  * @author zhimin.ma
@@ -10,4 +13,6 @@ import com.ch.mybatis.service.IService;
 public interface ITopicExtService extends IService<Long, BtTopicExt> {
 
     BtTopicExt findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username);
+
+    List<BtTopicExtProp> findProps(Long id);
 }
