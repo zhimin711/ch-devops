@@ -13,6 +13,8 @@ import com.ch.cloud.kafka.service.ITopicExtService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
+import com.ch.cloud.mock.Mock;
+import com.ch.cloud.mock.MockConfig;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -28,11 +30,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +47,7 @@ import java.util.Map;
 @Api(tags = "KAFKA主题扩展信息配置模块")
 @RestController
 @RequestMapping("topic/ext")
+@Slf4j
 public class TopicExtController {
 
     @Autowired
@@ -120,7 +125,13 @@ public class TopicExtController {
                                 @RequestHeader(Constants.TOKEN_USER) String username) {
 
         return ResultUtils.wrapFail(() -> {
-//            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
+            if (CommonUtils.isEmptyOr(record.getClusterName(), record.getTopicName())) {
+                ExceptionUtils._throw(PubError.NON_NULL, "集群或主题不能为空！");
+            }
+            BtTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            if (topicDto == null) {
+                ExceptionUtils._throw(PubError.NOT_EXISTS, "集群+主题不存在！");
+            }
 
             BtTopicExt r = topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username);
 
@@ -143,11 +154,65 @@ public class TopicExtController {
 
         return ResultUtils.wrapFail(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
-                ExceptionUtils._throw(PubError.EXPIRED);
+                ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
             }
+            boolean checkOK = checkProps(record.getProps());
+            if (checkOK) {
+                Object o = mackData(record.getProps());
 
+                log.info("mock: {}", o);
+            }
             return 0;
         });
+    }
+
+    private Object mackData(List<BtTopicExtProp> props) throws ClassNotFoundException {
+        if (props.size() == 1) {
+            BtTopicExtProp prop = props.get(0);
+            if (BeanExtUtils.BasicType.isObject(prop.getType())) {
+                if (CommonUtils.isEmpty(prop.getValRegex())) {
+                    MockConfig config = new MockConfig();
+                    config.setStringEnum(MockConfig.StringEnum.CHARACTER);
+                    return Mock.mock(Class.forName(prop.getType()), config);
+                } else {
+                    return prop.getValRegex();
+                }
+            } else if (CommonUtils.isEquals("java.util.Date", prop.getType())) {
+                MockConfig config = new MockConfig();
+                if (CommonUtils.isNotEmpty(prop.getValRegex())) {
+                    Date date = DateUtils.parse(prop.getValRegex());
+                    if (date != null) return prop.getValRegex();
+                    String[] dArr = prop.getValRegex().split(Constants.SEPARATOR_5);
+                    Date ds;
+                    Date de;
+                    if (dArr.length > 1) {
+                        ds = DateUtils.parse(dArr[0]);
+                        de = DateUtils.parse(dArr[1]);
+                        if (ds != null && de != null) {
+                            config.dateRange(dArr[0], dArr[1]);
+                        }
+                    }
+
+                }
+                return Mock.mock(Class.forName(prop.getType()), config);
+            }
+        }
+        return null;
+    }
+
+    private boolean checkProps(List<BtTopicExtProp> props) {
+        boolean isSingle = false;
+        boolean ok = true;
+        for (BtTopicExtProp prop : props) {
+            if (CommonUtils.isEmpty(prop.getCode())) {
+                isSingle = true;
+                break;
+            }
+        }
+        if (isSingle && props.size() > 1) {
+            return false;
+        }
+        return ok;
     }
 
 }
