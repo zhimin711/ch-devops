@@ -112,7 +112,7 @@ public class MockConfig {
         beanCache.put(name, bean);
     }
 
-    public Object getcacheBean(String beanClassName) {
+    public Object getCacheBean(String beanClassName) {
         return beanCache.get(beanClassName);
     }
 

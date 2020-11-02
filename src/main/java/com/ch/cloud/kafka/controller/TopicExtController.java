@@ -20,10 +20,7 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.toolkit.UUIDGenerator;
-import com.ch.utils.BeanExtUtils;
-import com.ch.utils.CommonUtils;
-import com.ch.utils.DateUtils;
-import com.ch.utils.ExceptionUtils;
+import com.ch.utils.*;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
@@ -195,6 +192,18 @@ public class TopicExtController {
 
                 }
                 return Mock.mock(Class.forName(prop.getType()), config);
+            } else if (CommonUtils.isEquals("{}", prop.getType())) {
+                if (CommonUtils.isNotEmpty(prop.getValRegex())) {
+                    Class<?> clazz = JarUtils.loadClass(prop.getValRegex());
+                    if (clazz != null) {
+                        if (CommonUtils.isNotEmpty(prop.getChildren())) {
+                            //todo mock config
+                        }
+                        MockConfig config = new MockConfig();
+                        config.setStringEnum(MockConfig.StringEnum.CHARACTER);
+                        return Mock.mock(clazz, config);
+                    }
+                }
             }
         }
         return null;
