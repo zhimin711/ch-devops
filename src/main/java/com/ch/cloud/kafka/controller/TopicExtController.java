@@ -166,11 +166,11 @@ public class TopicExtController {
 
                 KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
 
-                List<Future<Void>> futures = Lists.newArrayList();
+                List<Future<List<Object>>> futures = Lists.newArrayList();
 
                 for (int i = 0; i < ts; i++) {
-                    Future<Void> f = DefaultThreadPool.submit(() -> {
-//                        List<Object> list = Lists.newArrayList();
+                    Future<List<Object>> f = DefaultThreadPool.submit(() -> {
+                        List<Object> list = Lists.newArrayList();
                         for (int j = 0; j < bs; j++) {
                             Object o;
                             if (record.getProps().size() == 1) {
@@ -178,25 +178,28 @@ public class TopicExtController {
                             } else {
                                 o = mockDataProps(record.getProps());
                             }
-                            log.info("mock: {}", o);
-                            if (objects.size() < 100) objects.add(o);
+//                            log.info("mock: {}", o);
+                            list.add(o);
+//                            if (objects.size() < 100) objects.add(o);
                             contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
                         }
-//                        objects.addAll(list);
-                        return null;
+
+//                        log.info("mock size: {}", list.size());
+                        return list;
                     });
                     futures.add(f);
                 }
-                for (Future<Void> f : futures) {
+                for (Future<List<Object>> f : futures) {
                     try {
-                        f.get(3, TimeUnit.SECONDS);
+                        List<Object> list = f.get();
+                        objects.addAll(list);
+                        log.info("mock list size: {}", list.size());
                     } catch (InterruptedException | ExecutionException e) {
-                        // ignore
-                    } catch (TimeoutException e) {
-                        break;
+                        log.error("Future error!" + f.isDone(), e);
                     }
                 }
 
+                log.info("mock objects size: {}", objects.size());
             }
             return objects;
         });
@@ -280,7 +283,7 @@ public class TopicExtController {
                 Date ds = DateUtils.parse(dArr[0]);
                 Date de = DateUtils.parse(dArr[1]);
                 if (ds != null && de != null) {
-                    config.dateRange(dArr[0], dArr[1]);
+                    config.dateRange(ds, de);
                 }
 
             }

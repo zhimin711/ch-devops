@@ -11,8 +11,12 @@ import java.util.Date;
  */
 public class DateMocker extends AbstractDateMock implements Mocker<Date> {
 
-  public DateMocker(String startTimePattern, String endTime) {
-    super(startTimePattern, endTime);
+  public DateMocker(String startTimePattern, String endTimePattern) {
+    super(startTimePattern, endTimePattern);
+  }
+
+  public DateMocker(Date startTime, Date endTime) {
+    super(startTime, endTime);
   }
 
   @Override

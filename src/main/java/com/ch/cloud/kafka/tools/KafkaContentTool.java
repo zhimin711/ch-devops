@@ -337,16 +337,19 @@ public class KafkaContentTool {
         Producer<String, byte[]> producer = producerMap.get(cluster);
         if (producer == null) {
             synchronized (producerMap) {
-
-                Properties props = new Properties();
-                props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
-                props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-                props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+                if (producerMap.get(cluster) != null) {
+                    producer = producerMap.get(cluster);
+                } else {
+                    Properties props = new Properties();
+                    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
+                    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+                    props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
 //        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put("schema.registry.url", schemaUrl);//schema.registry.url指向射麻的存储位置
-                producer = new KafkaProducer<>(props);
-                producerMap.put(cluster, producer);
+                    producer = new KafkaProducer<>(props);
+                    producerMap.put(cluster, producer);
+                }
             }
         }
         //不断生成消息并发送
