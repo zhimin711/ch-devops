@@ -187,6 +187,13 @@ public class MockConfig {
         return this;
     }
 
+    public MockConfig dateRange(String min, String max) {
+        this.dateRange[0] = min;
+        this.dateRange[1] = max;
+        registerMocker(new DateMocker(min, max), Date.class);
+        return this;
+    }
+
     public MockConfig dateRange(Date min, Date max) {
 //        this.dateRange[0] = min;
 //        this.dateRange[1] = max;

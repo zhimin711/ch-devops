@@ -168,6 +168,7 @@ public class TopicExtController {
 
                 List<Future<List<Object>>> futures = Lists.newArrayList();
 
+                int ss = 100 / ts;
                 for (int i = 0; i < ts; i++) {
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
                         List<Object> list = Lists.newArrayList();
@@ -179,8 +180,7 @@ public class TopicExtController {
                                 o = mockDataProps(record.getProps());
                             }
 //                            log.info("mock: {}", o);
-                            list.add(o);
-//                            if (objects.size() < 100) objects.add(o);
+                            if (list.size() < ss) list.add(o);
                             contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
                         }
 
@@ -195,7 +195,7 @@ public class TopicExtController {
                         objects.addAll(list);
                         log.info("mock list size: {}", list.size());
                     } catch (InterruptedException | ExecutionException e) {
-                        log.error("Future error!" + f.isDone(), e);
+                        log.error("Future error!", e);
                     }
                 }
 
