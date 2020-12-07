@@ -17,6 +17,9 @@ public class StringMocker implements Mocker<String> {
     @Override
     public String mock(MockConfig mockConfig) {
 
+        if (mockConfig.getStringEnum() == MockConfig.StringEnum.ARRAY) {
+            return mockerArray(mockConfig);
+        }
         if (mockConfig.getStringEnum() == MockConfig.StringEnum.CHARACTER) {
             return mockerCharacter(mockConfig);
         }
@@ -24,6 +27,11 @@ public class StringMocker implements Mocker<String> {
             return UUID.randomUUID().toString();
         }
         return mockChinese(mockConfig);
+    }
+
+    private String mockerArray(MockConfig mockConfig) {
+        int index = RandomUtils.nextInt(0, mockConfig.getStringSeed().length);
+        return mockConfig.getStringSeed()[index];
     }
 
     /**

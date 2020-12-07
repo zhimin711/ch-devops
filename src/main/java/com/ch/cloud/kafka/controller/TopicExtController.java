@@ -17,6 +17,7 @@ import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
+import com.ch.result.InvokerPage;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.toolkit.UUIDGenerator;
@@ -150,11 +151,12 @@ public class TopicExtController {
     public Result<?> mock(@RequestBody BtTopicExt record,
                           @RequestHeader(Constants.TOKEN_USER) String username) {
 
-        return ResultUtils.wrapList(() -> {
+        return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
             }
             boolean checkOK = checkProps(record.getProps());
+            long total = 0;
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
                 int ts = 1;
@@ -180,7 +182,8 @@ public class TopicExtController {
                                 o = mockDataProps(record.getProps());
                             }
 //                            log.info("mock: {}", o);
-                            if (list.size() < ss) list.add(o);
+//                            if (list.size() < ss)
+                            list.add(o);
                             contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
                         }
 
@@ -192,7 +195,8 @@ public class TopicExtController {
                 for (Future<List<Object>> f : futures) {
                     try {
                         List<Object> list = f.get();
-                        objects.addAll(list);
+                        total += list.size();
+                        objects.addAll(list.size() > ss ? list.subList(0, ss) : list);
                         log.info("mock list size: {}", list.size());
                     } catch (InterruptedException | ExecutionException e) {
                         log.error("Future error!", e);
@@ -201,7 +205,7 @@ public class TopicExtController {
 
                 log.info("mock objects size: {}", objects.size());
             }
-            return objects;
+            return InvokerPage.Page.build(total, objects);
         });
     }
 
@@ -231,7 +235,7 @@ public class TopicExtController {
                 if (arr.length == 1) {
                     arr = prop.getValRegex().split(Constants.SEPARATOR_5);
                 }
-                if (arr.length == 1) {
+                if (arr.length == 1 && type != BeanExtUtils.BasicType.STRING) {
                     return prop.getValRegex();
                 }
 
@@ -247,6 +251,10 @@ public class TopicExtController {
                         break;
                     case FLOAT:
                         config.floatRange(Float.parseFloat(arr[0]), Float.parseFloat(arr[1]));
+                        break;
+                    case STRING:
+                        config.setStringEnum(MockConfig.StringEnum.ARRAY);
+                        config.stringSeed(prop.getValRegex().split(Constants.SEPARATOR_2));
                         break;
                     default:
                         isRegex = false;

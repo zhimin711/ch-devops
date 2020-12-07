@@ -30,6 +30,10 @@ public class MockConfig {
          */
         CHINESE,
         /**
+         * 随机的字符组之一
+         */
+        ARRAY,
+        /**
          * http连接
          */
         HTTP,
