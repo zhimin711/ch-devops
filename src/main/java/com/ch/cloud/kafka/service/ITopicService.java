@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.service;
 
 import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.pojo.TopicDto;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.mybatis.service.IService;
 
@@ -17,4 +18,6 @@ public interface ITopicService extends IService<Long, BtTopic> {
     List<BtTopic> findByClusterLikeTopic(String clusterName, String topicName);
 
     int saveOrUpdate(List<TopicInfo> topicList, String clusterName, String username);
+
+    TopicDto check(String cluster, String topic);
 }

@@ -3,22 +3,30 @@ package com.ch.cloud.kafka.service.impl;
 import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.mapper.BtTopicMapper;
+import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.pojo.TopicDto;
 import com.ch.cloud.kafka.pojo.TopicInfo;
+import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.e.PubError;
 import com.ch.mybatis.service.BaseService;
 import com.ch.mybatis.utils.ExampleUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
+import com.ch.utils.ExceptionUtils;
 import com.ch.utils.SQLUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.Sqls;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,6 +39,11 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
 
     @Autowired(required = false)
     private BtTopicMapper topicMapper;
+    @Autowired
+    private ClusterConfigService clusterConfigService;
+
+    @Value("${share.path.libs}")
+    private String libsDir;
 
     @Override
     protected Mapper<BtTopic> getMapper() {
@@ -98,5 +111,23 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
         ex.orderBy("clusterName").asc().orderBy("topicName").asc();
         List<BtTopic> records = getMapper().selectByExample(ex);
         return new PageInfo<>(records);
+    }
+
+    @Override
+    public TopicDto check(String cluster, String topic) {
+        BtClusterConfig config = clusterConfigService.findByClusterName(cluster);
+        if (config == null) {
+            throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
+        }
+        BtTopic topicExt = this.findByClusterAndTopic(cluster, topic);
+        if (topicExt == null) {
+            throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
+        }
+        TopicDto dto = new TopicDto();
+        BeanUtils.copyProperties(topicExt, dto);
+        dto.setZookeeper(config.getZookeeper());
+        String path = libsDir + File.separator + topicExt.getClassFile();
+        dto.setClassFile(path);
+        return dto;
     }
 }

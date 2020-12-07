@@ -1,5 +1,9 @@
 package com.ch.cloud.kafka.utils;
 
+import com.ch.cloud.kafka.pojo.ContentType;
+import com.ch.cloud.kafka.pojo.TopicDto;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
 import com.ch.utils.JSONUtils;
 import com.ch.utils.JarUtils;
 import com.google.common.collect.Maps;
@@ -66,7 +70,7 @@ public class KafkaSerializeUtils {
 
     public static Class<?> loadClazz(String path, String className) {
         String prefix = "file:";
-        log.debug("load class file path: {} | {}", prefix, path);
+//        log.debug("load class file path: {} | {}", prefix, path);
         try {
             Class<?> clazz = clazzMap.get(className);
             if (clazz == null) {
@@ -82,6 +86,7 @@ public class KafkaSerializeUtils {
             }
             return clazz;
         } catch (MalformedURLException | ClassNotFoundException e) {
+            log.error("load class file path: {} | {}", prefix, path);
             log.error("load class to deSerialize error!", e);
         }
         return null;
@@ -100,5 +105,25 @@ public class KafkaSerializeUtils {
                 return new String(bytes, StandardCharsets.UTF_8);
             }
         };
+    }
+
+
+    public static byte[] convertContent(TopicDto topicDto, String contentMsg) {
+
+        ContentType contentType = ContentType.from(topicDto.getType());
+        if (contentType == ContentType.PROTO_STUFF) {
+            Class<?> clazz = null;
+            if (CommonUtils.isNotEmpty(topicDto.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(topicDto.getClassFile(), topicDto.getClassName());
+            }
+            if (clazz != null) {
+                Object obj = JSONUtils.fromJson(contentMsg, clazz, DateUtils.Pattern.DATETIME_CN);
+                log.debug("send clazz content: {}", JSONUtils.toJson(obj));
+                if (obj != null) {
+                    return KafkaSerializeUtils.serializer(obj);
+                }
+            }
+        }
+        return contentMsg.getBytes();
     }
 }
