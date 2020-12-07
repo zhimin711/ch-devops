@@ -261,12 +261,14 @@ public class TopicExtController {
                 Class<?> clazz = JarUtils.loadClass(prop.getValRegex());
                 if (clazz != null) {
                     if (CommonUtils.isNotEmpty(prop.getChildren())) {
-                        //todo mock config
+                        //todo mock customer config
                     }
                     MockConfig config = new MockConfig();
                     config.setStringEnum(MockConfig.StringEnum.CHARACTER);
                     return Mock.mock(clazz, config);
                 }
+            } else if (CommonUtils.isNotEmpty(prop.getChildren())) {
+                return mockDataProps(prop.getChildren());
             } else {
                 return null;
             }
