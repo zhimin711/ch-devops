@@ -13,6 +13,7 @@ import com.ch.cloud.kafka.service.ITopicExtService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
+import com.ch.cloud.kafka.utils.TopicExtUtil;
 import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
 import com.ch.e.PubError;
@@ -36,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author zhimin.ma
@@ -155,7 +154,7 @@ public class TopicExtController {
             if (CommonUtils.isEmpty(record.getProps())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
             }
-            boolean checkOK = checkProps(record.getProps());
+            boolean checkOK = TopicExtUtil.checkProps(record.getProps());
             long total = 0;
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
@@ -177,9 +176,9 @@ public class TopicExtController {
                         for (int j = 0; j < bs; j++) {
                             Object o;
                             if (record.getProps().size() == 1) {
-                                o = mockDataProp(record.getProps().get(0));
+                                o = TopicExtUtil.mockDataProp(record.getProps().get(0));
                             } else {
-                                o = mockDataProps(record.getProps());
+                                o = TopicExtUtil.mockDataProps(record.getProps());
                             }
 //                            log.info("mock: {}", o);
 //                            if (list.size() < ss)
@@ -207,114 +206,6 @@ public class TopicExtController {
             }
             return InvokerPage.Page.build(total, objects);
         });
-    }
-
-    private Object mockDataProps(List<BtTopicExtProp> props) throws Exception {
-        JSONObject obj = new JSONObject();
-        for (BtTopicExtProp prop : props) {
-            obj.put(prop.getCode(), mockDataProp(prop));
-        }
-        return obj;
-    }
-
-    private Object mockDataProp(BtTopicExtProp prop) throws Exception {
-        BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
-        if (type != null) {
-            if (CommonUtils.isEmpty(prop.getValRegex())) {
-                MockConfig config = new MockConfig();
-                config.setStringEnum(MockConfig.StringEnum.CHARACTER);
-                return Mock.mock(Class.forName(prop.getType()), config);
-            } else {
-                boolean isRegex = true;
-                MockConfig config = new MockConfig();
-
-                String[] arr = prop.getValRegex().split(Constants.SEPARATOR);
-                if (NumberUtils.isNumeric(prop.getValRegex())) {
-                    return prop.getValRegex();
-                }
-                if (arr.length == 1) {
-                    arr = prop.getValRegex().split(Constants.SEPARATOR_5);
-                }
-                if (arr.length == 1 && type != BeanExtUtils.BasicType.STRING) {
-                    return prop.getValRegex();
-                }
-
-                switch (type) {
-                    case INT:
-                        config.intRange(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]));
-                        break;
-                    case LONG:
-                        config.longRange(Long.parseLong(arr[0]), Long.parseLong(arr[1]));
-                        break;
-                    case DOUBLE:
-                        config.doubleRange(Double.parseDouble(arr[0]), Double.parseDouble(arr[1]));
-                        break;
-                    case FLOAT:
-                        config.floatRange(Float.parseFloat(arr[0]), Float.parseFloat(arr[1]));
-                        break;
-                    case STRING:
-                        config.setStringEnum(MockConfig.StringEnum.ARRAY);
-                        config.stringSeed(prop.getValRegex().split(Constants.SEPARATOR_2));
-                        break;
-                    default:
-                        isRegex = false;
-
-                }
-                if (isRegex) return Mock.mock(Class.forName(prop.getType()), config);
-                return prop.getValRegex();
-            }
-        }
-        if (CommonUtils.isEquals("{}", prop.getType())) {
-            if (CommonUtils.isNotEmpty(prop.getValRegex())) {
-                Class<?> clazz = JarUtils.loadClass(prop.getValRegex());
-                if (clazz != null) {
-                    if (CommonUtils.isNotEmpty(prop.getChildren())) {
-                        //todo mock customer config
-                    }
-                    MockConfig config = new MockConfig();
-                    config.setStringEnum(MockConfig.StringEnum.CHARACTER);
-                    return Mock.mock(clazz, config);
-                }
-            } else if (CommonUtils.isNotEmpty(prop.getChildren())) {
-                return mockDataProps(prop.getChildren());
-            } else {
-                return null;
-            }
-        }
-        Class<?> clazz1 = KafkaSerializeUtils.loadClazz(null, prop.getType());
-        if (BeanExtUtils.isDate(clazz1)) {
-            MockConfig config = new MockConfig();
-            if (CommonUtils.isNotEmpty(prop.getValRegex())) {
-                String[] dArr = prop.getValRegex().split(Constants.SEPARATOR_5);
-                if (dArr.length == 1) {
-                    Date date = DateUtils.parse(prop.getValRegex());
-                    if (date != null) return date;
-                }
-                Date ds = DateUtils.parse(dArr[0]);
-                Date de = DateUtils.parse(dArr[1]);
-                if (ds != null && de != null) {
-                    config.dateRange(ds, de);
-                }
-
-            }
-            return Mock.mock(Class.forName(prop.getType()), config);
-        }
-        return null;
-    }
-
-    private boolean checkProps(List<BtTopicExtProp> props) {
-        boolean isSingle = false;
-        boolean ok = true;
-        for (BtTopicExtProp prop : props) {
-            if (CommonUtils.isEmpty(prop.getCode())) {
-                isSingle = true;
-                break;
-            }
-        }
-        if (isSingle && props.size() > 1) {
-            return false;
-        }
-        return ok;
     }
 
 }

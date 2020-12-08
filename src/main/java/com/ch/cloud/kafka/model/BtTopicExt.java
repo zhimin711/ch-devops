@@ -84,4 +84,6 @@ public class BtTopicExt {
 
     @Transient
     private List<BtTopicExtProp> props;
+    @Transient
+    private List<String> points;
 }
