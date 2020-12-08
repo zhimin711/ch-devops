@@ -1,7 +1,9 @@
 package com.ch.cloud.kafka.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.ch.Constants;
 import com.ch.utils.CommonUtils;
+import com.google.common.collect.Lists;
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GeodeticCurve;
@@ -100,6 +102,10 @@ public class MapUtils {
     }
 
     public static void main(String[] args) {
+        String point1 = "113.929208, 22.50641";
+        String point2 = "114.034705, 22.616348";
+
+        double d = calcDistance(point1, point2);
 
 //        GlobalCoordinates source = new GlobalCoordinates(29.490295, 106.486654);
         GlobalCoordinates source = new GlobalCoordinates(113.929208, 22.50641);
@@ -109,8 +115,34 @@ public class MapUtils {
         double meter2 = getDistanceMeter(source, target, Ellipsoid.WGS84);
         double[] meter3 = add("113.929208,22.50641", "114.034705,22.616348", 12739);
 
-        System.out.println("Sphere坐标系计算结果：" + meter1 + "米");
-        System.out.println("WGS84坐标系计算结果：" + meter2 + "米");
+        System.out.println("Code代码 坐标系计算结果：" + d + "米");
+        System.out.println("Sphere 坐标系计算结果：" + meter1 + "米");
+        System.out.println("WGS84 坐标系计算结果：" + meter2 + "米");
         System.out.println("坐标系计算结果：" + meter3[0] + "," + meter3[1]);
+
+        List<double[]> points11 = calcGPS(point1, point2, 11);
+
+        System.out.println("11 calcGPS: " + JSON.toJSONString(points11));
+    }
+
+
+    private static List<double[]> calcGPS(String point1, String point2, int total) {
+
+        double[] p1 = parsePoint(point1);
+        double[] p2 = parsePoint(point2);
+
+        double x_ = (p2[0] - p1[0])/total;
+        double y_ = (p2[1] - p1[1])/total;
+
+        List<double[]> list = Lists.newArrayList();
+        for (int i = 0; i < total; i++) {
+            double x = p1[0], y = p1[1];
+            double offsetX = x_ * i;
+            double offsetY = y_ * i;
+
+            list.add(new double[]{x + offsetX, y + offsetY});
+        }
+
+        return list;
     }
 }
