@@ -92,7 +92,6 @@ public class TopicGPSController {
 
         List<Object> objs = Lists.newArrayList();
 
-        Date md = record.getUpdateAt();
         long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
 
         Date sd = DateUtils.addMinutes(record.getCreateAt(), offsetS);
@@ -112,18 +111,20 @@ public class TopicGPSController {
         double psu1 = ps1 / (total);
         double psu2 = ps2 / (total);
 
-        double totalD = MapUtils.calcDistance(sp, dp);
-        double totalT = ed.getTime() - sd.getTime();
+        for (int i = 0; i < count; i++) {
+            sd = DateUtils.addMinutes(sd, record.getBatchSize() * i);
 
-        while (sd.before(ed) && sd.before(md)) {
             JSONObject o = mockDataProps(record.getProps(), sd);
 
-
+            double lng = spa[0] + psu1 * (offsetS * i);
+            double lat = spa[1] + psu2 * (offsetS * i);
+            o.put(record.getProps().get(0).getCode(), lng + "," + lat);
+            o.put(record.getProps().get(1).getCode(), lng);
+            o.put(record.getProps().get(2).getCode(), lat);
 //            objs.add(o);
             log.info("{}", o.toJSONString());
-            sd = DateUtils.addMinutes(sd, record.getBatchSize());
-
         }
+
 
         return objs;
     }

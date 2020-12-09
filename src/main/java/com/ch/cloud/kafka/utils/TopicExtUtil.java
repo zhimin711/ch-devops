@@ -83,10 +83,10 @@ public class TopicExtUtil {
                 boolean isRegex = true;
                 MockConfig config = new MockConfig();
 
-                String[] arr = prop.getValRegex().split(Constants.SEPARATOR);
                 if (NumberUtils.isNumeric(prop.getValRegex())) {
                     return prop.getValRegex();
                 }
+                String[] arr = prop.getValRegex().split(Constants.SEPARATOR);
                 if (arr.length == 1) {
                     arr = prop.getValRegex().split(Constants.SEPARATOR_5);
                 }
