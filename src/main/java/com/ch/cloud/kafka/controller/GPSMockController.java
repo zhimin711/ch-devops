@@ -1,16 +1,11 @@
 package com.ch.cloud.kafka.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.Constants;
-import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
-import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.cloud.kafka.utils.MapUtils;
-import com.ch.cloud.kafka.utils.TopicExtUtil;
-import com.ch.cloud.mock.Mock;
-import com.ch.cloud.mock.MockConfig;
+import com.ch.cloud.kafka.utils.MockUtil;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
 import com.ch.result.Result;
@@ -33,9 +28,9 @@ import java.util.concurrent.Future;
  * @date 2020/12/8
  */
 @RestController
-@RequestMapping("topic/gps")
+@RequestMapping("/gps")
 @Slf4j
-public class TopicGPSController {
+public class GPSMockController {
 
 
     @ApiOperation(value = "生成GPS数据", notes = "生成GPS数据并发送Kafka")
@@ -44,9 +39,10 @@ public class TopicGPSController {
                           @RequestHeader(Constants.TOKEN_USER) String username) {
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
-                ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
+            ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
             }
-            boolean checkOK = TopicExtUtil.checkGPSProps(record);
+            MockUtil.convertRules(record, record.getProps());
+            boolean checkOK = MockUtil.checkGPSProps(record);
             long total = 0;
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
@@ -133,12 +129,12 @@ public class TopicGPSController {
     private JSONObject mockDataProps(List<BtTopicExtProp> props, Date timestamp) throws Exception {
         JSONObject obj = new JSONObject();
         for (BtTopicExtProp prop : props) {
-            if (CommonUtils.isEquals(prop.getName(), TopicExtUtil.GPS_NAME)) {
+            if (CommonUtils.isEquals(prop.getName(), MockUtil.GPS_NAME)) {
 //                obj.put(prop.getCode(), mockGPS(prop));
-            } else if (CommonUtils.isEquals(prop.getName(), TopicExtUtil.GPS_TIME)) {
+            } else if (CommonUtils.isEquals(prop.getName(), MockUtil.GPS_TIME)) {
                 obj.put(prop.getCode(), timestamp.getTime());
             } else {
-                obj.put(prop.getCode(), TopicExtUtil.mockDataProp(prop));
+                obj.put(prop.getCode(), MockUtil.mockDataProp(prop));
             }
         }
         return obj;

@@ -6,8 +6,12 @@ import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
+import com.ch.cloud.mock.MockRule;
+import com.ch.cloud.mock.pojo.MockProp;
+import com.ch.e.PubError;
 import com.ch.utils.*;
 import com.google.common.collect.Lists;
+import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -18,8 +22,9 @@ import java.util.List;
  * @author 01370603
  * @date 2020/12/8
  */
-public class TopicExtUtil {
+public class MockUtil {
 
+    public static final String range_regex = "[~]";
 
     public static boolean checkProps(List<BtTopicExtProp> props) {
         boolean isSingle = false;
@@ -156,4 +161,47 @@ public class TopicExtUtil {
         }
         return null;
     }
+
+    public static List<MockProp> convertRules(BtTopicExt record, List<BtTopicExtProp> props) throws Exception {
+
+        List<MockProp> props2 = Lists.newArrayList();
+        for (BtTopicExtProp prop : props) {
+
+            if (CommonUtils.isEmpty(prop.getCode())) {
+                ExceptionUtils._throw(PubError.ARGS, "mock字段代码不能为空！");
+            }
+            MockProp prop2 = new MockProp();
+            BeanUtils.copyProperties(prop, prop2);
+            if (CommonUtils.isEquals(Constants.SEPARATOR, prop.getType()) || (CommonUtils.isEmpty(prop.getValRegex()) && CommonUtils.isEmpty(prop.getChildren()) && CommonUtils.isEquals("{}", prop.getType()))) {
+                prop2.setRule(MockRule.EMPTY);
+            } else if (!CommonUtils.isEquals("{}", prop.getType()) && CommonUtils.isEmpty(prop.getValRegex())) {
+                prop2.setRule(MockRule.RANDOM);
+            } else if (!CommonUtils.isEquals("{}", prop.getType())) {
+                BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
+                if (type == null) {
+                    ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "代码类型错误！");
+                }
+                Class<?> clazz = Class.forName(prop.getType());
+                if (Number.class.isAssignableFrom(clazz) && CommonUtils.isNumeric(prop.getValRegex())) {
+                    prop2.setRule(MockRule.FIXED);
+                }
+            } else {
+                prop2.setRule(MockRule.OBJECT);
+                Class<?> clazz = null;
+                if (CommonUtils.isNotEmpty(prop.getValRegex())) {
+                    clazz = JarUtils.loadClass(prop.getValRegex());
+                }
+                if (clazz != null) {
+                    prop2.setTargetClass(clazz);
+                }
+                if (CommonUtils.isNotEmpty(prop.getChildren())) {
+                    prop2.setChildren(convertRules(record, prop.getChildren()));
+                }
+            }
+            props2.add(prop2);
+        }
+
+        return props2;
+    }
+
 }

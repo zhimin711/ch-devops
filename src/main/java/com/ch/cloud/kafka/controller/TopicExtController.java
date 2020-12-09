@@ -1,7 +1,6 @@
 package com.ch.cloud.kafka.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtTopic;
@@ -13,9 +12,7 @@ import com.ch.cloud.kafka.service.ITopicExtService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
-import com.ch.cloud.kafka.utils.TopicExtUtil;
-import com.ch.cloud.mock.Mock;
-import com.ch.cloud.mock.MockConfig;
+import com.ch.cloud.kafka.utils.MockUtil;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
 import com.ch.result.InvokerPage;
@@ -32,7 +29,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -154,7 +150,7 @@ public class TopicExtController {
             if (CommonUtils.isEmpty(record.getProps())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
             }
-            boolean checkOK = TopicExtUtil.checkProps(record.getProps());
+            boolean checkOK = MockUtil.checkProps(record.getProps());
             long total = 0;
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
@@ -176,9 +172,9 @@ public class TopicExtController {
                         for (int j = 0; j < bs; j++) {
                             Object o;
                             if (record.getProps().size() == 1) {
-                                o = TopicExtUtil.mockDataProp(record.getProps().get(0));
+                                o = MockUtil.mockDataProp(record.getProps().get(0));
                             } else {
-                                o = TopicExtUtil.mockDataProps(record.getProps());
+                                o = MockUtil.mockDataProps(record.getProps());
                             }
 //                            log.info("mock: {}", o);
 //                            if (list.size() < ss)
