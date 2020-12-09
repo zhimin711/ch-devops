@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.Constants;
 import com.ch.StatusS;
@@ -45,7 +46,7 @@ public class TopicGPSController {
             if (CommonUtils.isEmpty(record.getProps())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
             }
-            boolean checkOK = TopicExtUtil.checkGPSProps(record.getProps());
+            boolean checkOK = TopicExtUtil.checkGPSProps(record);
             long total = 0;
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
@@ -60,11 +61,12 @@ public class TopicGPSController {
 
                 List<Future<List<Object>>> futures = Lists.newArrayList();
                 for (int i = 0; i < ts; i++) {
-                    long offset = (i + 1) * ss;
+                    long offsetS = i * ss;
+                    long offsetE = (i + 1) * ss;
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
 
-                        List<Object> o = mockDataProps(record, (int) offset);
-                        return null;
+                        List<Object> o = mockDataProps(record, (int) offsetS, (int) offsetE);
+                        return o;
                     });
                     futures.add(f);
                 }
@@ -86,28 +88,44 @@ public class TopicGPSController {
         });
     }
 
-    private List<Object> mockDataProps(BtTopicExt record, int offset) throws Exception {
-        Date sd = record.getCreateAt();
+    private List<Object> mockDataProps(BtTopicExt record, int offsetS, int offsetE) throws Exception {
+
+        List<Object> objs = Lists.newArrayList();
+
         Date md = record.getUpdateAt();
-        Date ed = DateUtils.addMinutes(sd, offset);
+        long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
+
+        Date sd = DateUtils.addMinutes(record.getCreateAt(), offsetS);
+        Date ed = DateUtils.addMinutes(record.getCreateAt(), offsetE);
 
         String sp = record.getPoints().get(0);
         String dp = record.getPoints().get(record.getPoints().size() - 1);
+
+        double[] spa = MapUtils.parsePoint(sp);
+        double[] dpa = MapUtils.parsePoint(dp);
+
+        double ps1 = dpa[0] - spa[0];
+        double ps2 = dpa[1] - spa[1];
+
+        int count = offsetE - offsetS;
+
+        double psu1 = ps1 / (total);
+        double psu2 = ps2 / (total);
+
         double totalD = MapUtils.calcDistance(sp, dp);
         double totalT = ed.getTime() - sd.getTime();
 
         while (sd.before(ed) && sd.before(md)) {
             JSONObject o = mockDataProps(record.getProps(), sd);
-            double currT = sd.getTime() - record.getCreateAt().getTime();
 
-            double currD = totalD / totalT * currT;
 
-//            double[] posLL = MapUtils.add(record.getPoints(), currD);
-
+//            objs.add(o);
+            log.info("{}", o.toJSONString());
             sd = DateUtils.addMinutes(sd, record.getBatchSize());
+
         }
 
-        return null;
+        return objs;
     }
 
 

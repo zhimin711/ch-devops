@@ -94,7 +94,7 @@ public class MapUtils {
     }
 
 
-    private static double[] parsePoint(String point) {
+    public static double[] parsePoint(String point) {
         String[] arr1 = point.split(Constants.SEPARATOR_2);
         double p1x = Double.parseDouble(arr1[0]);
         double p1y = Double.parseDouble(arr1[1]);
@@ -143,6 +143,7 @@ public class MapUtils {
             list.add(new double[]{x + offsetX, y + offsetY});
         }
 
+        list.add(p2);
         return list;
     }
 }

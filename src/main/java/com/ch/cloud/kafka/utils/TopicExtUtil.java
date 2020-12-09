@@ -2,6 +2,7 @@ package com.ch.cloud.kafka.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ch.Constants;
+import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
@@ -36,33 +37,23 @@ public class TopicExtUtil {
     }
 
     public static final String GPS_NAME = "经纬度";
+    public static final String GPS_LNG_NAME = "经度";
+    public static final String GPS_LAT_NAME = "经度";
     public static final String GPS_TIME = "上传时间";
 
-    public static boolean checkGPSProps(List<BtTopicExtProp> props) {
-        if (props.size() < 3) {
+    public static boolean checkGPSProps(BtTopicExt record) {
+        if (record.getPoints().size() < 2) {
+            return false;
+        }
+        List<BtTopicExtProp> props = record.getProps();
+        if (props.size() < 4) {
             return false;
         }
 
         BtTopicExtProp posProp = props.get(0);
         if (CommonUtils.isEmptyOr(posProp.getCode(), posProp.getChildren())) {
-            return false;
+//            return false;
         }
-        List<String> pos = Lists.newArrayList();
-        for (BtTopicExtProp p : posProp.getChildren()) {
-            if (CommonUtils.isEmpty(p.getValRegex())) {
-                return false;
-            }
-            if (pos.contains(p.getValRegex())) {
-                return false;
-            } else {
-                pos.add(p.getValRegex());
-            }
-        }
-
-        boolean ok = true;
-        boolean hasS = true;
-        boolean hasE = true;
-        boolean hasTs = true;
         for (BtTopicExtProp prop : props) {
             if (CommonUtils.isEmpty(prop.getCode())) {
                 return false;
