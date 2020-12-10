@@ -220,7 +220,7 @@ public class MockUtil {
                     prop2.setLen(Integer.parseInt(prop.getValRegex()));
                     break;
                 case RANDOM_RANGE:
-                    if (CommonUtils.isEmpty(prop)) {
+                    if (CommonUtils.isEmpty(prop.getValRegex())) {
                         ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
                     }
                     String tmp = prop.getValRegex();
@@ -231,9 +231,9 @@ public class MockUtil {
                         tmp = tmp.substring(0, prop.getValRegex().indexOf("]") - 1);
                     }
                     String[] arr;
-                    if (type == BeanExtUtils.BasicType.STRING) {
+                    if (type == BeanExtUtils.BasicType.STRING || type == BeanExtUtils.BasicType.CHAR) {
                         arr = tmp.split(Constants.SEPARATOR_2);
-                    } else if (BeanExtUtils.isDate(prop2.getTargetClass())) {
+                    } else if (isDate) {
                         arr = tmp.split(Constants.SEPARATOR_5);
                     } else {
                         arr = tmp.split(Constants.SEPARATOR_5);
@@ -268,37 +268,60 @@ public class MockUtil {
                         }
                         prop2.setOffset(offset + "");
                     }
+                    if (type == null || type == BeanExtUtils.BasicType.STRING || type == BeanExtUtils.BasicType.CHAR) {
+                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
+                    }
+                    String basic = parseNumberBasic(prop.getValRegex());
+                    String offset = parseNumberOffset(prop.getValRegex());
+                    prop2.setOffset(offset);
+
+                    prop2.setBaseN(Lists.newArrayList());
+                    switch (type) {
+                        case FLOAT:
+                        case DOUBLE:
+                            double b2 = Double.parseDouble(basic);
+                            double o2 = Double.parseDouble(offset);
+                            for (int i = 0; i < record.getThreadSize(); i++) {
+                                prop2.getBaseN().add((b2 + i * o2));
+                            }
+                        default:
+                            int b1 = Integer.parseInt(basic);
+                            int o1 = Integer.parseInt(offset);
+                            for (int i = 0; i < record.getThreadSize(); i++) {
+                                prop2.getBaseN().add((b1 + i * o1));
+                            }
+                    }
                     break;
                 case AUTO_INCR_RANGE:
                 case AUTO_DECR_RANGE:
+                    if (type == null) {
+                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
+                    }
                     break;
                 default:
-            }
-            if (prop.getValRegex().startsWith("*[") && prop.getValRegex().endsWith("]")) {
-                String numS = prop.getValRegex().substring(2, prop.getValRegex().length() - 1);
-                if (CommonUtils.isNumeric(numS)) {
-                    prop2.setLen(Integer.parseInt(numS));
-                }
-            } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && !prop.getValRegex().contains("][")) {
-                String range = prop.getValRegex().substring(1, prop.getValRegex().length() - 1);
-                if (type == BeanExtUtils.BasicType.STRING) {
-                    prop2.setStrRange(range.split(Constants.SEPARATOR_2));
-                } else {
-                    String[] arr = range.split(Constants.SEPARATOR_5);
-                    if (arr.length == 1) {
-                        ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围配置错误[1~100]！");
-                    }
-                    if (CommonUtils.isNumeric(arr[0]) || CommonUtils.isNumeric(arr[1])) {
-                        ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围开始或结束配置错误[1.0~100.0]！");
-                    }
-                    prop2.setMin(Double.parseDouble(arr[0]));
-                    prop2.setMax(Double.parseDouble(arr[1]));
-                }
             }
             props2.add(prop2);
         }
 
         return props2;
+    }
+
+    private static String parseNumberOffset(String regex) {
+        int index = regex.indexOf("[");
+        if (index > 0 && index < regex.length() && regex.endsWith("]")) {
+            String offset = regex.substring(index, regex.length() - 1);
+            if (CommonUtils.isNumeric(offset))
+                return offset;
+        }
+        return "0";
+    }
+
+    private static String parseNumberBasic(String regex) {
+        int index = regex.indexOf("[");
+        if (index == 0) {
+            return "0";
+        }
+        return regex.substring(0, index);
     }
 
     private static Date parseDateBasic(String regex) {
