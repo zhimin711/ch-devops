@@ -4,6 +4,7 @@ import com.ch.cloud.mock.MockRule;
 import com.ch.utils.DateUtils;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,7 +40,9 @@ public class MockProp {
 
     private DateUtils.Pattern pattern;
 
-    private List<String> baseL;
+    private List<Number> baseN;
+
+    private List<Date> baseD;
 
     private String offset;
 }

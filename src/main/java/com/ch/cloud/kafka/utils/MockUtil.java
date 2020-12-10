@@ -11,8 +11,11 @@ import com.ch.cloud.mock.pojo.MockProp;
 import com.ch.e.PubError;
 import com.ch.utils.*;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
+import java.time.Duration;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
 import java.util.List;
 
@@ -22,6 +25,7 @@ import java.util.List;
  * @author 01370603
  * @date 2020/12/8
  */
+@Slf4j
 public class MockUtil {
 
     public static final String range_regex = "[~]";
@@ -165,6 +169,9 @@ public class MockUtil {
 
     public static List<MockProp> convertRules(BtTopicExt record, List<BtTopicExtProp> props) throws Exception {
 
+        long minutes = (int) DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());
+        int ss = (int) minutes / record.getBatchSize() / record.getThreadSize();
+
         List<MockProp> props2 = Lists.newArrayList();
         for (BtTopicExtProp prop : props) {
 
@@ -251,15 +258,18 @@ public class MockUtil {
                     }
                     break;
                 case AUTO_INCR:
-
+                case AUTO_DECR:
                     if (isDate) {
-
+                        Date basic = parseDateBasic(prop.getValRegex());
+                        long offset = parseDateOffset(prop.getValRegex());
+                        prop2.setBaseD(Lists.newArrayList());
+                        for (int i = 0; i < record.getThreadSize(); i++) {
+                            prop2.getBaseD().add(DateUtils.addMinutes(basic, i * ss));
+                        }
+                        prop2.setOffset(offset + "");
                     }
                     break;
                 case AUTO_INCR_RANGE:
-                    break;
-                case AUTO_DECR:
-                    break;
                 case AUTO_DECR_RANGE:
                     break;
                 default:
@@ -291,12 +301,39 @@ public class MockUtil {
         return props2;
     }
 
+    private static Date parseDateBasic(String regex) {
+        int index = regex.indexOf("[");
+        if (index < 0) {
+            index = regex.indexOf("|");
+        }
+        if (index <= 0) {
+            return DateUtils.current();
+        }
+        String b = regex.substring(0, index);
+        Date bd = DateUtils.parse(b);
+        if (bd != null) {
+            return bd;
+        }
+
+        return DateUtils.current();
+    }
+
     public static List<MockProp> convertGPSRules(BtTopicExt record) throws Exception {
+        if (CommonUtils.isEmptyOr(record.getCreateAt(), record.getUpdateAt())) {
+            ExceptionUtils._throw(PubError.ARGS, "GPS轨迹开始或结束时间为空！");
+        }
+        if (CommonUtils.isEmpty(record.getThreadSize())) {
+            record.setThreadSize(1);
+        }
+        if (CommonUtils.isEmpty(record.getBatchSize())) {
+            record.setBatchSize(10);
+        }
         if (record.getProps().size() < 4) {
             ExceptionUtils._throw(PubError.ARGS, "mock字段代码不足！");
         } else if (record.getProps().size() == 4) {
             return Lists.newArrayList();
         }
+
         List<BtTopicExtProp> props = record.getProps().subList(4, record.getProps().size());
         return convertRules(record, props);
     }
@@ -311,11 +348,20 @@ public class MockUtil {
         }
         return null;
     }
-    private static String parseDateOffset(String regex) {
+
+    private static long parseDateOffset(String regex) {
         int index = regex.indexOf("[");
         if (index > 0 && index < regex.length() && regex.endsWith("]")) {
             String offset = regex.substring(index, regex.length() - 1);
+            try {
+                Duration duration = Duration.parse(offset);
+                return duration.getSeconds();
+            } catch (Exception e) {
+//                ExceptionUtils._throw(PubError.ARGS, "mock字段递增量解析失败！");
+                log.error("Duration.parse error!" + regex, e);
+            }
+
         }
-        return null;
+        return 0;
     }
 }
