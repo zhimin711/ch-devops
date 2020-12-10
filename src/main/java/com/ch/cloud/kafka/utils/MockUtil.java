@@ -172,18 +172,23 @@ public class MockUtil {
             }
             MockProp prop2 = new MockProp();
             BeanUtils.copyProperties(prop, prop2);
-            if (CommonUtils.isEquals(Constants.SEPARATOR, prop.getType()) || (CommonUtils.isEmpty(prop.getValRegex()) && CommonUtils.isEmpty(prop.getChildren()) && CommonUtils.isEquals("{}", prop.getType()))) {
+            BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
+            if (!CommonUtils.isEquals("{}", prop.getType()) && !CommonUtils.isEquals(Constants.SEPARATOR, prop.getType())) {
+                if (type == null || !CommonUtils.isEquals("java.util.Date", prop.getType())) {
+                    ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "类型错误！");
+                }
+                Class<?> clazz = Class.forName(prop.getType());
+                prop2.setTargetClass(clazz);
+            }
+            if (CommonUtils.isEquals(Constants.SEPARATOR, prop.getType()) ||
+                    (CommonUtils.isEmpty(prop.getValRegex()) && CommonUtils.isEmpty(prop.getChildren()) && CommonUtils.isEquals("{}", prop.getType()))) {
                 prop2.setRule(MockRule.EMPTY);
             } else if (!CommonUtils.isEquals("{}", prop.getType()) && CommonUtils.isEmpty(prop.getValRegex())) {
                 prop2.setRule(MockRule.RANDOM);
             } else if (!CommonUtils.isEquals("{}", prop.getType())) {
-                BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
-                if (type == null) {
-                    ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "代码类型错误！");
-                }
-                Class<?> clazz = Class.forName(prop.getType());
                 if (type == BeanExtUtils.BasicType.BOOLEAN
-                        || Number.class.isAssignableFrom(clazz) && CommonUtils.isNumeric(prop.getValRegex())) {
+                        || BeanExtUtils.isDate(prop2.getTargetClass()) && DateUtils.parse(prop.getValRegex()) != null
+                        || Number.class.isAssignableFrom(prop2.getTargetClass()) && CommonUtils.isNumeric(prop.getValRegex())) {
                     prop2.setRule(MockRule.FIXED);
                     continue;
                 }
