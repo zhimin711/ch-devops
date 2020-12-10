@@ -1,9 +1,8 @@
 package com.ch.cloud.kafka.model;
 
-import javax.persistence.*;
-
 import lombok.Data;
 
+import javax.persistence.*;
 import java.util.List;
 
 @Data
@@ -51,6 +50,11 @@ public class BtTopicExtProp {
      */
     @Column(name = "TYPE")
     private String type;
+    /**
+     * 类型规则
+     */
+    @Column(name = "RULE")
+    private String rule;
 
     /**
      * 序号

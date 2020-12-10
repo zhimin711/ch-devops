@@ -1,6 +1,7 @@
 package com.ch.cloud.mock.pojo;
 
 import com.ch.cloud.mock.MockRule;
+import com.ch.utils.DateUtils;
 import lombok.Data;
 
 import java.util.List;
@@ -35,4 +36,10 @@ public class MockProp {
     private double max;
 
     private String[] strRange;
+
+    private DateUtils.Pattern pattern;
+
+    private List<String> baseL;
+
+    private String offset;
 }

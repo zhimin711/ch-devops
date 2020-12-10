@@ -19,6 +19,10 @@ public class DateMocker extends AbstractDateMock implements Mocker<Date> {
     super(startTime, endTime);
   }
 
+  public DateMocker(long startTime, long endTime) {
+    super(startTime, endTime);
+  }
+
   @Override
   public Date mock(MockConfig mockConfig) {
     return new Date(RandomUtils.nextLong(startTime, endTime));

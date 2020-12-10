@@ -25,6 +25,7 @@ import java.util.List;
 public class MockUtil {
 
     public static final String range_regex = "[~]";
+    public static final String OBJ = "{}";
 
     public static boolean checkProps(List<BtTopicExtProp> props) {
         boolean isSingle = false;
@@ -172,68 +173,116 @@ public class MockUtil {
             }
             MockProp prop2 = new MockProp();
             BeanUtils.copyProperties(prop, prop2);
+            MockRule rule = MockRule.valueOf(prop.getRule());
+            prop2.setRule(rule);
             BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
-            if (!CommonUtils.isEquals("{}", prop.getType()) && !CommonUtils.isEquals(Constants.SEPARATOR, prop.getType())) {
-                if (type == null || !CommonUtils.isEquals("java.util.Date", prop.getType())) {
+            if (!CommonUtils.isEquals(OBJ, prop.getType())) {
+                if (type == null && !CommonUtils.isEquals(Date.class.getName(), prop.getType())) {
                     ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "类型错误！");
                 }
                 Class<?> clazz = Class.forName(prop.getType());
                 prop2.setTargetClass(clazz);
-            }
-            if (CommonUtils.isEquals(Constants.SEPARATOR, prop.getType()) ||
-                    (CommonUtils.isEmpty(prop.getValRegex()) && CommonUtils.isEmpty(prop.getChildren()) && CommonUtils.isEquals("{}", prop.getType()))) {
-                prop2.setRule(MockRule.EMPTY);
-            } else if (!CommonUtils.isEquals("{}", prop.getType()) && CommonUtils.isEmpty(prop.getValRegex())) {
-                prop2.setRule(MockRule.RANDOM);
-            } else if (!CommonUtils.isEquals("{}", prop.getType())) {
-                if (type == BeanExtUtils.BasicType.BOOLEAN
-                        || BeanExtUtils.isDate(prop2.getTargetClass()) && DateUtils.parse(prop.getValRegex()) != null
-                        || Number.class.isAssignableFrom(prop2.getTargetClass()) && CommonUtils.isNumeric(prop.getValRegex())) {
-                    prop2.setRule(MockRule.FIXED);
-                    continue;
-                }
-                if (prop.getValRegex().startsWith("*[") && prop.getValRegex().endsWith("]")) {
-                    prop2.setRule(MockRule.RANDOM_LENGTH);
-                    String numS = prop.getValRegex().substring(2, prop.getValRegex().length() - 1);
-                    if (CommonUtils.isNumeric(numS)) {
-                        prop2.setLen(Integer.parseInt(numS));
-                    }
-                } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && !prop.getValRegex().contains("][")) {
-                    prop2.setRule(MockRule.RANDOM_RANGE);
-                    String range = prop.getValRegex().substring(1, prop.getValRegex().length() - 1);
-                    if (type == BeanExtUtils.BasicType.STRING) {
-                        prop2.setStrRange(range.split(Constants.SEPARATOR_2));
-                    } else {
-                        String[] arr = range.split(Constants.SEPARATOR_5);
-                        if (arr.length == 1) {
-                            ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围配置错误[1~100]！");
-                        }
-                        if (CommonUtils.isNumeric(arr[0]) || CommonUtils.isNumeric(arr[1])) {
-                            ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围开始或结束配置错误[1.0~100.0]！");
-                        }
-                        prop2.setMin(Double.parseDouble(arr[0]));
-                        prop2.setMax(Double.parseDouble(arr[1]));
-                    }
-                } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("][+]")) {
-                    prop2.setRule(MockRule.AUTO_INCR_RANGE);
-                } else if (!prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && prop.getValRegex().contains("[+")) {
-                    prop2.setRule(MockRule.AUTO_INCR);
-                } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("][-]")) {
-                    prop2.setRule(MockRule.AUTO_DECR_RANGE);
-                } else if (!prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && prop.getValRegex().contains("[-")) {
-                    prop2.setRule(MockRule.AUTO_DECR);
-                }
             } else {
-                prop2.setRule(MockRule.OBJECT);
                 Class<?> clazz = null;
                 if (CommonUtils.isNotEmpty(prop.getValRegex())) {
                     clazz = JarUtils.loadClass(prop.getValRegex());
                 }
                 if (clazz != null) {
                     prop2.setTargetClass(clazz);
+                } else if (CommonUtils.isEmpty(prop.getChildren())) {
+                    prop2.setRule(MockRule.EMPTY);
                 }
                 if (CommonUtils.isNotEmpty(prop.getChildren())) {
                     prop2.setChildren(convertRules(record, prop.getChildren()));
+                }
+                continue;
+            }
+            boolean isDate = BeanExtUtils.isDate(prop2.getTargetClass());
+            switch (rule) {
+                case RANDOM:
+                    if (isDate && CommonUtils.isNotEmpty(prop.getValRegex())) {
+                        prop2.setPattern(parseDatePattern(prop.getValRegex()));
+                    }
+                    break;
+                case RANDOM_LENGTH:
+                    if (type == null) {
+                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机类型错误！");
+                    } else if (!CommonUtils.isNumeric(prop.getValRegex())) {
+                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机长度错误，请输入为数字！");
+                    }
+                    prop2.setLen(Integer.parseInt(prop.getValRegex()));
+                    break;
+                case RANDOM_RANGE:
+                    if (CommonUtils.isEmpty(prop)) {
+                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
+                    }
+                    String tmp = prop.getValRegex();
+                    if (prop.getValRegex().startsWith("[")) {
+                        tmp = tmp.substring(1);
+                    }
+                    if (prop.getValRegex().indexOf("]") > 0) {
+                        tmp = tmp.substring(0, prop.getValRegex().indexOf("]") - 1);
+                    }
+                    String[] arr;
+                    if (type == BeanExtUtils.BasicType.STRING) {
+                        arr = tmp.split(Constants.SEPARATOR_2);
+                    } else if (BeanExtUtils.isDate(prop2.getTargetClass())) {
+                        arr = tmp.split(Constants.SEPARATOR_5);
+                    } else {
+                        arr = tmp.split(Constants.SEPARATOR_5);
+                    }
+                    if (arr.length < 2) {
+                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
+                    }
+                    if (type == BeanExtUtils.BasicType.STRING) {
+                        prop2.setStrRange(arr);
+                    } else if (isDate) {
+                        Date d1 = DateUtils.parse(arr[0]);
+                        Date d2 = DateUtils.parse(arr[1]);
+                        if (CommonUtils.isEmptyOr(d1, d2)) {
+                            ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "日期范围配置错误！");
+                        }
+                        prop2.setPattern(parseDatePattern(prop.getValRegex()));
+                        prop2.setMin(d1.getTime());
+                        prop2.setMax(d2.getTime());
+                    } else {
+                        prop2.setMin(Double.parseDouble(arr[0]));
+                        prop2.setMax(Double.parseDouble(arr[1]));
+                    }
+                    break;
+                case AUTO_INCR:
+
+                    if (isDate) {
+
+                    }
+                    break;
+                case AUTO_INCR_RANGE:
+                    break;
+                case AUTO_DECR:
+                    break;
+                case AUTO_DECR_RANGE:
+                    break;
+                default:
+            }
+            if (prop.getValRegex().startsWith("*[") && prop.getValRegex().endsWith("]")) {
+                String numS = prop.getValRegex().substring(2, prop.getValRegex().length() - 1);
+                if (CommonUtils.isNumeric(numS)) {
+                    prop2.setLen(Integer.parseInt(numS));
+                }
+            } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && !prop.getValRegex().contains("][")) {
+                String range = prop.getValRegex().substring(1, prop.getValRegex().length() - 1);
+                if (type == BeanExtUtils.BasicType.STRING) {
+                    prop2.setStrRange(range.split(Constants.SEPARATOR_2));
+                } else {
+                    String[] arr = range.split(Constants.SEPARATOR_5);
+                    if (arr.length == 1) {
+                        ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围配置错误[1~100]！");
+                    }
+                    if (CommonUtils.isNumeric(arr[0]) || CommonUtils.isNumeric(arr[1])) {
+                        ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围开始或结束配置错误[1.0~100.0]！");
+                    }
+                    prop2.setMin(Double.parseDouble(arr[0]));
+                    prop2.setMax(Double.parseDouble(arr[1]));
                 }
             }
             props2.add(prop2);
@@ -242,4 +291,31 @@ public class MockUtil {
         return props2;
     }
 
+    public static List<MockProp> convertGPSRules(BtTopicExt record) throws Exception {
+        if (record.getProps().size() < 4) {
+            ExceptionUtils._throw(PubError.ARGS, "mock字段代码不足！");
+        } else if (record.getProps().size() == 4) {
+            return Lists.newArrayList();
+        }
+        List<BtTopicExtProp> props = record.getProps().subList(4, record.getProps().size());
+        return convertRules(record, props);
+    }
+
+    private static DateUtils.Pattern parseDatePattern(String regex) {
+        int index = regex.indexOf("|");
+        if (index > 0 && index < regex.length() && regex.endsWith("|")) {
+            String p = regex.substring(index, regex.length() - 1);
+            if (CommonUtils.isNotEmpty(p)) {
+                return DateUtils.Pattern.fromPattern(p);
+            }
+        }
+        return null;
+    }
+    private static String parseDateOffset(String regex) {
+        int index = regex.indexOf("[");
+        if (index > 0 && index < regex.length() && regex.endsWith("]")) {
+            String offset = regex.substring(index, regex.length() - 1);
+        }
+        return null;
+    }
 }

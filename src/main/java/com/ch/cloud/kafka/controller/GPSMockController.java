@@ -6,6 +6,7 @@ import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.kafka.utils.MapUtils;
 import com.ch.cloud.kafka.utils.MockUtil;
+import com.ch.cloud.mock.pojo.MockProp;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
 import com.ch.result.Result;
@@ -16,8 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -39,9 +39,10 @@ public class GPSMockController {
                           @RequestHeader(Constants.TOKEN_USER) String username) {
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
-            ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
+                ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
             }
-            MockUtil.convertRules(record, record.getProps());
+            List<MockProp> props = MockUtil.convertGPSRules(record);
+
             boolean checkOK = MockUtil.checkGPSProps(record);
             long total = 0;
             List<Object> objects = Lists.newArrayList();
@@ -60,7 +61,6 @@ public class GPSMockController {
                     long offsetS = i * ss;
                     long offsetE = (i + 1) * ss;
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
-
                         List<Object> o = mockDataProps(record, (int) offsetS, (int) offsetE);
                         return o;
                     });
