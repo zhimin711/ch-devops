@@ -17,11 +17,15 @@ public enum MockRule {
      */
     FIXED,
     /**
-     * 随机值:空 或 *[长度]
+     * 随机值:空
+     */
+    RANDOM,
+    /**
+     * 固定长度随机值: *[长度]
      * *[10]
      * *[1~10]
      */
-    RANDOM,
+    RANDOM_LENGTH,
     /**
      * 范围-随机:
      * int: [1~100]

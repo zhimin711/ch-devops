@@ -27,4 +27,12 @@ public class MockProp {
     private List<MockProp> children;
 
     private Class<?> targetClass;
+
+    private int len;
+
+    private double min;
+
+    private double max;
+
+    private String[] strRange;
 }

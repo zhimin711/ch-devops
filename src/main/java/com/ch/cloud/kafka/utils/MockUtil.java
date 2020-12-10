@@ -182,8 +182,41 @@ public class MockUtil {
                     ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "代码类型错误！");
                 }
                 Class<?> clazz = Class.forName(prop.getType());
-                if (Number.class.isAssignableFrom(clazz) && CommonUtils.isNumeric(prop.getValRegex())) {
+                if (type == BeanExtUtils.BasicType.BOOLEAN
+                        || Number.class.isAssignableFrom(clazz) && CommonUtils.isNumeric(prop.getValRegex())) {
                     prop2.setRule(MockRule.FIXED);
+                    continue;
+                }
+                if (prop.getValRegex().startsWith("*[") && prop.getValRegex().endsWith("]")) {
+                    prop2.setRule(MockRule.RANDOM_LENGTH);
+                    String numS = prop.getValRegex().substring(2, prop.getValRegex().length() - 1);
+                    if (CommonUtils.isNumeric(numS)) {
+                        prop2.setLen(Integer.parseInt(numS));
+                    }
+                } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && !prop.getValRegex().contains("][")) {
+                    prop2.setRule(MockRule.RANDOM_RANGE);
+                    String range = prop.getValRegex().substring(1, prop.getValRegex().length() - 1);
+                    if (type == BeanExtUtils.BasicType.STRING) {
+                        prop2.setStrRange(range.split(Constants.SEPARATOR_2));
+                    } else {
+                        String[] arr = range.split(Constants.SEPARATOR_5);
+                        if (arr.length == 1) {
+                            ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围配置错误[1~100]！");
+                        }
+                        if (CommonUtils.isNumeric(arr[0]) || CommonUtils.isNumeric(arr[1])) {
+                            ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + ": 范围开始或结束配置错误[1.0~100.0]！");
+                        }
+                        prop2.setMin(Double.parseDouble(arr[0]));
+                        prop2.setMax(Double.parseDouble(arr[1]));
+                    }
+                } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("][+]")) {
+                    prop2.setRule(MockRule.AUTO_INCR_RANGE);
+                } else if (!prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && prop.getValRegex().contains("[+")) {
+                    prop2.setRule(MockRule.AUTO_INCR);
+                } else if (prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("][-]")) {
+                    prop2.setRule(MockRule.AUTO_DECR_RANGE);
+                } else if (!prop.getValRegex().startsWith("[") && prop.getValRegex().endsWith("]") && prop.getValRegex().contains("[-")) {
+                    prop2.setRule(MockRule.AUTO_DECR);
                 }
             } else {
                 prop2.setRule(MockRule.OBJECT);
