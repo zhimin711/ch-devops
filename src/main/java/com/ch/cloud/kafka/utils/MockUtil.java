@@ -220,6 +220,8 @@ public class MockUtil {
                     prop2.setLen(Integer.parseInt(prop.getValRegex()));
                     break;
                 case RANDOM_RANGE:
+                case AUTO_INCR_RANGE:
+                case AUTO_DECR_RANGE:
                     if (CommonUtils.isEmpty(prop.getValRegex())) {
                         ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
                     }
@@ -256,6 +258,10 @@ public class MockUtil {
                         prop2.setMin(Double.parseDouble(arr[0]));
                         prop2.setMax(Double.parseDouble(arr[1]));
                     }
+                    if (prop2.getMin() > 0 && prop2.getMax() > 0) {
+                        prop2.setOffset((prop2.getMax() - prop2.getMin()) / record.getThreadSize() / record.getBatchSize() + "");
+                    }
+
                     break;
                 case AUTO_INCR:
                 case AUTO_DECR:
@@ -290,12 +296,6 @@ public class MockUtil {
                             for (int i = 0; i < record.getThreadSize(); i++) {
                                 prop2.getBaseN().add((b1 + i * o1));
                             }
-                    }
-                    break;
-                case AUTO_INCR_RANGE:
-                case AUTO_DECR_RANGE:
-                    if (type == null) {
-                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
                     }
                     break;
                 default:
@@ -386,5 +386,49 @@ public class MockUtil {
 
         }
         return 0;
+    }
+
+    public static Object mockProp(MockProp prop) {
+        Object o = null;
+
+        boolean isDate = BeanExtUtils.isDate(prop.getTargetClass());
+        boolean isString = BeanExtUtils.isString(prop.getTargetClass());
+
+        MockConfig config = new MockConfig();
+        switch (prop.getRule()) {
+            case FIXED:
+                o = prop.getValRegex();
+                break;
+            case RANDOM:
+                o = Mock.mock(prop.getTargetClass(), config);
+                break;
+            case RANDOM_RANGE:
+                if (isString) {
+                    config.setStringEnum(MockConfig.StringEnum.ARRAY);
+                    config.stringSeed(prop.getValRegex().split(Constants.SEPARATOR_2));
+                } else {
+                    config.dateRange((long) prop.getMin(), (long) prop.getMax());
+                    config.intRange((int) prop.getMin(), (int) prop.getMax());
+                    config.doubleRange(prop.getMin(), prop.getMax());
+                    config.floatRange((float) prop.getMin(), (float) prop.getMax());
+                    config.byteRange((byte) prop.getMin(), (byte) prop.getMax());
+                }
+                o = Mock.mock(prop.getTargetClass(), config);
+                break;
+            case RANDOM_LENGTH:
+                break;
+            case OBJECT:
+                if (prop.getTargetClass() != null) {
+                    config.setStringEnum(MockConfig.StringEnum.CHARACTER);
+                    o = Mock.mock(prop.getTargetClass(), config);
+                }
+                if (CommonUtils.isNotEmpty(prop.getChildren())) {
+                    for (MockProp p : prop.getChildren()) {
+
+                    }
+                }
+            default:
+        }
+        return o;
     }
 }

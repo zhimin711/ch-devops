@@ -204,6 +204,10 @@ public class MockConfig {
         registerMocker(new DateMocker(min, max), Date.class);
         return this;
     }
+    public MockConfig dateRange(Long min, Long max) {
+        registerMocker(new DateMocker(min, max), Date.class);
+        return this;
+    }
 
     public MockConfig sizeRange(int min, int max) {
         this.sizeRange[0] = min;
