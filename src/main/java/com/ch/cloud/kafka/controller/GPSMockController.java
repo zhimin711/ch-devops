@@ -47,21 +47,12 @@ public class GPSMockController {
             long total = 0;
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
-                int ts = record.getThreadSize();
-                if (CommonUtils.isNotEmpty(record.getThreadSize()) && record.getThreadSize() > 0) {
-                    ts = record.getThreadSize();
-                }
-                Date sd = record.getCreateAt();
-                Date ed = record.getUpdateAt();
-                long minutes = DateUtils.calcOffsetMinutes(sd, ed);//60
-                long ss = minutes / record.getThreadSize();//15
 
                 List<Future<List<Object>>> futures = Lists.newArrayList();
-                for (int i = 0; i < ts; i++) {
-                    long offsetS = i * ss;
-                    long offsetE = (i + 1) * ss;
+                for (int i = 0; i < record.getThreadSize(); i++) {
+                    int threadIndex = i;
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
-                        List<Object> o = mockDataProps(record, (int) offsetS, (int) offsetE);
+                        List<Object> o = mockDataProps(record, props, threadIndex);
                         return o;
                     });
                     futures.add(f);
@@ -84,11 +75,15 @@ public class GPSMockController {
         });
     }
 
-    private List<Object> mockDataProps(BtTopicExt record, int offsetS, int offsetE) throws Exception {
+    private List<Object> mockDataProps(BtTopicExt record, List<MockProp> props, int threadIndex) throws Exception {
+
 
         List<Object> objs = Lists.newArrayList();
 
         long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
+        int ss = (int) total / record.getThreadSize();
+        int offsetS = threadIndex * ss;
+        int offsetE = (threadIndex + 1) * ss;
 
         Date sd = DateUtils.addMinutes(record.getCreateAt(), offsetS);
         Date ed = DateUtils.addMinutes(record.getCreateAt(), offsetE);
@@ -110,14 +105,15 @@ public class GPSMockController {
         for (int i = 0; i < count; i++) {
             sd = DateUtils.addMinutes(sd, record.getBatchSize() * i);
 
-            JSONObject o = mockDataProps(record.getProps(), sd);
-
             double lng = spa[0] + psu1 * (offsetS * i);
             double lat = spa[1] + psu2 * (offsetS * i);
-            o.put(record.getProps().get(0).getCode(), lng + "," + lat);
-            o.put(record.getProps().get(1).getCode(), lng);
-            o.put(record.getProps().get(2).getCode(), lat);
-//            objs.add(o);
+
+            JSONObject o = mockDataProps(record.getProps(), sd, lng, lat);
+            for (MockProp p : props) {
+                Object o1 = MockUtil.mockProp(p, count * threadIndex + i);
+                o.put(p.getCode(), o1);
+            }
+            objs.add(o);
             log.info("{}", o.toJSONString());
         }
 
@@ -126,15 +122,19 @@ public class GPSMockController {
     }
 
 
-    private JSONObject mockDataProps(List<BtTopicExtProp> props, Date timestamp) throws Exception {
+    private JSONObject mockDataProps(List<BtTopicExtProp> props, Date timestamp, double lng, double lat) throws Exception {
         JSONObject obj = new JSONObject();
-        for (BtTopicExtProp prop : props) {
-            if (CommonUtils.isEquals(prop.getName(), MockUtil.GPS_NAME)) {
-//                obj.put(prop.getCode(), mockGPS(prop));
-            } else if (CommonUtils.isEquals(prop.getName(), MockUtil.GPS_TIME)) {
+        for (int i = 0; i < 4; i++) {
+            BtTopicExtProp prop = props.get(i);
+            String name = prop.getName().trim();
+            if (CommonUtils.isEquals(name, MockUtil.GPS_NAME)) {
+                obj.put(prop.getCode(), lng + "," + lat);
+            } else if (CommonUtils.isEquals(name, MockUtil.GPS_LNG_NAME)) {
+                obj.put(prop.getCode(), lng + "");
+            } else if (CommonUtils.isEquals(name, MockUtil.GPS_LAT_NAME)) {
+                obj.put(prop.getCode(), lat + "");
+            } else if (CommonUtils.isEquals(name, MockUtil.GPS_TIME)) {
                 obj.put(prop.getCode(), timestamp.getTime());
-            } else {
-                obj.put(prop.getCode(), MockUtil.mockDataProp(prop));
             }
         }
         return obj;

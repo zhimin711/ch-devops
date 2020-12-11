@@ -11,13 +11,15 @@ import com.ch.cloud.mock.pojo.MockProp;
 import com.ch.e.PubError;
 import com.ch.utils.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.temporal.TemporalAmount;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * decs:
@@ -48,8 +50,8 @@ public class MockUtil {
 
     public static final String GPS_NAME = "经纬度";
     public static final String GPS_LNG_NAME = "经度";
-    public static final String GPS_LAT_NAME = "经度";
-    public static final String GPS_TIME = "上传时间";
+    public static final String GPS_LAT_NAME = "纬度";
+    public static final String GPS_TIME = "轨迹时间";
 
     public static boolean checkGPSProps(BtTopicExt record) {
         if (record.getPoints().size() < 2) {
@@ -254,9 +256,11 @@ public class MockUtil {
                         prop2.setPattern(parseDatePattern(prop.getValRegex()));
                         prop2.setMin(d1.getTime());
                         prop2.setMax(d2.getTime());
+                        prop2.setBaseD(Lists.newArrayList(d1, d2));
                     } else {
                         prop2.setMin(Double.parseDouble(arr[0]));
                         prop2.setMax(Double.parseDouble(arr[1]));
+                        prop2.setBaseN(Lists.newArrayList(Double.parseDouble(arr[0]),Double.parseDouble(arr[1])));
                     }
                     if (prop2.getMin() > 0 && prop2.getMax() > 0) {
                         prop2.setOffset((prop2.getMax() - prop2.getMin()) / record.getThreadSize() / record.getBatchSize() + "");
@@ -273,6 +277,8 @@ public class MockUtil {
                             prop2.getBaseD().add(DateUtils.addMinutes(basic, i * ss));
                         }
                         prop2.setOffset(offset + "");
+                        prop2.setPattern(parseDatePattern(prop.getValRegex()));
+                        break;
                     }
                     if (type == null || type == BeanExtUtils.BasicType.STRING || type == BeanExtUtils.BasicType.CHAR) {
                         ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
@@ -313,12 +319,13 @@ public class MockUtil {
             if (CommonUtils.isNumeric(offset))
                 return offset;
         }
-        return "0";
+        return "1";
     }
 
     private static String parseNumberBasic(String regex) {
+        if (CommonUtils.isNumeric(regex)) return regex;
         int index = regex.indexOf("[");
-        if (index == 0) {
+        if (index < 0) {
             return "0";
         }
         return regex.substring(0, index);
@@ -374,10 +381,12 @@ public class MockUtil {
 
     private static long parseDateOffset(String regex) {
         int index = regex.indexOf("[");
-        if (index > 0 && index < regex.length() && regex.endsWith("]")) {
-            String offset = regex.substring(index, regex.length() - 1);
+        int indexS = regex.indexOf("]");
+        if (index > 0 && index < indexS) {
+            String offset = regex.substring(index + 1, indexS);
+            if (CommonUtils.isNumeric(offset)) return Integer.parseInt(offset);
             try {
-                Duration duration = Duration.parse(offset);
+                Duration duration = Duration.parse(offset.toUpperCase());
                 return duration.getSeconds();
             } catch (Exception e) {
 //                ExceptionUtils._throw(PubError.ARGS, "mock字段递增量解析失败！");
@@ -385,10 +394,10 @@ public class MockUtil {
             }
 
         }
-        return 0;
+        return 60;
     }
 
-    public static Object mockProp(MockProp prop) {
+    public static Object mockProp(MockProp prop, int offset) {
         Object o = null;
 
         boolean isDate = BeanExtUtils.isDate(prop.getTargetClass());
@@ -423,12 +432,102 @@ public class MockUtil {
                     o = Mock.mock(prop.getTargetClass(), config);
                 }
                 if (CommonUtils.isNotEmpty(prop.getChildren())) {
+                    Map<String, Object> customVMap = Maps.newConcurrentMap();
                     for (MockProp p : prop.getChildren()) {
-
+                        Object o1;
+                        String code = prop.getCode();
+                        if (isArray(p.getCode())) {
+                            int len = getArrayLength(p.getCode());
+                            Object[] objs = new Object[len];
+                            for (int i = 0; i < len; i++) {
+                                objs[i] = mockProp(p, i);
+                            }
+                            o1 = objs;
+                            code = getPropCode(code);
+                        } else if (isCollection(p.getCode())) {
+                            int len = getCollectionLength(p.getCode());
+                            List<Object> objs = Lists.newArrayList();
+                            for (int i = 0; i < len; i++) {
+                                objs.add(mockProp(p, i));
+                            }
+                            o1 = objs;
+                            code = getPropCode(code);
+                        } else {
+                            o1 = mockProp(p, offset);
+                        }
+                        customVMap.put(code, o1);
+                    }
+                    if (o != null) {
+                        BeanExtUtils.setFieldValue(o, customVMap, true);
+                    } else {
+                        o = new JSONObject(customVMap);
                     }
                 }
+            case AUTO_INCR:
+            case AUTO_INCR_RANGE:
+                if (isDate) {
+                    Date baseD = prop.getBaseD().get(0);
+                    int offsetD = Integer.parseInt(prop.getOffset()) * offset;
+                    Date mvDate = DateUtils.addSeconds(baseD, offsetD);
+                    if (prop.getPattern() != null) {
+                        o = DateUtils.format(mvDate, prop.getPattern());
+                    } else {
+                        o = mvDate;
+                    }
+                } else {
+                    BigDecimal baseN = new BigDecimal(prop.getBaseN().get(0).doubleValue());
+                    BigDecimal offsetN = new BigDecimal(prop.getOffset());
+                    o = NumberUtils.fixed2(baseN.add(offsetN.add(offsetN.multiply(new BigDecimal(offset)))));
+                }
+                break;
+            case AUTO_DECR:
+                if (isDate) {
+                    Date baseD = prop.getBaseD().get(0);
+                    int offsetD = Integer.parseInt(prop.getOffset()) * offset;
+                    Date mvDate = DateUtils.addSeconds(baseD, -offsetD);
+                    o = prop.getPattern() != null ? DateUtils.format(mvDate, prop.getPattern()) : mvDate;
+                } else {
+                    BigDecimal baseN = new BigDecimal(prop.getBaseN().get(0).doubleValue());
+                    BigDecimal offsetN = new BigDecimal(prop.getOffset());
+                    o = NumberUtils.fixed2(baseN.subtract(offsetN.subtract(offsetN.multiply(new BigDecimal(offset)))));
+                }
+                break;
+            case AUTO_DECR_RANGE:
             default:
         }
         return o;
     }
+
+    private static boolean isArray(String propCode) {
+        int s = propCode.indexOf("[");
+        int e = propCode.indexOf("]");
+        return s >= 0 && e > 0;
+    }
+
+    private static String getPropCode(String propCode) {
+        return propCode.substring(propCode.indexOf(Constants.SEPARATOR_1));
+    }
+
+    private static int getArrayLength(String propCode) {
+        int s = propCode.indexOf("[");
+        int e = propCode.indexOf("]");
+        String len = propCode.substring(s + 1, e);
+        if (CommonUtils.isNumeric(len)) return Integer.parseInt(len);
+        return 1;
+    }
+
+    private static boolean isCollection(String propCode) {
+        int s = propCode.indexOf("<");
+        int e = propCode.indexOf(">");
+        return s >= 0 && e > 0;
+    }
+
+    private static int getCollectionLength(String propCode) {
+        int s = propCode.indexOf("<");
+        int e = propCode.indexOf(">");
+        String len = propCode.substring(s + 1, e);
+        if (CommonUtils.isNumeric(len)) return Integer.parseInt(len);
+        return 1;
+    }
+
 }

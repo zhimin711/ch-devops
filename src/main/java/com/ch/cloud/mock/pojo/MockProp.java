@@ -45,4 +45,6 @@ public class MockProp {
     private List<Date> baseD;
 
     private String offset;
+
+    private int currIndex;
 }
