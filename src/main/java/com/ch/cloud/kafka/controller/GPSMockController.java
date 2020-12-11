@@ -85,6 +85,7 @@ public class GPSMockController {
                     return new JSONObject();
                 }).sorted((e1, e2) -> CommonUtils.compareTo(e1.get("ts"), e2.get("ts"))).collect(Collectors.toList());
                 listMap.forEach(e -> System.out.println("[" + e.get("longitude") + "," + e.get("latitude") + "],"));
+//                listMap.forEach(e -> System.out.println("[" + e.get("ts") + "]"));
 
             }
 
@@ -99,12 +100,13 @@ public class GPSMockController {
         List<Object> objs = Lists.newArrayList();
 
         long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
-        int ss = (int) total / record.getThreadSize();
-        int offsetS = threadIndex * ss;
-        int offsetE = (threadIndex + 1) * ss;
+        int ss = (int) total / record.getBatchSize();
+        int ss1 = ss / record.getThreadSize();
+        int offsetS = threadIndex * ss1;
+        int offsetE = (threadIndex + 1) * ss1;
 
         Date sd = DateUtils.addMinutes(record.getCreateAt(), offsetS);
-        Date ed = DateUtils.addMinutes(record.getCreateAt(), offsetE);
+//        Date ed = DateUtils.addMinutes(record.getCreateAt(), offsetE);
 
         String sp = record.getPoints().get(0);
         String dp = record.getPoints().get(record.getPoints().size() - 1);
@@ -120,10 +122,9 @@ public class GPSMockController {
         double psu1 = ps1 / (total);
         double psu2 = ps2 / (total);
 
-        double rs = RandomUtils.nextDouble(psu2, psu2 + 0.001);
-
         for (int i = 0; i < count; i++) {
-            sd = DateUtils.addMinutes(sd, record.getBatchSize() * i);
+            Date sd1 = DateUtils.addMinutes(record.getCreateAt(), offsetS * record.getBatchSize());
+            sd = DateUtils.addMinutes(sd1, i * record.getBatchSize());
 
             double lng = spa[0] + psu1 * (offsetS + i);
             double lat = spa[1] + psu2 * (offsetS + i);
