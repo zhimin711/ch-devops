@@ -189,9 +189,7 @@ public class MockController {
                 listMap.forEach(e -> System.out.println("[" + DateUtils.formatOfUTC(DateUtils.parseTimestamp(e.getLong("ts"))) + "]"));
 
             }
-
-
-            return null;
+            return InvokerPage.Page.build(total, objects);
         });
     }
 
