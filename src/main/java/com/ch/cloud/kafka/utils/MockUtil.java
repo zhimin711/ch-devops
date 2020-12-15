@@ -169,16 +169,20 @@ public class MockUtil {
         return null;
     }
 
-    public static List<MockProp> convertRules(BtTopicExt record, List<BtTopicExtProp> props) throws Exception {
+    public static List<MockProp> convertRules(BtTopicExt record, List<BtTopicExtProp> props, boolean isChild) throws Exception {
 
-        long minutes = (int) DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());
-        int ss = (int) minutes / record.getBatchSize() / record.getThreadSize();
+        long total = CommonUtils.isEquals("GPS", record.getDescription()) ?
+                (int) DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt()) : 0;
+        int ss = CommonUtils.isEquals("GPS", record.getDescription()) ?
+                (int) total / record.getBatchSize() / record.getThreadSize() : record.getThreadSize();
 
         List<MockProp> props2 = Lists.newArrayList();
         for (BtTopicExtProp prop : props) {
 
-            if (CommonUtils.isEmpty(prop.getCode())) {
+            if (CommonUtils.isEmpty(prop.getCode()) && (isChild || props.size() > 1)) {
                 ExceptionUtils._throw(PubError.ARGS, "mock字段代码不能为空！");
+            } else if (CommonUtils.isEmpty(prop.getRule())) {
+                ExceptionUtils._throw(PubError.ARGS, "mock字段规则不能为空！");
             }
             MockProp prop2 = new MockProp();
             BeanUtils.copyProperties(prop, prop2);
@@ -202,8 +206,9 @@ public class MockUtil {
                     prop2.setRule(MockRule.EMPTY);
                 }
                 if (CommonUtils.isNotEmpty(prop.getChildren())) {
-                    prop2.setChildren(convertRules(record, prop.getChildren()));
+                    prop2.setChildren(convertRules(record, prop.getChildren(), true));
                 }
+                props2.add(prop2);
                 continue;
             }
             boolean isDate = BeanExtUtils.isDate(prop2.getTargetClass());
@@ -260,7 +265,7 @@ public class MockUtil {
                     } else {
                         prop2.setMin(Double.parseDouble(arr[0]));
                         prop2.setMax(Double.parseDouble(arr[1]));
-                        prop2.setBaseN(Lists.newArrayList(Double.parseDouble(arr[0]),Double.parseDouble(arr[1])));
+                        prop2.setBaseN(Lists.newArrayList(Double.parseDouble(arr[0]), Double.parseDouble(arr[1])));
                     }
                     if (prop2.getMin() > 0 && prop2.getMax() > 0) {
                         prop2.setOffset((prop2.getMax() - prop2.getMin()) / record.getThreadSize() / record.getBatchSize() + "");
@@ -365,7 +370,7 @@ public class MockUtil {
         }
 
         List<BtTopicExtProp> props = record.getProps().subList(4, record.getProps().size());
-        return convertRules(record, props);
+        return convertRules(record, props, false);
     }
 
     private static DateUtils.Pattern parseDatePattern(String regex) {
@@ -416,9 +421,10 @@ public class MockUtil {
                     config.setStringEnum(MockConfig.StringEnum.ARRAY);
                     config.stringSeed(prop.getValRegex().split(Constants.SEPARATOR_2));
                 } else {
-                    config.dateRange((long) prop.getMin(), (long) prop.getMax());
-                    config.intRange((int) prop.getMin(), (int) prop.getMax());
                     config.doubleRange(prop.getMin(), prop.getMax());
+                    config.intRange((int) prop.getMin(), (int) prop.getMax());
+                    config.longRange((long) prop.getMin(), (long) prop.getMax());
+                    config.dateRange((long) prop.getMin(), (long) prop.getMax());
                     config.floatRange((float) prop.getMin(), (float) prop.getMax());
                     config.byteRange((byte) prop.getMin(), (byte) prop.getMax());
                 }
@@ -435,17 +441,17 @@ public class MockUtil {
                     Map<String, Object> customVMap = Maps.newConcurrentMap();
                     for (MockProp p : prop.getChildren()) {
                         Object o1;
-                        String code = prop.getCode();
-                        if (isArray(p.getCode())) {
-                            int len = getArrayLength(p.getCode());
+                        String code = p.getCode();
+                        if (isArray(code)) {
+                            int len = getArrayLength(code);
                             Object[] objs = new Object[len];
                             for (int i = 0; i < len; i++) {
                                 objs[i] = mockProp(p, i);
                             }
                             o1 = objs;
                             code = getPropCode(code);
-                        } else if (isCollection(p.getCode())) {
-                            int len = getCollectionLength(p.getCode());
+                        } else if (isCollection(code)) {
+                            int len = getCollectionLength(code);
                             List<Object> objs = Lists.newArrayList();
                             for (int i = 0; i < len; i++) {
                                 objs.add(mockProp(p, i));
@@ -463,6 +469,7 @@ public class MockUtil {
                         o = new JSONObject(customVMap);
                     }
                 }
+                break;
             case AUTO_INCR:
             case AUTO_INCR_RANGE:
                 if (isDate) {
@@ -498,17 +505,19 @@ public class MockUtil {
         return o;
     }
 
-    private static boolean isArray(String propCode) {
+    public static boolean isArray(String propCode) {
         int s = propCode.indexOf("[");
         int e = propCode.indexOf("]");
         return s >= 0 && e > 0;
     }
 
-    private static String getPropCode(String propCode) {
-        return propCode.substring(propCode.indexOf(Constants.SEPARATOR_1));
+    public static String getPropCode(String propCode) {
+        int s = propCode.indexOf(Constants.SEPARATOR_1);
+        if (s < 0) return propCode;
+        return propCode.substring(s + 1);
     }
 
-    private static int getArrayLength(String propCode) {
+    public static int getArrayLength(String propCode) {
         int s = propCode.indexOf("[");
         int e = propCode.indexOf("]");
         String len = propCode.substring(s + 1, e);
@@ -516,13 +525,13 @@ public class MockUtil {
         return 1;
     }
 
-    private static boolean isCollection(String propCode) {
+    public static boolean isCollection(String propCode) {
         int s = propCode.indexOf("<");
         int e = propCode.indexOf(">");
         return s >= 0 && e > 0;
     }
 
-    private static int getCollectionLength(String propCode) {
+    public static int getCollectionLength(String propCode) {
         int s = propCode.indexOf("<");
         int e = propCode.indexOf(">");
         String len = propCode.substring(s + 1, e);
@@ -530,4 +539,15 @@ public class MockUtil {
         return 1;
     }
 
+    public static String getArrayPropCode(String propCode) {
+        int e = propCode.indexOf("]");
+        if (e >= 0) return propCode.substring(e + 1);
+        return propCode;
+    }
+
+    public static String getCollectionPropCode(String propCode) {
+        int e = propCode.indexOf(">");
+        if (e >= 0) return propCode.substring(e + 1);
+        return propCode;
+    }
 }

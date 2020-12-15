@@ -1,25 +1,22 @@
 package com.ch.cloud.kafka.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtTopic;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
-import com.ch.cloud.kafka.pojo.TopicDto;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicExtService;
 import com.ch.cloud.kafka.service.ITopicService;
-import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
-import com.ch.cloud.kafka.utils.MockUtil;
 import com.ch.e.PubError;
-import com.ch.pool.DefaultThreadPool;
-import com.ch.result.InvokerPage;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.toolkit.UUIDGenerator;
-import com.ch.utils.*;
+import com.ch.utils.BeanExtUtils;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
+import com.ch.utils.ExceptionUtils;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,8 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * @author zhimin.ma
@@ -141,67 +136,5 @@ public class TopicExtController {
         });
     }
 
-    @ApiOperation(value = "生成主题数据", notes = "生成主题数据")
-    @PostMapping("mock")
-    public Result<?> mock(@RequestBody BtTopicExt record,
-                          @RequestHeader(Constants.TOKEN_USER) String username) {
-
-        return ResultUtils.wrapPage(() -> {
-            if (CommonUtils.isEmpty(record.getProps())) {
-                ExceptionUtils._throw(PubError.NON_NULL, "属性不存在！");
-            }
-            boolean checkOK = MockUtil.checkProps(record.getProps());
-            long total = 0;
-            List<Object> objects = Lists.newArrayList();
-            if (checkOK) {
-                int ts = 1;
-                int bs = CommonUtils.isNotEmpty(record.getBatchSize()) ? record.getBatchSize() : 10;
-                if (CommonUtils.isNotEmpty(record.getThreadSize())) {
-                    ts = record.getThreadSize();
-                }
-                TopicDto topicDto = topicService.check(record.getClusterName(), record.getTopicName());
-
-                KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
-
-                List<Future<List<Object>>> futures = Lists.newArrayList();
-
-                int ss = 100 / ts;
-                for (int i = 0; i < ts; i++) {
-                    Future<List<Object>> f = DefaultThreadPool.submit(() -> {
-                        List<Object> list = Lists.newArrayList();
-                        for (int j = 0; j < bs; j++) {
-                            Object o;
-                            if (record.getProps().size() == 1) {
-                                o = MockUtil.mockDataProp(record.getProps().get(0));
-                            } else {
-                                o = MockUtil.mockDataProps(record.getProps());
-                            }
-//                            log.info("mock: {}", o);
-//                            if (list.size() < ss)
-                            list.add(o);
-                            contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
-                        }
-
-//                        log.info("mock size: {}", list.size());
-                        return list;
-                    });
-                    futures.add(f);
-                }
-                for (Future<List<Object>> f : futures) {
-                    try {
-                        List<Object> list = f.get();
-                        total += list.size();
-                        objects.addAll(list.size() > ss ? list.subList(0, ss) : list);
-                        log.info("mock list size: {}", list.size());
-                    } catch (InterruptedException | ExecutionException e) {
-                        log.error("Future error!", e);
-                    }
-                }
-
-                log.info("mock objects size: {}", objects.size());
-            }
-            return InvokerPage.Page.build(total, objects);
-        });
-    }
 
 }
