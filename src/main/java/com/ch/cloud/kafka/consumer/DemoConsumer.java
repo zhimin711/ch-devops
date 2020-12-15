@@ -1,18 +1,17 @@
 package com.ch.cloud.kafka.consumer;
 
 import kafka.consumer.KafkaStream;
-import kafka.consumer.SimpleConsumer;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhimin.ma
@@ -57,13 +56,15 @@ public class DemoConsumer {
 
             List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic);
 
+            AtomicInteger c = new AtomicInteger();
             streams.forEach(stream -> {
                 for (MessageAndMetadata<byte[], byte[]> msg : stream) {
-
+                    c.getAndIncrement();
                     String str = new String(msg.message());
                     logger.info("consumer ======================> str: {}", str);
                 }
             });
+            logger.info("count: {}", c.get());
         } catch (Exception e) {
             logger.error("consumer Error!", e);
             throw new RuntimeException("Error consumer tuple", e);

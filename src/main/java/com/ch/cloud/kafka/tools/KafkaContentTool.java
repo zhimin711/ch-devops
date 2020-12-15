@@ -291,6 +291,7 @@ public class KafkaContentTool {
                                 msg = JSONUtils.toJson(JSONUtils.fromJson(msg, clazz));
                             }
                         }
+//                        log.info("message\t=====>{} : {}", messageAndOffset.offset(), msg);
                         if (((CommonUtils.isEmpty(content) || msg.contains(content))
                                 && (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST))
                                 || (searchType == SearchType.ALL && msg.contains(content))) {
@@ -362,7 +363,8 @@ public class KafkaContentTool {
     private String getServers() {
         List<String> servers = Lists.newArrayList();
         brokers.forEach((k, v) -> servers.add(k + ":" + v));
-        return servers.stream().reduce((r, e) -> r.concat("," + e)).get();
+        Optional<String> op = servers.stream().reduce((r, e) -> r.concat("," + e));
+        return op.orElse("");
     }
 
     public boolean isAsync() {

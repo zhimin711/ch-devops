@@ -1,6 +1,8 @@
 package com.ch.test;
 
 
+import com.ch.cloud.kafka.consumer.DemoConsumer;
+import com.google.common.collect.Lists;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
@@ -9,6 +11,7 @@ import kafka.common.TopicAndPartition;
 import kafka.javaapi.*;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -58,6 +61,30 @@ public class SimpleConsumerDemo {
             System.out.println("Oops:" + e);
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void get() {
+        SimpleConsumerDemo example = new SimpleConsumerDemo();
+        long maxReads = 4;
+        String topic = "";
+
+        int partition = 0;
+        List<String> seeds = Lists.newArrayList();
+        int port = 9092;
+        try {
+            example.run(maxReads, topic, partition, seeds, port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @Test
+    public void get2() {
+        String zkServer = "100.80.131.199:2181,100.80.131.200:2181,100.80.131.201:2181,100.80.131.245:2181,100.80.131.246:2181/kafka/eos_tbp_core_vs7usn2s01";
+        DemoConsumer consumer = new DemoConsumer(zkServer,"KafkaZM","TDM_IOV_RUN_DATA");
+
+        consumer.nextTuple();
+
     }
 
     public void run(long a_maxReads, String a_topic, int a_partition, List<String> a_seedBrokers, int a_port)
