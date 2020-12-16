@@ -166,7 +166,8 @@ public class MockController {
                     int threadIndex = i;
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
                         List<Object> o = mockGPSDataProps(record, props, threadIndex);
-                        contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
+                        o.forEach(e -> contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(e))));
+//                        contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
                         return o;
                     });
                     futures.add(f);

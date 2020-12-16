@@ -56,19 +56,21 @@ public class DemoConsumer {
 
             List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic);
 
-            AtomicInteger c = new AtomicInteger();
             streams.forEach(stream -> {
                 for (MessageAndMetadata<byte[], byte[]> msg : stream) {
-                    c.getAndIncrement();
+
                     String str = new String(msg.message());
-                    logger.info("consumer ======================> str: {}", str);
+                    logger.info("consumer ======================> {} str: {}", msg.offset(), str);
                 }
             });
-            logger.info("count: {}", c.get());
         } catch (Exception e) {
             logger.error("consumer Error!", e);
             throw new RuntimeException("Error consumer tuple", e);
         }
+    }
+
+    public void destroy(){
+        consumer.shutdown();
     }
 
 }

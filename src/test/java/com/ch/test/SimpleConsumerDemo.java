@@ -85,6 +85,12 @@ public class SimpleConsumerDemo {
 
         consumer.nextTuple();
 
+        try {
+            Thread.sleep(10000);
+            consumer.destroy();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run(long a_maxReads, String a_topic, int a_partition, List<String> a_seedBrokers, int a_port)
