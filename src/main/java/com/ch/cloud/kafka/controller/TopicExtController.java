@@ -51,17 +51,24 @@ public class TopicExtController {
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping
-    public Result<BtTopicExt> load(BtTopicExt record,
+    public Result<BtTopicExt> configs(BtTopicExt record,
+                                   @RequestHeader(Constants.TOKEN_USER) String username) {
+        return ResultUtils.wrapList(() -> topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username));
+    }
+
+    @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
+    @GetMapping("{id}")
+    public Result<BtTopicExt> load(@PathVariable Long id,
+                                   BtTopicExt record,
                                    @RequestHeader(Constants.TOKEN_USER) String username) {
         return ResultUtils.wrap(() -> {
-            BtTopicExt record2 = topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username);
+            BtTopicExt record2 = topicExtService.find(id);
             if (record2 == null) {
                 record2 = new BtTopicExt();
                 record2.setClusterName(record.getClusterName());
                 record2.setTopicName(record.getTopicName());
                 record2.setThreadSize(4);
                 record2.setBatchSize(10);
-
             }
             loadTopicProps(record2);
             return record2;
@@ -122,7 +129,7 @@ public class TopicExtController {
                 ExceptionUtils._throw(PubError.NOT_EXISTS, "集群+主题不存在！");
             }
 
-            BtTopicExt r = topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username);
+            BtTopicExt r = topicExtService.find(record.getId());
 
             if (r != null) {
                 record.setId(r.getId());

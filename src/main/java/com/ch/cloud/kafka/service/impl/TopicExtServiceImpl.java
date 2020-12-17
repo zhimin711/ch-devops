@@ -13,6 +13,8 @@ import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.common.Mapper;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.Sqls;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -38,7 +40,7 @@ public class TopicExtServiceImpl extends BaseService<Long, BtTopicExt> implement
     private BtTopicExtPropMapper propMapper;
 
     @Override
-    public BtTopicExt findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username) {
+    public List<BtTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username) {
         if (CommonUtils.isEmptyOr(clusterName, topicName, username)) {
             return null;
         }
@@ -46,7 +48,13 @@ public class TopicExtServiceImpl extends BaseService<Long, BtTopicExt> implement
         q.setClusterName(clusterName);
         q.setTopicName(topicName);
         q.setCreateBy(username);
-        return getMapper().selectOne(q);
+        Example example = Example.builder(BtTopicExt.class).select("id", "description")
+                .where(Sqls.custom()
+                        .andEqualTo("clusterName", clusterName)
+                        .andEqualTo("createBy", username)
+                        .andEqualTo("topicName", topicName))
+                .build();
+        return getMapper().selectByExample(example);
     }
 
     @Override

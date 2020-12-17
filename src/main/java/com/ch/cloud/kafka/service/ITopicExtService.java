@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface ITopicExtService extends IService<Long, BtTopicExt> {
 
-    BtTopicExt findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username);
+    List<BtTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username);
 
     List<BtTopicExtProp> findProps(Long id);
 }
