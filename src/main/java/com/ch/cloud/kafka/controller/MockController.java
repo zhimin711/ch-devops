@@ -196,48 +196,66 @@ public class MockController {
 
     private List<Object> mockGPSDataProps(BtTopicExt record, List<MockProp> props, int threadIndex) throws Exception {
 
+        long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
+
+        double total2 = 0.0;
+        List<Double> distances = Lists.newArrayList();
+        for (int i = 0; i < record.getPoints().size() - 1; i++) {
+            double distance = MapUtils.calcDistance(record.getPoints().get(i), record.getPoints().get(i + 1));
+            distances.add(distance);
+            total2 += distance;
+        }
+        double finalTotal = total2;
+        List<Double> distanceRates = distances.stream().map(e -> e / finalTotal).collect(Collectors.toList());
 
         List<Object> objs = Lists.newArrayList();
 
-        long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
-        int ss = (int) total / record.getBatchSize();
-        int ss1 = ss / record.getThreadSize();
-        int offsetS = threadIndex * ss1;
-        int offsetE = (threadIndex + 1) * ss1;
+        if (total < record.getPoints().size()) {
+            total = record.getUpdateAt().getTime() - record.getCreateAt().getTime();
+            int offset = (int) (total / record.getPoints().size());
+            for (int i = 0; i < record.getPoints().size(); i++) {
+                Date sd1 = DateUtils.addMilliseconds(record.getCreateAt(), offset * objs.size());
 
-        Date sd = DateUtils.addMinutes(record.getCreateAt(), offsetS);
-//        Date ed = DateUtils.addMinutes(record.getCreateAt(), offsetE);
-
-        String sp = record.getPoints().get(0);
-        String dp = record.getPoints().get(record.getPoints().size() - 1);
-
-        double[] spa = MapUtils.parsePoint(sp);
-        double[] dpa = MapUtils.parsePoint(dp);
-
-        double ps1 = dpa[0] - spa[0];
-        double ps2 = dpa[1] - spa[1];
-
-        int count = offsetE - offsetS;
-
-        double psu1 = ps1 / (total);
-        double psu2 = ps2 / (total);
-
-        for (int i = 0; i < count; i++) {
-            Date sd1 = DateUtils.addMinutes(record.getCreateAt(), offsetS * record.getBatchSize());
-            sd = DateUtils.addMinutes(sd1, i * record.getBatchSize());
-
-            double lng = spa[0] + psu1 * (offsetS + i);
-            double lat = spa[1] + psu2 * (offsetS + i);
-            lat = RandomUtils.nextDouble(lat, lat + 0.004);
-
-            JSONObject o = mockGPSDataProps(record.getProps(), sd, lng, lat);
-            for (MockProp p : props) {
-                Object o1 = MockUtil.mockProp(p, count * threadIndex + i);
-                o.put(p.getCode(), o1);
+                double[] spa = MapUtils.parsePoint(record.getPoints().get(i));
+                JSONObject o = mockGPSDataProps(record.getProps(), sd1, spa[0], spa[1]);
+                for (MockProp p : props) {
+                    Object o1 = MockUtil.mockProp(p, objs.size());
+                    o.put(p.getCode(), o1);
+                }
+                objs.add(o);
             }
-            objs.add(o);
+        } else {
+            for (int i = 0; i < distanceRates.size(); i++) {
+                int offsetE = (int) Math.floor(total * distanceRates.get(i));
+                String sp = record.getPoints().get(i);
+                String dp = record.getPoints().get(i + 1);
+
+                double[] spa = MapUtils.parsePoint(sp);
+                double[] dpa = MapUtils.parsePoint(dp);
+
+                double ps1 = dpa[0] - spa[0];
+                double ps2 = dpa[1] - spa[1];
+
+                double psu1 = ps1 / (offsetE);
+                double psu2 = ps2 / (offsetE);
+
+                for (int j = 0; j < offsetE; j++) {
+                    Date sd1 = DateUtils.addMinutes(record.getCreateAt(), objs.size());
+
+                    double lng = spa[0] + psu1 * j;
+                    double lat = spa[1] + psu2 * j;
+
+                    JSONObject o = mockGPSDataProps(record.getProps(), sd1, lng, lat);
+                    for (MockProp p : props) {
+                        Object o1 = MockUtil.mockProp(p, objs.size());
+                        o.put(p.getCode(), o1);
+                    }
+                    objs.add(o);
 //            log.info("{}", o.toJSONString());
+                }
+            }
         }
+
         return objs;
     }
 

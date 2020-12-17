@@ -14,6 +14,7 @@ import kafka.message.MessageAndOffset;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /*官方文档的翻译：
@@ -170,7 +171,7 @@ public class SimpleConsumerDemo {
 
                 byte[] bytes = new byte[payload.limit()];
                 payload.get(bytes);
-                System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes, "UTF-8"));
+                System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes, StandardCharsets.UTF_8));
                 numRead++;
                 a_maxReads--;
             }

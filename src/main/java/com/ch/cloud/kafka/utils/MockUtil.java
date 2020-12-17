@@ -357,12 +357,20 @@ public class MockUtil {
         if (CommonUtils.isEmptyOr(record.getCreateAt(), record.getUpdateAt())) {
             ExceptionUtils._throw(PubError.ARGS, "GPS轨迹开始或结束时间为空！");
         }
+        if (CommonUtils.isEmpty(record.getPoints()) || record.getPoints().size() < 2) {
+            ExceptionUtils._throw(PubError.ARGS, "GPS轨迹点不足！");
+        }
         if (CommonUtils.isEmpty(record.getThreadSize())) {
             record.setThreadSize(1);
         }
         if (CommonUtils.isEmpty(record.getBatchSize())) {
             record.setBatchSize(10);
         }
+        int total = (int) DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());
+        if (total / record.getBatchSize() < 2) {
+            ExceptionUtils._throw(PubError.ARGS, "GPS轨迹开始和结束时间范围过小，不能生成GPS！");
+        }
+
         if (record.getProps().size() < 4) {
             ExceptionUtils._throw(PubError.ARGS, "mock字段代码不足！");
         } else if (record.getProps().size() == 4) {
