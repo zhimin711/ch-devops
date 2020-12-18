@@ -117,7 +117,7 @@ public class TopicExtController {
 
     @ApiOperation(value = "新增主题扩展信息", notes = "新增主题扩展信息")
     @PostMapping
-    public Result<Integer> save(@RequestBody BtTopicExt record,
+    public Result<Long> save(@RequestBody BtTopicExt record,
                                 @RequestHeader(Constants.TOKEN_USER) String username) {
 
         return ResultUtils.wrapFail(() -> {
@@ -136,12 +136,27 @@ public class TopicExtController {
                 record.setUpdateBy(username);
                 record.setUpdateAt(DateUtils.current());
             } else {
+                record.setId(null);
                 record.setCreateBy(username);
                 record.setStatus(StatusS.ENABLED);
             }
-            return topicExtService.save(record);
+            topicExtService.save(record);
+            return record.getId();
         });
     }
 
+    @ApiOperation(value = "删除主题扩展信息", notes = "")
+    @DeleteMapping({"{id}"})
+    public Result<Integer> delete(@PathVariable Long id,
+                                  @RequestHeader(Constants.TOKEN_USER) String username) {
+        return ResultUtils.wrapFail(() -> {
+            BtTopicExt record = new BtTopicExt();
+            record.setId(id);
+            record.setStatus(StatusS.DELETE);
+            record.setUpdateBy(username);
+            record.setUpdateAt(DateUtils.current());
+            return topicExtService.update(record);
+        });
+    }
 
 }

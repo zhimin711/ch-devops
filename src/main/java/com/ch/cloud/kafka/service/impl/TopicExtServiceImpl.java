@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.service.impl;
 
 import com.ch.Constants;
+import com.ch.StatusS;
 import com.ch.cloud.kafka.mapper.BtTopicExtMapper;
 import com.ch.cloud.kafka.mapper.BtTopicExtPropMapper;
 import com.ch.cloud.kafka.model.BtTopicExt;
@@ -51,7 +52,8 @@ public class TopicExtServiceImpl extends BaseService<Long, BtTopicExt> implement
         Example example = Example.builder(BtTopicExt.class).select("id", "description")
                 .where(Sqls.custom()
                         .andEqualTo("clusterName", clusterName)
-                        .andEqualTo("createBy", username)
+//                        .andEqualTo("createBy", username)
+                        .andEqualTo("status", StatusS.ENABLED)
                         .andEqualTo("topicName", topicName))
                 .build();
         return getMapper().selectByExample(example);
