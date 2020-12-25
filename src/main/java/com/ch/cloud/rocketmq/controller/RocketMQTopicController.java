@@ -27,12 +27,11 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
-@Controller
+@RestController
 @RequestMapping("/rocketmq/topic")
 public class RocketMQTopicController {
     private Logger logger = LoggerFactory.getLogger(RocketMQTopicController.class);
@@ -43,27 +42,23 @@ public class RocketMQTopicController {
     @Resource
     private ConsumerService consumerService;
 
-    @RequestMapping(value = "/list.query", method = RequestMethod.GET)
-    @ResponseBody
-    public Object list() throws MQClientException, RemotingException, InterruptedException {
+    @GetMapping
+    public Object list() {
         return topicService.fetchAllTopicList();
     }
 
-    @RequestMapping(value = "/stats.query", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/stats")
     public Object stats(@RequestParam String topic) {
         return topicService.stats(topic);
     }
 
     @RequestMapping(value = "/route.query", method = RequestMethod.GET)
-    @ResponseBody
     public Object route(@RequestParam String topic) {
         return topicService.route(topic);
     }
 
 
     @RequestMapping(value = "/createOrUpdate.do", method = { RequestMethod.POST})
-    @ResponseBody
     public Object topicCreateOrUpdateRequest(@RequestBody TopicConfigInfo topicCreateOrUpdateRequest) {
         Preconditions.checkArgument(CommonUtils.isNotEmpty(topicCreateOrUpdateRequest.getBrokerNameList()) || CommonUtils.isNotEmpty(topicCreateOrUpdateRequest.getClusterNameList()),
             "clusterName or brokerName can not be all blank");
@@ -73,26 +68,22 @@ public class RocketMQTopicController {
     }
 
     @RequestMapping(value = "/queryConsumerByTopic.query")
-    @ResponseBody
     public Object queryConsumerByTopic(@RequestParam String topic) {
         return consumerService.queryConsumeStatsListByTopicName(topic);
     }
 
     @RequestMapping(value = "/queryTopicConsumerInfo.query")
-    @ResponseBody
     public Object queryTopicConsumerInfo(@RequestParam String topic) {
         return topicService.queryTopicConsumerInfo(topic);
     }
 
     @RequestMapping(value = "/examineTopicConfig.query")
-    @ResponseBody
     public Object examineTopicConfig(@RequestParam String topic,
         @RequestParam(required = false) String brokerName) throws RemotingException, MQClientException, InterruptedException {
         return topicService.examineTopicConfig(topic);
     }
 
     @RequestMapping(value = "/sendTopicMessage.do", method = {RequestMethod.POST})
-    @ResponseBody
     public Object sendTopicMessage(
         @RequestBody SendTopicMessageRequest sendTopicMessageRequest) throws RemotingException, MQClientException, InterruptedException {
         return topicService.sendTopicMessageRequest(sendTopicMessageRequest);
@@ -104,13 +95,11 @@ public class RocketMQTopicController {
      * @return
      */
     @RequestMapping(value = "/deleteTopic.do", method = {RequestMethod.POST})
-    @ResponseBody
     public Object delete(@RequestParam(required = false) String clusterName, @RequestParam String topic) {
         return topicService.deleteTopic(topic, clusterName);
     }
 
     @RequestMapping(value = "/deleteTopicByBroker.do", method = {RequestMethod.POST})
-    @ResponseBody
     public Object deleteTopicByBroker(@RequestParam String brokerName, @RequestParam String topic) {
         return topicService.deleteTopicInBroker(brokerName, topic);
     }
