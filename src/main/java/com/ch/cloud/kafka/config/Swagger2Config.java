@@ -15,7 +15,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @author: Wang Chen Chen
  * @Date: 2018/10/26 10:42
  * @describe： swagger2 RESTful接口文档配置
- *             文档URL: http://localhost:8090/doc.html
+ *             文档URL: http://localhost:7004/swagger2.html
  * @version: 1.0
  */
 

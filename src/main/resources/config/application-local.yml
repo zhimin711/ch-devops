@@ -1,5 +1,5 @@
 server:
-  port: 7003
+  port: 7004
 
 spring:
   application:
@@ -34,3 +34,15 @@ share:
   path:
     upload: share/${spring.application.name}/upload
     libs: D:\\mnt\\share\\common\\libs
+rocketmq:
+  namesrv:
+    addr: 10.206.46.77:9876
+    isVIPChannel: true
+    consoleCollectData: /tmp/rocket/console/data/
+  console:
+    data: /tmp/rocketmq-console/data
+  name-server: 10.206.46.77:9876 # 自己的RocketMQ服务地址
+#  name-server: false
+  producer:
+    send-message-timeout: 300000
+    group: ch-kafka

@@ -17,8 +17,9 @@ ext {
 //	springCloudVersion = 'Edgware.RELEASE' //Greenwich.RC1\Finchley.SR2\Edgware.SR5\Camden.SR3
     springCloudVersion = 'Greenwich.RELEASE'
     springOauth2 = '2.3.4.RELEASE'
-    alicloudVersion = '0.9.0.RELEASE' //0.2.1.RELEASE,0.9.0.RELEASE
+    alicloudVersion = '+' //0.2.1.RELEASE,0.9.0.RELEASE
     chVersion = '1.0.3-SNAPSHOT' //0.2.1.RELEASE
+    rocketmqVersion = '4.0.0-incubating' //0.2.1.RELEASE
 }
 configurations {
     compileOnly {
@@ -54,6 +55,12 @@ dependencies {
     //数据源相关包
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1'
     implementation "mysql:mysql-connector-java:5.1.30"
+
+//    implementation 'org.apache.rocketmq:rocketmq-spring-boot-starter:2.1.0'
+    implementation "org.apache.rocketmq:rocketmq-tools:${rocketmqVersion}"
+    implementation "org.apache.rocketmq:rocketmq-namesrv:${rocketmqVersion}"
+    implementation "org.apache.rocketmq:rocketmq-broker:${rocketmqVersion}"
+    implementation 'org.jooq:joor:0.9.6'
 
     implementation 'io.dubbo.springboot:spring-boot-starter-dubbo:1.0.0'
 
