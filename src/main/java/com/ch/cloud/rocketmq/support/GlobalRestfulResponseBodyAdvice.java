@@ -19,6 +19,7 @@ package com.ch.cloud.rocketmq.support;
 
 import com.ch.cloud.rocketmq.admin.annotation.OriginalControllerReturnValue;
 import com.ch.result.Result;
+import com.ch.result.ResultUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -28,11 +29,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 
 @ControllerAdvice(basePackages = "com.ch.cloud.rocketmq")
 public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
+    @SuppressWarnings({"unckecked"})
     public Object beforeBodyWrite(
             Object obj, MethodParameter methodParameter, MediaType mediaType,
             Class<? extends HttpMessageConverter<?>> converterType,
@@ -44,6 +47,8 @@ public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Objec
         Result value;
         if (obj instanceof Result) {
             value = (Result) obj;
+        } else if (obj instanceof Collection) {
+            value = Result.success((Collection) obj);
         } else {
             value = Result.success(obj);
         }

@@ -52,11 +52,15 @@ public class RocketMQTopicController {
         return topicService.stats(topic);
     }
 
-    @RequestMapping(value = "/route.query", method = RequestMethod.GET)
+    @RequestMapping(value = "/route", method = RequestMethod.GET)
     public Object route(@RequestParam String topic) {
         return topicService.route(topic);
     }
 
+    @RequestMapping(value = "/consumer")
+    public Object queryConsumerByTopic(@RequestParam String topic) {
+        return consumerService.queryConsumeStatsListByTopicName(topic);
+    }
 
     @RequestMapping(value = "/createOrUpdate.do", method = { RequestMethod.POST})
     public Object topicCreateOrUpdateRequest(@RequestBody TopicConfigInfo topicCreateOrUpdateRequest) {
@@ -67,19 +71,14 @@ public class RocketMQTopicController {
         return true;
     }
 
-    @RequestMapping(value = "/queryConsumerByTopic.query")
-    public Object queryConsumerByTopic(@RequestParam String topic) {
-        return consumerService.queryConsumeStatsListByTopicName(topic);
-    }
-
     @RequestMapping(value = "/queryTopicConsumerInfo.query")
     public Object queryTopicConsumerInfo(@RequestParam String topic) {
         return topicService.queryTopicConsumerInfo(topic);
     }
 
-    @RequestMapping(value = "/examineTopicConfig.query")
+    @RequestMapping(value = "/config")
     public Object examineTopicConfig(@RequestParam String topic,
-        @RequestParam(required = false) String brokerName) throws RemotingException, MQClientException, InterruptedException {
+        @RequestParam(required = false) String brokerName) {
         return topicService.examineTopicConfig(topic);
     }
 
