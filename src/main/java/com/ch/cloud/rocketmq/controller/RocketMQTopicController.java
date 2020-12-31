@@ -62,29 +62,28 @@ public class RocketMQTopicController {
         return consumerService.queryConsumeStatsListByTopicName(topic);
     }
 
-    @RequestMapping(value = "/createOrUpdate.do", method = { RequestMethod.POST})
+    @GetMapping(value = "/consumerInfo")
+    public Object queryTopicConsumerInfo(@RequestParam String topic) {
+        return topicService.queryTopicConsumerInfo(topic);
+    }
+
+    @PostMapping
     public Object topicCreateOrUpdateRequest(@RequestBody TopicConfigInfo topicCreateOrUpdateRequest) {
         Preconditions.checkArgument(CommonUtils.isNotEmpty(topicCreateOrUpdateRequest.getBrokerNameList()) || CommonUtils.isNotEmpty(topicCreateOrUpdateRequest.getClusterNameList()),
-            "clusterName or brokerName can not be all blank");
+                "clusterName or brokerName can not be all blank");
         logger.info("op=look topicCreateOrUpdateRequest={}", JsonUtil.obj2String(topicCreateOrUpdateRequest));
         topicService.createOrUpdate(topicCreateOrUpdateRequest);
         return true;
     }
 
-    @RequestMapping(value = "/queryTopicConsumerInfo.query")
-    public Object queryTopicConsumerInfo(@RequestParam String topic) {
-        return topicService.queryTopicConsumerInfo(topic);
-    }
-
-    @RequestMapping(value = "/config")
+    @GetMapping(value = "/config")
     public Object examineTopicConfig(@RequestParam String topic,
-        @RequestParam(required = false) String brokerName) {
+                                     @RequestParam(required = false) String brokerName) {
         return topicService.examineTopicConfig(topic);
     }
 
-    @RequestMapping(value = "/sendTopicMessage.do", method = {RequestMethod.POST})
-    public Object sendTopicMessage(
-        @RequestBody SendTopicMessageRequest sendTopicMessageRequest) throws RemotingException, MQClientException, InterruptedException {
+    @PostMapping(value = "/sendMessage")
+    public Object sendTopicMessage(@RequestBody SendTopicMessageRequest sendTopicMessageRequest) {
         return topicService.sendTopicMessageRequest(sendTopicMessageRequest);
     }
 
@@ -93,7 +92,7 @@ public class RocketMQTopicController {
      * @param topic
      * @return
      */
-    @RequestMapping(value = "/deleteTopic.do", method = {RequestMethod.POST})
+    @DeleteMapping
     public Object delete(@RequestParam(required = false) String clusterName, @RequestParam String topic) {
         return topicService.deleteTopic(topic, clusterName);
     }

@@ -57,8 +57,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
     public TopicList fetchAllTopicList() {
         try {
             return mqAdminExt.fetchAllTopicList();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -67,8 +66,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
     public TopicStatsTable stats(String topic) {
         try {
             return mqAdminExt.examineTopicStats(topic);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -77,8 +75,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
     public TopicRouteData route(String topic) {
         try {
             return mqAdminExt.examineTopicRouteInfo(topic);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw Throwables.propagate(ex);
         }
     }
@@ -87,8 +84,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
     public GroupList queryTopicConsumerInfo(String topic) {
         try {
             return mqAdminExt.queryTopicConsumeByWho(topic);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -100,11 +96,10 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
             for (String brokerName : changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
-                topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
+                    topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
                 mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
@@ -114,8 +109,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
         ClusterInfo clusterInfo = null;
         try {
             clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
         return mqAdminExt.examineTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topic);
@@ -149,8 +143,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
                 nameServerSet = new HashSet<String>(Arrays.asList(ns));
             }
             mqAdminExt.deleteTopicInNameServer(nameServerSet, topic);
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
         return true;
@@ -161,8 +154,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
         ClusterInfo clusterInfo = null;
         try {
             clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
         for (String clusterName : clusterInfo.getClusterAddrTable().keySet()) {
@@ -178,13 +170,11 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
             ClusterInfo clusterInfo = null;
             try {
                 clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
             mqAdminExt.deleteTopicInBroker(Sets.newHashSet(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr()), topic);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
         return true;
@@ -198,16 +188,14 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
         try {
             producer.start();
             Message msg = new Message(sendTopicMessageRequest.getTopic(),
-                sendTopicMessageRequest.getTag(),
-                sendTopicMessageRequest.getKey(),
-                sendTopicMessageRequest.getMessageBody().getBytes()
+                    sendTopicMessageRequest.getTag(),
+                    sendTopicMessageRequest.getKey(),
+                    sendTopicMessageRequest.getMessageBody().getBytes()
             );
             return producer.send(msg);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
-        }
-        finally {
+        } finally {
             producer.shutdown();
         }
     }
