@@ -23,8 +23,6 @@ import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;

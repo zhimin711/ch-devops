@@ -1,7 +1,12 @@
 package com.ch.cloud.kafka.config;
 
+import com.ch.Constants;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -11,11 +16,12 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+
 /**
  * @author: Wang Chen Chen
  * @Date: 2018/10/26 10:42
  * @describe： swagger2 RESTful接口文档配置
- *             文档URL: http://localhost:7004/swagger2.html
+ * 文档URL: http://localhost:7004/swagger2.html
  * @version: 1.0
  */
 
@@ -24,32 +30,56 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 // 启用swagger2功能注解
 public class Swagger2Config {
 
+
     @Bean
-    public Docket buildDocket(){
+    public Docket buildDocket() {
         //api文档实例
         //文档类型：DocumentationType.SWAGGER_2
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())    //.apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.ch.cloud.kafka.controller"))//要注释的接口名
+                .apis(basePackage("com.ch.cloud.kafka.controller" + Constants.SEPARATOR_2 + "com.ch.cloud.rocketmq.controller"))//要注释的接口名
                 .paths(PathSelectors.any())
                 .build();
     }
 
     /**
-     *@describe 接口的相关信息
-     *@date 2018/11/7
-     *@author  Wang Chen Chen
+     * 声明基础包
+     *
+     * @param basePackage 基础包路径
+     * @return
      */
-    private ApiInfo apiInfo2() {
-        return new ApiInfoBuilder()
-                .title("朝华后台 Swagger2 构建RESTful接口 ")
-                .description("接口描述")
-                .termsOfServiceUrl("termsOfServiceUrl")
-                .version("1.0")
-                .license("http://springfox.github.io/springfox/docs/current/")
-                .licenseUrl("http://springfox.github.io/springfox/docs/current/")
-                .build();
+    public static Predicate<RequestHandler> basePackage(final String basePackage) {
+        return input -> declaringClass(input).transform(handlerPackage(basePackage)).or(true);
+    }
+
+    /**
+     * 校验基础包
+     *
+     * @param basePackage 基础包路径
+     * @return
+     */
+    private static Function<Class<?>, Boolean> handlerPackage(final String basePackage) {
+        return input -> {
+            for (String strPackage : basePackage.split(Constants.SEPARATOR_2)) {
+                boolean isMatch = input.getPackage().getName().startsWith(strPackage);
+                if (isMatch) {
+                    return true;
+                }
+            }
+            return false;
+        };
+    }
+
+    /**
+     * 检验基础包实例
+     *
+     * @param requestHandler 请求处理类
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    private static Optional<? extends Class<?>> declaringClass(RequestHandler requestHandler) {
+        return Optional.fromNullable(requestHandler.declaringClass());
     }
 
     //构建 api文档的详细信息函数,注意这里的注解引用的是哪个

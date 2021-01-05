@@ -31,7 +31,7 @@ public interface MessageService {
      * @param msgId
      * @return
      */
-    Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId);
+    Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId) throws Exception;
 
     List<MessageView> queryMessageByTopicAndKey(final String topic, final String key);
 
@@ -40,7 +40,7 @@ public interface MessageService {
      * @param begin
      * @param end
      * @return
-     * @see com.alibaba.rocketmq.tools.command.message.PrintMessageSubCommand
+     * @see org.apache.rocketmq.tools.command.message.PrintMessageSubCommand
      */
     List<MessageView> queryMessageByTopic(final String topic, final long begin,
                                           final long end);
@@ -51,5 +51,5 @@ public interface MessageService {
                                                         String clientId);
 
     @Deprecated // use viewMessage(String subject, final String msgId) instead
-    Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset);
+    Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset) throws Exception;
 }
