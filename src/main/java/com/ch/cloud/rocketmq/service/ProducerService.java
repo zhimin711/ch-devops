@@ -20,5 +20,5 @@ package com.ch.cloud.rocketmq.service;
 import org.apache.rocketmq.common.protocol.body.ProducerConnection;
 
 public interface ProducerService {
-    ProducerConnection getProducerConnection(String producerGroup, String topic);
+    ProducerConnection getProducerConnection(String producerGroup, String topic) throws Exception;
 }

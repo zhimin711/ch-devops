@@ -22,6 +22,8 @@ import com.ch.e.PubError;
 import com.ch.e.PubException;
 import com.ch.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -42,8 +44,12 @@ public class GlobalExceptionHandler {
             log.error("op=global_exception_handler_print_error", ex);
             if (ex instanceof PubException) {
                 value = Result.error(((PubException) ex).getError(), ex.getMessage());
+            } else if (ex instanceof MQBrokerException) {
+                value = Result.error(PubError.DEFAULT, ((MQBrokerException) ex).getErrorMessage());
+            } else if (ex instanceof MQClientException) {
+                value = Result.error(PubError.DEFAULT, ((MQClientException) ex).getErrorMessage());
             } else {
-                value = Result.error(PubError.DEFAULT, ex.getMessage());
+                value = Result.error(PubError.UNKNOWN, ex.getMessage());
             }
         }
         return value;

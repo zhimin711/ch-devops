@@ -27,40 +27,35 @@ import com.google.common.base.Preconditions;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
-@Controller
-@RequestMapping("/consumer")
-public class ConsumerController {
-    private Logger logger = LoggerFactory.getLogger(ConsumerController.class);
+@RestController
+@RequestMapping("/rocketmq/consumer")
+public class RocketMQConsumerController {
+    private Logger logger = LoggerFactory.getLogger(RocketMQConsumerController.class);
 
     @Resource
     private ConsumerService consumerService;
 
     @RequestMapping(value = "/groupList.query")
-    @ResponseBody
     public Object list() {
         return consumerService.queryGroupList();
     }
 
     @RequestMapping(value = "/group.query")
-    @ResponseBody
     public Object groupQuery(@RequestParam String consumerGroup) {
         return consumerService.queryGroup(consumerGroup);
     }
 
     @RequestMapping(value = "/resetOffset.do", method = {RequestMethod.POST})
-    @ResponseBody
     public Object resetOffset(@RequestBody ResetOffsetRequest resetOffsetRequest) {
         logger.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
         return consumerService.resetOffset(resetOffsetRequest);
     }
 
     @RequestMapping(value = "/examineSubscriptionGroupConfig.query")
-    @ResponseBody
     public Object examineSubscriptionGroupConfig(@RequestParam String consumerGroup) {
         return consumerService.examineSubscriptionGroupConfig(consumerGroup);
     }
@@ -72,27 +67,23 @@ public class ConsumerController {
     }
 
     @RequestMapping(value = "/createOrUpdate.do", method = {RequestMethod.POST})
-    @ResponseBody
     public Object consumerCreateOrUpdateRequest(@RequestBody ConsumerConfigInfo consumerConfigInfo) {
         Preconditions.checkArgument(CommonUtils.isNotEmpty(consumerConfigInfo.getBrokerNameList()) || CommonUtils.isNotEmpty(consumerConfigInfo.getClusterNameList()),
-            "clusterName or brokerName can not be all blank");
+                "clusterName or brokerName can not be all blank");
         return consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
     }
 
     @RequestMapping(value = "/fetchBrokerNameList.query", method = {RequestMethod.GET})
-    @ResponseBody
     public Object fetchBrokerNameList(@RequestParam String consumerGroup) {
         return consumerService.fetchBrokerNameSetBySubscriptionGroup(consumerGroup);
     }
 
     @RequestMapping(value = "/queryTopicByConsumer.query")
-    @ResponseBody
     public Object queryConsumerByTopic(@RequestParam String consumerGroup) {
         return consumerService.queryConsumeStatsListByGroupName(consumerGroup);
     }
 
     @RequestMapping(value = "/consumerConnection.query")
-    @ResponseBody
     public Object consumerConnection(@RequestParam(required = false) String consumerGroup) {
         ConsumerConnection consumerConnection = consumerService.getConsumerConnection(consumerGroup);
         consumerConnection.setConnectionSet(ConnectionInfo.buildConnectionInfoHashSet(consumerConnection.getConnectionSet()));
@@ -100,7 +91,6 @@ public class ConsumerController {
     }
 
     @RequestMapping(value = "/consumerRunningInfo.query")
-    @ResponseBody
     public Object getConsumerRunningInfo(@RequestParam String consumerGroup, @RequestParam String clientId,
                                          @RequestParam boolean jstack) {
         return consumerService.getConsumerRunningInfo(consumerGroup, clientId, jstack);

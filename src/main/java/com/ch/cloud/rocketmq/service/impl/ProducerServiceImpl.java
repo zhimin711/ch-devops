@@ -34,12 +34,7 @@ public class ProducerServiceImpl implements ProducerService {
     private MQAdminExt mqAdminExt;
 
     @Override
-    public ProducerConnection getProducerConnection(String producerGroup, String topic) {
-        try {
-            return mqAdminExt.examineProducerConnectionInfo(producerGroup, topic);
-        }
-        catch (RemotingException | MQClientException | MQBrokerException | InterruptedException e) {
-            throw Throwables.propagate(e);
-        }
+    public ProducerConnection getProducerConnection(String producerGroup, String topic) throws Exception {
+        return mqAdminExt.examineProducerConnectionInfo(producerGroup, topic);
     }
 }

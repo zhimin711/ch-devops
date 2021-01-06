@@ -16,29 +16,23 @@
  */
 package com.ch.cloud.rocketmq.controller;
 
-import org.apache.rocketmq.common.protocol.body.ProducerConnection;
 import com.ch.cloud.rocketmq.model.ConnectionInfo;
 import com.ch.cloud.rocketmq.service.ProducerService;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
-@Controller
-@RequestMapping("/producer")
-public class ProducerController {
+@RestController
+@RequestMapping("/rocketmq/producer")
+public class RocketMQProducerController {
 
     @Resource
     private ProducerService producerService;
 
-    @RequestMapping(value = "/producerConnection.query", method = {RequestMethod.GET})
-    @ResponseBody
-    public Object producerConnection(@RequestParam String producerGroup, @RequestParam String topic) {
+    @GetMapping(value = "/connection")
+    public Object producerConnection(@RequestParam String producerGroup, @RequestParam String topic) throws Exception {
         ProducerConnection producerConnection = producerService.getProducerConnection(producerGroup, topic);
-        producerConnection.setConnectionSet(ConnectionInfo.buildConnectionInfoHashSet(producerConnection.getConnectionSet()));
-        return producerConnection;
+        return ConnectionInfo.buildConnectionInfoHashSet(producerConnection.getConnectionSet());
     }
 }
