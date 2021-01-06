@@ -39,12 +39,12 @@ public class RocketMQConsumerController {
     @Resource
     private ConsumerService consumerService;
 
-    @RequestMapping(value = "/groupList.query")
+    @GetMapping(value = "/groups")
     public Object list() {
         return consumerService.queryGroupList();
     }
 
-    @RequestMapping(value = "/group.query")
+    @GetMapping(value = "/group")
     public Object groupQuery(@RequestParam String consumerGroup) {
         return consumerService.queryGroup(consumerGroup);
     }
@@ -55,7 +55,7 @@ public class RocketMQConsumerController {
         return consumerService.resetOffset(resetOffsetRequest);
     }
 
-    @RequestMapping(value = "/examineSubscriptionGroupConfig.query")
+    @GetMapping(value = "/examineSubscriptionGroupConfig")
     public Object examineSubscriptionGroupConfig(@RequestParam String consumerGroup) {
         return consumerService.examineSubscriptionGroupConfig(consumerGroup);
     }
@@ -73,24 +73,24 @@ public class RocketMQConsumerController {
         return consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
     }
 
-    @RequestMapping(value = "/fetchBrokerNameList.query", method = {RequestMethod.GET})
+    @GetMapping(value = "/fetchBrokerNameList.query")
     public Object fetchBrokerNameList(@RequestParam String consumerGroup) {
         return consumerService.fetchBrokerNameSetBySubscriptionGroup(consumerGroup);
     }
 
-    @RequestMapping(value = "/queryTopicByConsumer.query")
+    @GetMapping(value = "/queryTopic")
     public Object queryConsumerByTopic(@RequestParam String consumerGroup) {
         return consumerService.queryConsumeStatsListByGroupName(consumerGroup);
     }
 
-    @RequestMapping(value = "/consumerConnection.query")
+    @GetMapping(value = "/connection")
     public Object consumerConnection(@RequestParam(required = false) String consumerGroup) {
         ConsumerConnection consumerConnection = consumerService.getConsumerConnection(consumerGroup);
         consumerConnection.setConnectionSet(ConnectionInfo.buildConnectionInfoHashSet(consumerConnection.getConnectionSet()));
         return consumerConnection;
     }
 
-    @RequestMapping(value = "/consumerRunningInfo.query")
+    @GetMapping(value = "/runningInfo")
     public Object getConsumerRunningInfo(@RequestParam String consumerGroup, @RequestParam String clientId,
                                          @RequestParam boolean jstack) {
         return consumerService.getConsumerRunningInfo(consumerGroup, clientId, jstack);
