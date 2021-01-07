@@ -49,7 +49,7 @@ public class RocketMQConsumerController {
         return consumerService.queryGroup(consumerGroup);
     }
 
-    @RequestMapping(value = "/resetOffset.do", method = {RequestMethod.POST})
+    @PostMapping(value = "/resetOffset")
     public Object resetOffset(@RequestBody ResetOffsetRequest resetOffsetRequest) {
         logger.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
         return consumerService.resetOffset(resetOffsetRequest);
@@ -60,20 +60,19 @@ public class RocketMQConsumerController {
         return consumerService.examineSubscriptionGroupConfig(consumerGroup);
     }
 
-    @RequestMapping(value = "/deleteSubGroup.do", method = {RequestMethod.POST})
-    @ResponseBody
+    @PostMapping(value = "/deleteSubGroup")
     public Object deleteSubGroup(@RequestBody DeleteSubGroupRequest deleteSubGroupRequest) {
         return consumerService.deleteSubGroup(deleteSubGroupRequest);
     }
 
-    @RequestMapping(value = "/createOrUpdate.do", method = {RequestMethod.POST})
+    @PostMapping
     public Object consumerCreateOrUpdateRequest(@RequestBody ConsumerConfigInfo consumerConfigInfo) {
         Preconditions.checkArgument(CommonUtils.isNotEmpty(consumerConfigInfo.getBrokerNameList()) || CommonUtils.isNotEmpty(consumerConfigInfo.getClusterNameList()),
                 "clusterName or brokerName can not be all blank");
         return consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
     }
 
-    @GetMapping(value = "/fetchBrokerNameList.query")
+    @GetMapping(value = "/fetchBrokerNameList")
     public Object fetchBrokerNameList(@RequestParam String consumerGroup) {
         return consumerService.fetchBrokerNameSetBySubscriptionGroup(consumerGroup);
     }

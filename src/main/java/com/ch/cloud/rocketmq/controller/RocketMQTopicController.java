@@ -50,7 +50,7 @@ public class RocketMQTopicController {
         return topicService.stats(topic);
     }
 
-    @RequestMapping(value = "/route", method = RequestMethod.GET)
+    @GetMapping(value = "/route")
     public Object route(@RequestParam String topic) {
         return topicService.route(topic);
     }
