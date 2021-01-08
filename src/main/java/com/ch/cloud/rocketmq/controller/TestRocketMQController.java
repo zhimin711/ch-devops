@@ -16,6 +16,18 @@
  */
 package com.ch.cloud.rocketmq.controller;
 
+import com.ch.Constants;
+import com.ch.cloud.rocketmq.config.RMQConfigure;
+import com.ch.cloud.rocketmq.service.TopicService;
+import com.ch.cloud.rocketmq.util.JsonUtil;
+import com.ch.e.PubError;
+import com.ch.pool.DefaultThreadPool;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.ExceptionUtils;
+import com.ch.utils.StringExtUtils;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
@@ -24,67 +36,94 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
-import com.ch.cloud.rocketmq.config.RMQConfigure;
-import com.ch.cloud.rocketmq.util.JsonUtil;
+import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @RequestMapping("/test")
+@Slf4j
 public class TestRocketMQController {
-    private Logger logger = LoggerFactory.getLogger(TestRocketMQController.class);
     private String testTopic = "test1";
 
     @Resource
     private RMQConfigure rMQConfigure;
 
-    @RequestMapping(value = "/runTask", method = RequestMethod.GET)
-    @ResponseBody
-    public Object list() throws MQClientException {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(testTopic + "Group");
-        consumer.setNamesrvAddr(rMQConfigure.getAddr());
-        consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
-        consumer.subscribe(testTopic, "*");
-        consumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
-            logger.info("receiveMessage msgSize={}", msgs.size());
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-        });
-        consumer.start();
-        final DefaultMQProducer producer = new DefaultMQProducer(testTopic + "Group");
-        producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(rMQConfigure.getAddr());
-        producer.start();
+    @Resource
+    private TopicService topicService;
 
-        new Thread(() -> {
+    private Set<String> allTopics = Sets.newHashSet();
+    private Set<String> existsTopics = Sets.newHashSet();
 
-            int i = 0;
-            while (true) {
-                try {
-                    Message msg = new Message(testTopic,
-                        "TagA" + i,
-                        "KEYS" + i,
-                        ("Hello RocketMQ " + i).getBytes()
-                    );
-                    Thread.sleep(1000L);
-                    SendResult sendResult = producer.send(msg);
-                    logger.info("sendMessage={}", JsonUtil.obj2String(sendResult));
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    try {
-                        Thread.sleep(1000);
-                    }
-                    catch (Exception ignore) {
-                    }
-                }
+    @GetMapping(value = "/runTask")
+    public Object list(@RequestParam String topicStr,
+                       @RequestParam(required = false) Integer consumerThreadSize,
+                       @RequestParam(required = false) Integer producerThreadSize) throws MQClientException {
+
+        if (CommonUtils.isEmpty(topicStr)) {
+            ExceptionUtils._throw(PubError.NON_NULL, "topic must be not null!");
+        }
+        if (CommonUtils.isEmpty(allTopics)) {
+            TopicList list = topicService.fetchAllTopicList();
+            allTopics = list.getTopicList();
+        }
+        List<String> topics = StringExtUtils.splitStr(Constants.SEPARATOR_2, topicStr);
+        Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e)).collect(Collectors.toSet());
+        if (list.isEmpty()) return null;
+        int consumerThreadSize2 = CommonUtils.isEmpty(consumerThreadSize) ? 1 : consumerThreadSize;
+        int producerThreadSize2 = CommonUtils.isEmpty(producerThreadSize) ? 1 : producerThreadSize;
+        for (String topic : list) {
+            for (int i = 0; i < consumerThreadSize2; i++) {
+                DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(topic + "_" + (i + 1) + "Group");
+                consumer.setNamesrvAddr(rMQConfigure.getAddr());
+                consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
+                consumer.subscribe(topic, "*");
+                consumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
+                    log.info("{} receiveMessage msgSize={}", topic, msgs.size());
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                });
+                consumer.start();
             }
-        }).start();
+
+            for (int j = 0; j < producerThreadSize2; j++) {
+                final DefaultMQProducer producer = new DefaultMQProducer(topic + "_" + (j + 1) + "Group");
+                producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
+                producer.setNamesrvAddr(rMQConfigure.getAddr());
+                producer.start();
+                new Thread(() -> {
+                    int i = 0;
+                    while (true) {
+                        try {
+                            Message msg = new Message(topic,
+                                    "TagA" + i,
+                                    "KEYS" + i,
+                                    ("Hello RocketMQ " + i).getBytes()
+                            );
+                            Thread.sleep(1000L);
+                            SendResult sendResult = producer.send(msg);
+                            log.info("{} sendMessage={}", topic, JsonUtil.obj2String(sendResult));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            try {
+                                Thread.sleep(1000);
+                            } catch (Exception ignore) {
+                            }
+                        }
+                    }
+                }).start();
+            }
+            existsTopics.add(topic);
+        }
+
         return true;
     }
 }
