@@ -19,11 +19,13 @@ package com.ch.cloud.rocketmq.controller;
 
 import com.google.common.base.Strings;
 import com.ch.cloud.rocketmq.service.DashboardService;
+import io.swagger.annotations.Api;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
+@Api(tags = "Rocket MQ 监控模块")
 @RestController
 @RequestMapping("/rocketmq/dashboard")
 public class RocketMQDashboardController {

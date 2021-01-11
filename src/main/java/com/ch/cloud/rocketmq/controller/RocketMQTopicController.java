@@ -23,12 +23,14 @@ import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
+@Api(tags = "Rocket MQ 主题管理模块")
 @RestController
 @RequestMapping("/rocketmq/topic")
 public class RocketMQTopicController {

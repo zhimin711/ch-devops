@@ -20,6 +20,7 @@ import com.ch.cloud.rocketmq.model.MessageView;
 import com.ch.cloud.rocketmq.service.MessageService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.google.common.collect.Maps;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.Pair;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
@@ -30,6 +31,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
+@Api(tags = "Rocket MQ 消息搜索模块")
 @RestController
 @RequestMapping("/rocketmq/message")
 @Slf4j

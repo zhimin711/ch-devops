@@ -18,23 +18,21 @@ package com.ch.cloud.rocketmq.controller;
 
 import com.ch.cloud.rocketmq.admin.annotation.OriginalControllerReturnValue;
 import com.ch.cloud.rocketmq.service.OpsService;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
-@Controller
+@RestController
 @RequestMapping("/rocketmq")
-public class NamesvrController {
+public class RocketMQNamesvrController {
     @Resource
     private OpsService opsService;
 
-    @RequestMapping(value = "/nsaddr", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/nsaddr")
     @OriginalControllerReturnValue
-    public Object nsaddr() {
+    public Object getNameSvrList() {
         return opsService.getNameSvrList();
     }
 }

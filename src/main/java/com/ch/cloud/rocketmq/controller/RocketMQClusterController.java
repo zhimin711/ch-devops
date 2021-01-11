@@ -17,7 +17,7 @@
 package com.ch.cloud.rocketmq.controller;
 
 import com.ch.cloud.rocketmq.service.ClusterService;
-import com.ch.result.Result;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
+@Api(tags = "Rocket MQ 集群管理模块")
 @RestController
 @RequestMapping("/rocketmq/cluster")
 public class RocketMQClusterController {

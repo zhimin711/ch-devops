@@ -6,8 +6,8 @@ spring:
     name: ch-kafka
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://grdtest-m.dbsit.sfdc.com.cn:3306/grdtest
-    username: grdtest
+    url: jdbc:mysql://canalmgr-m.dbsit.sfcloud.local:3306/ch_mq
+    username: zhimin
     password: admin123
 
     type: com.zaxxer.hikari.HikariDataSource
@@ -38,9 +38,9 @@ rocketmq:
   namesrv:
     addr: 10.206.46.77:9876
     isVIPChannel: true
-    consoleCollectData: /tmp/rocket/console/data/
+    consoleCollectData: D:\\tmp\\rocket\\console\\data
   console:
-    data: /tmp/rocketmq-console/data
+    data: D:\\tmp\\rocketmq-console\\data
   name-server: 10.206.46.77:9876 # 自己的RocketMQ服务地址
 #  name-server: false
   producer:

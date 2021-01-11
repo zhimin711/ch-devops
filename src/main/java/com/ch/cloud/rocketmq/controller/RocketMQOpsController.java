@@ -17,36 +17,29 @@
 package com.ch.cloud.rocketmq.controller;
 
 import com.ch.cloud.rocketmq.service.OpsService;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
-@Controller
-@RequestMapping("/ops")
-public class OpsController {
+@RestController
+@RequestMapping("/rocketmq/ops")
+public class RocketMQOpsController {
 
     @Resource
     private OpsService opsService;
 
-    @RequestMapping(value = "/homePage.query", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/homePage.query")
     public Object homePage() {
         return opsService.homePageInfo();
     }
 
-    @RequestMapping(value = "/updateNameSvrAddr.do", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(value = "/updateNameSvrAddr")
     public Object updateNameSvrAddr(@RequestParam String nameSvrAddrList) {
         opsService.updateNameSvrAddrList(nameSvrAddrList);
         return true;
     }
 
-    @RequestMapping(value = "/rocketMqStatus.query", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/rocketMqStatus")
     public Object clusterStatus() {
         return opsService.rocketMqStatusCheck();
     }

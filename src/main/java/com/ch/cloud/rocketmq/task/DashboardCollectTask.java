@@ -290,10 +290,10 @@ public class DashboardCollectTask {
             return newTpsList;
         }
         String oldLastTps = oldTpsList.get(oldTpsList.size() - 1);
-        Long oldLastTimestamp = Long.parseLong(oldLastTps.split(",")[0]);
+        long oldLastTimestamp = Long.parseLong(oldLastTps.split(",")[0]);
         String newFirstTps = newTpsList.get(0);
-        Long newFirstTimestamp = Long.parseLong(newFirstTps.split(",")[0]);
-        if (oldLastTimestamp.longValue() < newFirstTimestamp.longValue()) {
+        long newFirstTimestamp = Long.parseLong(newFirstTps.split(",")[0]);
+        if (oldLastTimestamp < newFirstTimestamp) {
             result.addAll(oldTpsList);
             result.addAll(newTpsList);
             return result;
