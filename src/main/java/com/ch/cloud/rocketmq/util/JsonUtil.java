@@ -55,8 +55,7 @@ public class JsonUtil {
     public static void writeValue(Writer writer, Object obj) {
         try {
             objectMapper.writeValue(writer, obj);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Throwables.propagateIfPossible(e);
         }
     }
@@ -74,8 +73,7 @@ public class JsonUtil {
 
         try {
             return src instanceof String ? (String) src : objectMapper.writeValueAsString(src);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Parse Object to String error src=" + src, e);
             return null;
         }
@@ -94,8 +92,7 @@ public class JsonUtil {
 
         try {
             return src instanceof byte[] ? (byte[]) src : objectMapper.writeValueAsBytes(src);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Parse Object to byte[] error", e);
             return null;
         }
@@ -115,8 +112,7 @@ public class JsonUtil {
         str = escapesSpecialChar(str);
         try {
             return clazz.equals(String.class) ? (T) str : objectMapper.readValue(str, clazz);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Parse String to Object error\nString: {}\nClass<T>: {}\nError: {}", str, clazz.getName(), e);
             return null;
         }
@@ -135,8 +131,7 @@ public class JsonUtil {
         }
         try {
             return clazz.equals(byte[].class) ? (T) bytes : objectMapper.readValue(bytes, clazz);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Parse byte[] to Object error\nbyte[]: {}\nClass<T>: {}\nError: {}", bytes, clazz.getName(), e);
             return null;
         }
@@ -156,10 +151,9 @@ public class JsonUtil {
         str = escapesSpecialChar(str);
         try {
             return (T) (typeReference.getType().equals(String.class) ? str : objectMapper.readValue(str, typeReference));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Parse String to Object error\nString: {}\nTypeReference<T>: {}\nError: {}", str,
-                typeReference.getType(), e);
+                    typeReference.getType(), e);
             return null;
         }
     }
@@ -177,11 +171,10 @@ public class JsonUtil {
         }
         try {
             return (T) (typeReference.getType().equals(byte[].class) ? bytes : objectMapper.readValue(bytes,
-                typeReference));
-        }
-        catch (Exception e) {
+                    typeReference));
+        } catch (Exception e) {
             logger.error("Parse byte[] to Object error\nbyte[]: {}\nTypeReference<T>: {}\nError: {}", bytes,
-                typeReference.getType(), e);
+                    typeReference.getType(), e);
             return null;
         }
     }

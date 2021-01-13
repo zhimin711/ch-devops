@@ -58,7 +58,6 @@ public class MybatisConfig {
             bean.setMapperLocations(resolver.getResources("classpath*:com/ch/cloud/**/mapper/*.xml"));
             return bean.getObject();
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

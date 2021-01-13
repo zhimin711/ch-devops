@@ -52,18 +52,16 @@ public class MQAdminAspect {
         long start = System.currentTimeMillis();
         Object obj = null;
         try {
-            MethodSignature signature = (MethodSignature)joinPoint.getSignature();
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
             Method method = signature.getMethod();
             MultiMQAdminCmdMethod multiMQAdminCmdMethod = method.getAnnotation(MultiMQAdminCmdMethod.class);
             if (multiMQAdminCmdMethod != null && multiMQAdminCmdMethod.timeoutMillis() > 0) {
                 MQAdminInstance.initMQAdminInstance(multiMQAdminCmdMethod.timeoutMillis());
-            }
-            else {
+            } else {
                 MQAdminInstance.initMQAdminInstance(0);
             }
             obj = joinPoint.proceed();
-        }
-        finally {
+        } finally {
             MQAdminInstance.destroyMQAdminInstance();
             logger.debug("op=look method={} cost={}", joinPoint.getSignature().getName(), System.currentTimeMillis() - start);
         }

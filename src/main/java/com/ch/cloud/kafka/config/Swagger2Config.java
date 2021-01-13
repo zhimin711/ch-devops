@@ -1,20 +1,20 @@
 package com.ch.cloud.kafka.config;
 
 import com.ch.Constants;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 
 /**
@@ -34,6 +34,7 @@ public class Swagger2Config {
     @Bean
     public Docket buildDocket() {
         //api文档实例
+
         //文档类型：DocumentationType.SWAGGER_2
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())    //.apiInfo(apiInfo())
@@ -49,8 +50,8 @@ public class Swagger2Config {
      * @param basePackage 基础包路径
      * @return
      */
-    public static Predicate<RequestHandler> basePackage(final String basePackage) {
-        return input -> declaringClass(input).transform(handlerPackage(basePackage)).or(true);
+    private static Predicate<RequestHandler> basePackage(final String basePackage) {
+        return input -> declaringClass(input).map(handlerPackage(basePackage)).orElse(true);
     }
 
     /**
@@ -78,17 +79,17 @@ public class Swagger2Config {
      * @return
      */
     @SuppressWarnings("deprecation")
-    private static Optional<? extends Class<?>> declaringClass(RequestHandler requestHandler) {
-        return Optional.fromNullable(requestHandler.declaringClass());
+    private static Optional<Class<?>> declaringClass(RequestHandler requestHandler) {
+        return Optional.ofNullable(requestHandler.declaringClass());
     }
 
     //构建 api文档的详细信息函数,注意这里的注解引用的是哪个
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 //页面标题
-                .title("朝华 Kafka RESTFUL API")
+                .title("朝华 MQ RESTFUL API")
                 //创建人
-                .contact(new Contact("CHAO YUN", "http://www.chaoyun.com", ""))
+                .contact(new Contact("CHAO HUA", "http://www.chaohua.com", "zhimin711@sina.com"))
                 //版本号
                 .version("1.0.0")
                 //描述
