@@ -44,6 +44,7 @@ dependencies {
 
     //spring boot相关包
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web', {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
@@ -81,6 +82,7 @@ dependencies {
     compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
 //    implementation('org.springframework.kafka:spring-kafka:2+')
+    compile 'redis.clients:jedis:3.1.0'
 
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation 'org.gavaghan:geodesy:1.1.3'
