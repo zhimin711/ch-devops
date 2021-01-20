@@ -130,4 +130,11 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
         dto.setClassFile(path);
         return dto;
     }
+
+    @Override
+    public int update(BtTopic srcRecord, BtTopic targetRecord) {
+        Example example = ExampleUtils.create(srcRecord);
+
+        return topicMapper.updateByExampleSelective(targetRecord, example);
+    }
 }

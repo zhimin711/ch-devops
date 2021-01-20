@@ -35,6 +35,7 @@ import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.tools.command.stats.StatsAllSubCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +49,8 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Component
+
+@ConditionalOnProperty(prefix = "rocketmq.namesrv", value = { "addr" })
 public class DashboardCollectTask {
     private Date currentDate = new Date();
     @Resource

@@ -20,4 +20,6 @@ public interface ITopicService extends IService<Long, BtTopic> {
     int saveOrUpdate(List<TopicInfo> topicList, String clusterName, String username);
 
     TopicDto check(String cluster, String topic);
+
+    int update(BtTopic srcRecord, BtTopic targetRecord);
 }
