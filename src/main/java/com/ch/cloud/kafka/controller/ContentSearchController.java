@@ -88,11 +88,13 @@ public class ContentSearchController {
         return res;
     }
 
+    @ApiOperation(value = "KAFKA消息集群")
     @GetMapping("clusters")
     public Result<BtClusterConfig> getClusters() {
         return ResultUtils.wrapList(() -> clusterConfigService.findEnabled());
     }
 
+    @ApiOperation(value = "KAFKA消息主题")
     @GetMapping("topics")
     public Result<BtTopic> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
                                                    @RequestParam("topicName") String topicName) {

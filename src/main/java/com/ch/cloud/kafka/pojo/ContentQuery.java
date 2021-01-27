@@ -17,28 +17,28 @@ public class ContentQuery {
     /**
      * 集群名称
      */
-    @ApiModelProperty(value = "集群名称", required = true, position = 1)
+    @ApiModelProperty(name = "集群名称", required = true, position = 1)
     private String cluster;
     /**
      * 集群主题
      */
-    @ApiModelProperty(value = "集群主题", required = true, position = 2)
+    @ApiModelProperty(name = "集群主题", required = true, position = 2)
     private String topic;
     /**
      * 搜索类型(0.全量 1.按最新 2.最早 3.)
      */
-    @ApiModelProperty(value = "搜索类型(0.全量 1.按最新 2.最早)", required = true, position = 3)
+    @ApiModelProperty(name = "搜索类型", value = "(0.全量 1.按最新 2.最早)", required = true, position = 3)
     private String type;
     /**
      * 内容
      */
-    @ApiModelProperty(value = "搜索内容", position = 4)
+    @ApiModelProperty(name = "搜索内容", position = 4)
     private String content;
 
-    @ApiModelProperty(value = "搜索页", hidden = true)
-    private int page = 1;
+    @ApiModelProperty(name = "搜索页", hidden = true)
+    private Integer page = 1;
 
-    @ApiModelProperty(value = "搜索量", position = 6)
+    @ApiModelProperty(name = "搜索量", position = 6, example = "1000")
     private int limit = 1000;
 
 }

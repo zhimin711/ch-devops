@@ -29,8 +29,7 @@ configurations {
 
 repositories {
     mavenLocal()
-    maven { url "http://artifactory.sf-express.com/artifactory/maven" }
-    jcenter()
+    maven { url "https://maven.aliyun.com/repository/central" }
     mavenCentral()
     maven { url "https://repo.spring.io/milestone" }
 }
@@ -77,9 +76,9 @@ dependencies {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
-    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
-    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
     compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
+//    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
 //    implementation('org.springframework.kafka:spring-kafka:2+')
     compile 'redis.clients:jedis:3.1.0'
