@@ -45,9 +45,9 @@ public class GlobalExceptionHandler {
             if (ex instanceof PubException) {
                 value = Result.error(((PubException) ex).getError(), ex.getMessage());
             } else if (ex instanceof MQBrokerException) {
-                value = Result.error(PubError.DEFAULT, ((MQBrokerException) ex).getErrorMessage());
+                value = Result.error(PubError.UNDEFINED, ((MQBrokerException) ex).getErrorMessage());
             } else if (ex instanceof MQClientException) {
-                value = Result.error(PubError.DEFAULT, ((MQClientException) ex).getErrorMessage());
+                value = Result.error(PubError.UNDEFINED, ((MQClientException) ex).getErrorMessage());
             } else if (ex instanceof IllegalArgumentException) {
                 value = Result.error(PubError.ARGS, ex.getMessage());
             } else {

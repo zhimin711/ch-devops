@@ -139,7 +139,7 @@ public class MockController {
 
                 log.info("mock objects size: {}", objects.size());
             }
-            return InvokerPage.Page.build(total, objects);
+            return InvokerPage.build(total, objects);
         });
     }
 
@@ -190,7 +190,7 @@ public class MockController {
                 listMap.forEach(e -> System.out.println("[" + DateUtils.formatOfUTC(DateUtils.parseTimestamp(e.getLong("ts"))) + "]"));
 
             }
-            return InvokerPage.Page.build(total, objects);
+            return InvokerPage.build(total, objects);
         });
     }
 
