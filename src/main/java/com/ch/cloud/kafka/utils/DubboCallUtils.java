@@ -6,6 +6,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ch.Separator;
 import com.ch.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +66,7 @@ public class DubboCallUtils {
     }
 
     private static ReferenceConfig getReferenceConfig(String interfaceName, String address, String group, String version) {
-        String referenceKey = interfaceName;
+        String referenceKey = address + Separator._3 + interfaceName;
 
         ReferenceConfig referenceConfig = referenceCache.get(referenceKey);
         if (null == referenceConfig) {
@@ -75,13 +76,13 @@ public class DubboCallUtils {
                 referenceConfig.setRegistry(getRegistryConfig(address, group, version));
 //                Class<?> interfaceClass = Class.forName(interfaceName);
 //                referenceConfig.setInterface(interfaceClass);
-                referenceConfig.setInterface(referenceKey);
+                referenceConfig.setInterface(interfaceName);
                 if (StringUtils.isNotEmpty(version)) {
                     referenceConfig.setVersion(version);
                 }
                 referenceConfig.setProtocol("dubbo");
                 referenceConfig.setGeneric(true);
-                referenceConfig.setTimeout(3600);
+                referenceConfig.setTimeout(10);
                 //referenceConfig.setUrl("dubbo://10.1.50.167:20880/com.test.service.HelloService");
                 referenceCache.put(referenceKey, referenceConfig);
             } catch (Exception e) {
