@@ -82,7 +82,7 @@ public class DubboCallUtils {
                 }
                 referenceConfig.setProtocol("dubbo");
                 referenceConfig.setGeneric(true);
-                referenceConfig.setTimeout(10);
+                referenceConfig.setTimeout(1000);
                 //referenceConfig.setUrl("dubbo://10.1.50.167:20880/com.test.service.HelloService");
                 referenceCache.put(referenceKey, referenceConfig);
             } catch (Exception e) {
