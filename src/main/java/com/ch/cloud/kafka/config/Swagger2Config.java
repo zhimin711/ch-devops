@@ -18,11 +18,12 @@ import java.util.function.Function;
 
 
 /**
- * @author: Wang Chen Chen
- * @Date: 2018/10/26 10:42
- * @describe： swagger2 RESTful接口文档配置
+ * desc: swagger2 Restful接口文档配置
  * 文档URL: http://localhost:7004/swagger2.html
- * @version: 1.0
+ *
+ * @author Zhimin Ma
+ * @date 2018/10/26 10:42
+ * @since 1.0
  */
 
 @EnableSwagger2

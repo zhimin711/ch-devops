@@ -6,7 +6,7 @@ import com.ch.cloud.mock.mocker.BaseMocker;
 /**
  * 模拟对象门面类
  *
- * @author jsonzou, kanyuxia, TaoYu
+ * @author zhimin ma
  */
 public class Mock {
 
