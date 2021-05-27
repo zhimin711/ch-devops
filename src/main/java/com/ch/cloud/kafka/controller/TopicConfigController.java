@@ -9,6 +9,7 @@ import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.TopicManager;
+import com.ch.cloud.kafka.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -57,8 +58,7 @@ public class TopicConfigController {
 
     @ApiOperation(value = "新增主题信息", notes = "")
     @PostMapping
-    public Result<Integer> add(@RequestBody BtTopic record,
-                               @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Integer> add(@RequestBody BtTopic record) {
         BtTopic r = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
         if (r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE)) {
             return Result.error(PubError.EXISTS, "主题已存在！");
@@ -81,11 +81,11 @@ public class TopicConfigController {
                 r.setClusterName(record.getClassName());
                 r.setDescription(record.getDescription());
                 r.setStatus(StatusS.ENABLED);
-                r.setUpdateBy(username);
+                r.setUpdateBy(ContextUtil.getUser());
                 r.setUpdateAt(DateUtils.current());
                 return topicService.update(r);
             }
-            record.setCreateBy(username);
+            record.setCreateBy(ContextUtil.getUser());
             record.setStatus(StatusS.ENABLED);
             return topicService.save(record);
         });
@@ -103,10 +103,9 @@ public class TopicConfigController {
 
     @ApiOperation(value = "修改主题信息", notes = "")
     @PutMapping({"{id}"})
-    public Result<Integer> update(@PathVariable Long id, @RequestBody BtTopic record,
-                                  @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Integer> update(@PathVariable Long id, @RequestBody BtTopic record) {
         return ResultUtils.wrapFail(() -> {
-            record.setUpdateBy(username);
+            record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
             return topicService.update(record);
         });
@@ -114,13 +113,12 @@ public class TopicConfigController {
 
     @ApiOperation(value = "删除主题信息", notes = "")
     @DeleteMapping({"{id}"})
-    public Result<Integer> delete(@PathVariable Long id,
-                                  @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             BtTopic record = new BtTopic();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
-            record.setUpdateBy(username);
+            record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
             int c = topicService.update(record);
             if (c > 0) {
@@ -169,23 +167,21 @@ public class TopicConfigController {
 
     @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题")
     @PostMapping("sync")
-    public Result<Integer> syncTopics(@RequestBody BtTopic topic,
-                                      @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Integer> syncTopics(@RequestBody BtTopic topic) {
         return ResultUtils.wrap(() -> {
             BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
             List<TopicInfo> topicList = TopicManager.getTopics(cluster.getZookeeper());
-            return topicService.saveOrUpdate(topicList, topic.getClusterName(), username);
+            return topicService.saveOrUpdate(topicList, topic.getClusterName(), ContextUtil.getUser());
         });
     }
 
 
     @ApiOperation(value = "清空所有主题", notes = "注：（删除并重建）")
     @PostMapping("clean")
-    public Result<Integer> cleanTopics(@RequestBody BtTopic topic,
-                                       @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Integer> cleanTopics(@RequestBody BtTopic topic) {
         return ResultUtils.wrap(() -> {
             BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
             if (cluster == null) {

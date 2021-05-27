@@ -8,6 +8,7 @@ import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicExtService;
 import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
@@ -51,16 +52,14 @@ public class TopicExtController {
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping
-    public Result<BtTopicExt> configs(BtTopicExt record,
-                                   @RequestHeader(Constants.TOKEN_USER) String username) {
-        return ResultUtils.wrapList(() -> topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), username));
+    public Result<BtTopicExt> configs(BtTopicExt record) {
+        return ResultUtils.wrapList(() -> topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), ContextUtil.getUser()));
     }
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping("{id}")
     public Result<BtTopicExt> load(@PathVariable Long id,
-                                   BtTopicExt record,
-                                   @RequestHeader(Constants.TOKEN_USER) String username) {
+                                   BtTopicExt record) {
         return ResultUtils.wrap(() -> {
             BtTopicExt record2 = topicExtService.find(id);
             if (record2 == null) {
@@ -117,8 +116,7 @@ public class TopicExtController {
 
     @ApiOperation(value = "新增主题扩展信息", notes = "新增主题扩展信息")
     @PostMapping
-    public Result<Long> save(@RequestBody BtTopicExt record,
-                                @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Long> save(@RequestBody BtTopicExt record) {
 
         return ResultUtils.wrapFail(() -> {
             if (CommonUtils.isEmptyOr(record.getClusterName(), record.getTopicName())) {
@@ -133,11 +131,11 @@ public class TopicExtController {
 
             if (r != null) {
                 record.setId(r.getId());
-                record.setUpdateBy(username);
+                record.setUpdateBy(ContextUtil.getUser());
                 record.setUpdateAt(DateUtils.current());
             } else {
                 record.setId(null);
-                record.setCreateBy(username);
+                record.setCreateBy(ContextUtil.getUser());
                 record.setStatus(StatusS.ENABLED);
             }
             topicExtService.save(record);
@@ -147,13 +145,12 @@ public class TopicExtController {
 
     @ApiOperation(value = "删除主题扩展信息", notes = "")
     @DeleteMapping({"{id}"})
-    public Result<Integer> delete(@PathVariable Long id,
-                                  @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             BtTopicExt record = new BtTopicExt();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
-            record.setUpdateBy(username);
+            record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
             return topicExtService.update(record);
         });

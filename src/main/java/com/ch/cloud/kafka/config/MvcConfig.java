@@ -40,6 +40,6 @@ public class MvcConfig implements WebMvcConfigurer {
                 ContextUtil.setUser(user);
                 return true;
             }
-        }).addPathPatterns("/**");
+        }).addPathPatterns("/**").excludePathPatterns("/webjars/**");
     }
 }

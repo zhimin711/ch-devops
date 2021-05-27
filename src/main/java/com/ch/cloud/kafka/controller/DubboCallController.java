@@ -25,8 +25,7 @@ public class DubboCallController {
 
     @ApiOperation(value = "Dubbo 调用")
     @PostMapping("call")
-    public Object call(@RequestBody DubboCall2 record,
-                       @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Object call(@RequestBody DubboCall2 record) {
         return DubboCallUtils.invoke(record.getAddress(), record.getVersion(), record.getInterfaceName(),
                 record.getMethod(), record.getParamClassName(),
                 record.getParamJson());
@@ -34,8 +33,7 @@ public class DubboCallController {
 
     @ApiOperation(value = "Dubbo 存储调用参数")
     @PostMapping("params")
-    public Object saveCallParams(@RequestBody DubboCall2 record,
-                       @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Object saveCallParams(@RequestBody DubboCall2 record) {
         return DubboCallUtils.invoke(record.getAddress(), record.getVersion(), record.getInterfaceName(),
                 record.getMethod(), record.getParamClassName(),
                 record.getParamJson());
@@ -43,8 +41,7 @@ public class DubboCallController {
 
     @ApiOperation(value = "Dubbo 更新存储调用参数")
     @PutMapping("params")
-    public Object editCallParams(@RequestBody DubboCall2 record,
-                       @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Object editCallParams(@RequestBody DubboCall2 record) {
         return DubboCallUtils.invoke(record.getAddress(), record.getVersion(), record.getInterfaceName(),
                 record.getMethod(), record.getParamClassName(),
                 record.getParamJson());

@@ -11,6 +11,7 @@ import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.cloud.kafka.service.IContentSearchService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
+import com.ch.cloud.kafka.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
@@ -48,8 +49,7 @@ public class ContentSearchController {
 
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
-    public Result<?> search(ContentQuery record,
-                            @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<?> search(ContentQuery record) {
         Result<TopicDto> res1 = ResultUtils.wrapFail(() -> topicService.check(record.getCluster(), record.getTopic()));
         if (res1.isEmpty()) {
             return res1;
@@ -58,7 +58,7 @@ public class ContentSearchController {
         KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
         contentTool.setContentSearchService(contentSearchService);
         contentTool.setContentRecordService(contentRecordService);
-        contentTool.setUsername(username);
+        contentTool.setUsername(ContextUtil.getUser());
         Result<BtContentRecord> res = ResultUtils.wrapList(() -> {
             SearchType searchType = SearchType.ALL;
             if ("1".equals(record.getType())) {

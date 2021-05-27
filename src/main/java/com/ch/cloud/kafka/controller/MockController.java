@@ -48,8 +48,7 @@ public class MockController {
 
     @ApiOperation(value = "生成数据", notes = "生成主题数据")
     @PostMapping
-    public Result<?> mock(@RequestBody BtTopicExt record,
-                          @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<?> mock(@RequestBody BtTopicExt record) {
 
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
@@ -147,8 +146,7 @@ public class MockController {
 
     @ApiOperation(value = "生成GPS数据", notes = "生成GPS数据并发送Kafka")
     @PostMapping("gps")
-    public Result<?> gps(@RequestBody BtTopicExt record,
-                         @RequestHeader(Constants.TOKEN_USER) String username) {
+    public Result<?> gps(@RequestBody BtTopicExt record) {
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
                 ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
