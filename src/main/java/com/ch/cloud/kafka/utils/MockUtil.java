@@ -8,6 +8,7 @@ import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
 import com.ch.cloud.mock.MockRule;
 import com.ch.cloud.mock.pojo.MockProp;
+import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.utils.*;
 import com.google.common.collect.Lists;
@@ -31,7 +32,7 @@ import java.util.Map;
 public class MockUtil {
 
     public static final String range_regex = "[~]";
-    public static final String OBJ = "{}";
+    public static final String OBJ         = "{}";
 
     public static boolean checkProps(List<BtTopicExtProp> props) {
         boolean isSingle = false;
@@ -48,10 +49,10 @@ public class MockUtil {
         return true;
     }
 
-    public static final String GPS_NAME = "经纬度";
+    public static final String GPS_NAME     = "经纬度";
     public static final String GPS_LNG_NAME = "经度";
     public static final String GPS_LAT_NAME = "纬度";
-    public static final String GPS_TIME = "轨迹时间";
+    public static final String GPS_TIME     = "轨迹时间";
 
     public static boolean checkGPSProps(BtTopicExt record) {
         if (record.getPoints().size() < 2) {
@@ -85,7 +86,7 @@ public class MockUtil {
 
 
     public static Object mockDataProp(BtTopicExtProp prop) throws Exception {
-        BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
+        BeanUtilsV2.BasicType type = BeanUtilsV2.BasicType.fromObject(prop.getType());
         if (type != null) {
             if (CommonUtils.isEmpty(prop.getValRegex())) {
                 MockConfig config = new MockConfig();
@@ -102,7 +103,7 @@ public class MockUtil {
                 if (arr.length == 1) {
                     arr = prop.getValRegex().split(Constants.SEPARATOR_5);
                 }
-                if (arr.length == 1 && type != BeanExtUtils.BasicType.STRING) {
+                if (arr.length == 1 && type != BeanUtilsV2.BasicType.STRING) {
                     return prop.getValRegex();
                 }
 
@@ -149,7 +150,7 @@ public class MockUtil {
             }
         }
         Class<?> clazz1 = KafkaSerializeUtils.loadClazz(null, prop.getType());
-        if (BeanExtUtils.isDate(clazz1)) {
+        if (BeanUtilsV2.isDate(clazz1)) {
             MockConfig config = new MockConfig();
             if (CommonUtils.isNotEmpty(prop.getValRegex())) {
                 String[] dArr = prop.getValRegex().split(Constants.SEPARATOR_5);
@@ -188,7 +189,7 @@ public class MockUtil {
             BeanUtils.copyProperties(prop, prop2);
             MockRule rule = MockRule.valueOf(prop.getRule());
             prop2.setRule(rule);
-            BeanExtUtils.BasicType type = BeanExtUtils.BasicType.fromObject(prop.getType());
+            BeanUtilsV2.BasicType type = BeanUtilsV2.BasicType.fromObject(prop.getType());
             if (!CommonUtils.isEquals(OBJ, prop.getType())) {
                 if (type == null && !CommonUtils.isEquals(Date.class.getName(), prop.getType())) {
                     ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "类型错误！");
@@ -211,7 +212,7 @@ public class MockUtil {
                 props2.add(prop2);
                 continue;
             }
-            boolean isDate = BeanExtUtils.isDate(prop2.getTargetClass());
+            boolean isDate = BeanUtilsV2.isDate(prop2.getTargetClass());
             switch (rule) {
                 case RANDOM:
                     if (isDate && CommonUtils.isNotEmpty(prop.getValRegex())) {
@@ -240,7 +241,7 @@ public class MockUtil {
                         tmp = tmp.substring(0, prop.getValRegex().indexOf("]") - 1);
                     }
                     String[] arr;
-                    if (type == BeanExtUtils.BasicType.STRING || type == BeanExtUtils.BasicType.CHAR) {
+                    if (type == BeanUtilsV2.BasicType.STRING || type == BeanUtilsV2.BasicType.CHAR) {
                         arr = tmp.split(Constants.SEPARATOR_2);
                     } else if (isDate) {
                         arr = tmp.split(Constants.SEPARATOR_5);
@@ -250,7 +251,7 @@ public class MockUtil {
                     if (arr.length < 2) {
                         ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
                     }
-                    if (type == BeanExtUtils.BasicType.STRING) {
+                    if (type == BeanUtilsV2.BasicType.STRING) {
                         prop2.setStrRange(arr);
                     } else if (isDate) {
                         Date d1 = DateUtils.parse(arr[0]);
@@ -285,7 +286,7 @@ public class MockUtil {
                         prop2.setPattern(parseDatePattern(prop.getValRegex()));
                         break;
                     }
-                    if (type == null || type == BeanExtUtils.BasicType.STRING || type == BeanExtUtils.BasicType.CHAR) {
+                    if (type == null || type == BeanUtilsV2.BasicType.STRING || type == BeanUtilsV2.BasicType.CHAR) {
                         ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
                     }
                     String basic = parseNumberBasic(prop.getValRegex());
@@ -413,8 +414,8 @@ public class MockUtil {
     public static Object mockProp(MockProp prop, int offset) {
         Object o = null;
 
-        boolean isDate = BeanExtUtils.isDate(prop.getTargetClass());
-        boolean isString = BeanExtUtils.isString(prop.getTargetClass());
+        boolean isDate = BeanUtilsV2.isDate(prop.getTargetClass());
+        boolean isString = BeanUtilsV2.isString(prop.getTargetClass());
 
         MockConfig config = new MockConfig();
         switch (prop.getRule()) {
@@ -472,7 +473,7 @@ public class MockUtil {
                         customVMap.put(code, o1);
                     }
                     if (o != null) {
-                        BeanExtUtils.setFieldValue(o, customVMap, true);
+                        BeanUtilsV2.setFieldValue(o, customVMap, true);
                     } else {
                         o = new JSONObject(customVMap);
                     }

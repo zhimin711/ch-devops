@@ -66,7 +66,7 @@ public class DubboCallUtils {
     }
 
     private static ReferenceConfig getReferenceConfig(String interfaceName, String address, String group, String version) {
-        String referenceKey = address + Separator._3 + interfaceName;
+        String referenceKey = address + Separator.S3 + interfaceName;
 
         ReferenceConfig referenceConfig = referenceCache.get(referenceKey);
         if (null == referenceConfig) {

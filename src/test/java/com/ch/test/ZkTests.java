@@ -2,6 +2,9 @@ package com.ch.test;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.junit.Test;
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
 
 /**
  * decs:
@@ -27,4 +30,18 @@ public class ZkTests {
         System.out.println(zkClient.exists(ROOT_PATH_WITHOUT_SUFFIX));
     }
 
+
+    public static void main(String[] args) {
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            Unsafe u = (Unsafe) f.get(null);
+            System.out.println(Long.MAX_VALUE+"");
+            long address = u.allocateMemory(Long.MAX_VALUE/1024);
+
+            u.freeMemory(address);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
 }

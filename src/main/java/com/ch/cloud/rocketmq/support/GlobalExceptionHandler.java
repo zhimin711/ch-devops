@@ -17,15 +17,12 @@
 
 package com.ch.cloud.rocketmq.support;
 
-import com.ch.cloud.rocketmq.exception.ServiceException;
 import com.ch.e.PubError;
 import com.ch.e.PubException;
 import com.ch.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;

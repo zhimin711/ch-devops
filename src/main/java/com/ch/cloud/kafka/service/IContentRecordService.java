@@ -11,7 +11,7 @@ import java.util.List;
  * @author zhimin.ma
  * @date 2019/10/30
  */
-public interface IContentRecordService extends IService<Long, BtContentRecord> {
+public interface IContentRecordService extends IService<BtContentRecord> {
 
     List<BtContentRecord> findBySid(Long sid);
 }

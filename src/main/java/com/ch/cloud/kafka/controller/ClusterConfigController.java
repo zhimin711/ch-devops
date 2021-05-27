@@ -13,7 +13,7 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.ExceptionUtils;
+import com.ch.e.ExceptionUtils;
 import com.github.pagehelper.PageInfo;
 import io.micrometer.core.instrument.binder.kafka.KafkaConsumerMetrics;
 import io.swagger.annotations.Api;

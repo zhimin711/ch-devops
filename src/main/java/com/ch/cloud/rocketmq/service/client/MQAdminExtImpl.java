@@ -18,7 +18,7 @@ package com.ch.cloud.rocketmq.service.client;
 
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.e.PubError;
-import com.ch.utils.ExceptionUtils;
+import com.ch.e.ExceptionUtils;
 import com.google.common.base.Throwables;
 import org.apache.rocketmq.client.QueryResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;

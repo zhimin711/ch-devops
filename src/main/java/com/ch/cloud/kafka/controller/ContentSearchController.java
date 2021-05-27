@@ -16,7 +16,7 @@ import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.ExceptionUtils;
+import com.ch.e.ExceptionUtils;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -120,7 +120,7 @@ public class ContentSearchController {
 
     @PostMapping("send")
     public Result<Integer> sendMessage(@RequestBody ContentSearchDto searchDto) {
-        return ResultUtils.wrapFail(() -> {
+        return ResultUtils.wrap(() -> {
             if (CommonUtils.isEmpty(searchDto.getContent())) {
                 throw ExceptionUtils.create(PubError.NON_NULL, "发送消息不能为空!");
             }
@@ -129,25 +129,22 @@ public class ContentSearchController {
             KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
 
             contentTool.send(KafkaSerializeUtils.convertContent(topicDto, searchDto.getContent()));
-            return 1;
         });
     }
 
 
     @PutMapping("resend/{sid}")
     public Result<Integer> resendMessage(@PathVariable Long sid, @RequestBody String content) {
-        return ResultUtils.wrapFail(() -> {
+        return ResultUtils.wrap(() -> {
             BtContentSearch searchRecord = contentSearchService.find(sid);
             TopicDto topicDto = topicService.check(searchRecord.getCluster(), searchRecord.getTopic());
 
             KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
 
             contentTool.send(KafkaSerializeUtils.convertContent(topicDto, content));
-            return 1;
 //            BtClusterConfig config = clusterConfigService.findByClusterName(searchRecord.getCluster());
 //            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), searchRecord.getCluster(), searchRecord.getTopic());
 //            contentTool.send(content.getBytes());
-//            return 1;
         });
     }
 

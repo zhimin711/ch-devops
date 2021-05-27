@@ -5,12 +5,10 @@ import com.ch.cloud.kafka.mapper.BtClusterConfigMapper;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.tools.KafkaManager;
-import com.ch.mybatis.service.BaseService;
+import com.ch.mybatis.service.ServiceImpl;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 import java.util.Map;
@@ -20,15 +18,8 @@ import java.util.Map;
  * @date 2018/9/25 19:14
  */
 @Service
-public class ClusterConfigServiceImpl extends BaseService<Long, BtClusterConfig> implements ClusterConfigService {
+public class ClusterConfigServiceImpl extends ServiceImpl<BtClusterConfigMapper, BtClusterConfig> implements ClusterConfigService {
 
-    @Autowired(required = false)
-    private BtClusterConfigMapper clusterConfigMapper;
-
-    @Override
-    protected Mapper<BtClusterConfig> getMapper() {
-        return clusterConfigMapper;
-    }
 
     @Override
     public int save(BtClusterConfig record) {
@@ -51,13 +42,13 @@ public class ClusterConfigServiceImpl extends BaseService<Long, BtClusterConfig>
         }
         BtClusterConfig q = new BtClusterConfig();
         q.setClusterName(cluster);
-        return clusterConfigMapper.selectOne(q);
+        return getMapper().selectOne(q);
     }
 
     @Override
     public List<BtClusterConfig> findEnabled() {
         BtClusterConfig q = new BtClusterConfig();
         q.setStatus(StatusS.ENABLED);
-        return clusterConfigMapper.select(q);
+        return getMapper().select(q);
     }
 }

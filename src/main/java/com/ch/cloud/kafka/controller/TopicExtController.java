@@ -13,10 +13,10 @@ import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.toolkit.UUIDGenerator;
-import com.ch.utils.BeanExtUtils;
+import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.ExceptionUtils;
+import com.ch.e.ExceptionUtils;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -89,7 +89,7 @@ public class TopicExtController {
                 return;
             }
 //            Object obj = clazz.newInstance();
-            Map<String, Object> map = BeanExtUtils.getPropertyAndType(clazz);
+            Map<String, Object> map = BeanUtilsV2.getPropertyAndType(clazz);
             props = convert(map);
         }
 

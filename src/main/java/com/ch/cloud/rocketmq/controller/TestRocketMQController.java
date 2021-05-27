@@ -22,8 +22,8 @@ import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.ExceptionUtils;
-import com.ch.utils.StringExtUtils;
+import com.ch.e.ExceptionUtils;
+import com.ch.utils.StringUtilsV2;
 import com.google.common.collect.Sets;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +75,7 @@ public class TestRocketMQController {
             TopicList list = topicService.fetchAllTopicList();
             allTopics = list.getTopicList();
         }
-        List<String> topics = StringExtUtils.splitStr(Constants.SEPARATOR_2, topicStr);
+        List<String> topics = StringUtilsV2.splitStr(Constants.SEPARATOR_2, topicStr);
         Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e)).collect(Collectors.toSet());
         if (list.isEmpty()) return null;
         int consumerThreadSize2 = CommonUtils.isEmpty(consumerThreadSize) ? 1 : consumerThreadSize;

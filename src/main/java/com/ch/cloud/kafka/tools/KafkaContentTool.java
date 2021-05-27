@@ -13,7 +13,7 @@ import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.ExceptionUtils;
+import com.ch.e.ExceptionUtils;
 import com.ch.utils.JSONUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

@@ -15,7 +15,7 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.ExceptionUtils;
+import com.ch.e.ExceptionUtils;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -144,7 +144,7 @@ public class TopicConfigController {
         return ResultUtils.wrapList(() -> {
             BtClusterConfig cluster = clusterConfigService.findByClusterName(clusterName);
             if (cluster == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS);
+                ExceptionUtils._throw(PubError.NOT_EXISTS);
             }
             return TopicManager.getTopicsByName(cluster.getZookeeper(), topicName);
         });

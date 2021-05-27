@@ -9,7 +9,7 @@ import com.ch.mybatis.service.IService;
  * @author zhimin.ma
  * @date 2019/10/30
  */
-public interface IContentSearchService extends IService<Long, BtContentSearch> {
+public interface IContentSearchService extends IService<BtContentSearch> {
 
     int start(Long id);
 

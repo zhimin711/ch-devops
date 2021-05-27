@@ -7,13 +7,12 @@ import com.ch.cloud.kafka.mapper.BtTopicExtPropMapper;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.kafka.service.ITopicExtService;
-import com.ch.mybatis.service.BaseService;
+import com.ch.mybatis.service.ServiceImpl;
 import com.ch.toolkit.UUIDGenerator;
 import com.ch.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.Sqls;
 
@@ -27,15 +26,7 @@ import java.util.stream.Collectors;
  * @date 2018/9/25 19:14
  */
 @Service
-public class TopicExtServiceImpl extends BaseService<Long, BtTopicExt> implements ITopicExtService {
-
-    @Resource
-    private BtTopicExtMapper mapper;
-
-    @Override
-    protected Mapper<BtTopicExt> getMapper() {
-        return mapper;
-    }
+public class TopicExtServiceImpl extends ServiceImpl<BtTopicExtMapper, BtTopicExt> implements ITopicExtService {
 
     @Resource
     private BtTopicExtPropMapper propMapper;

@@ -11,7 +11,7 @@ import java.util.List;
  * @author zhimin.ma
  * @date 2018/9/25 18:20
  */
-public interface ITopicService extends IService<Long, BtTopic> {
+public interface ITopicService extends IService<BtTopic> {
 
     BtTopic findByClusterAndTopic(String cluster, String topic);
 

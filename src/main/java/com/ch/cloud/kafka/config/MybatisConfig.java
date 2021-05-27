@@ -1,6 +1,6 @@
 package com.ch.cloud.kafka.config;
 
-import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -40,17 +40,17 @@ public class MybatisConfig {
 //        bean.setTypeAliasesPackage("com.zh.books.**.model");
 
         //分页插件
-        PageHelper pageHelper = new PageHelper();
+        PageInterceptor pageInterceptor = new PageInterceptor();
         //PageHelper Properties
         Properties properties = new Properties();
         properties.setProperty("reasonable", "true");
         properties.setProperty("supportMethodsArguments", "true");
         properties.setProperty("returnPageInfo", "check");
         properties.setProperty("params", "count=countSql");
-        pageHelper.setProperties(properties);
+        pageInterceptor.setProperties(properties);
 
         //添加插件
-        bean.setPlugins(new Interceptor[]{pageHelper});
+        bean.setPlugins(new Interceptor[]{pageInterceptor});
 
         //添加XML目录
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();

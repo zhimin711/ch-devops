@@ -10,7 +10,7 @@ import java.util.List;
  * @author zhimin.ma
  * @date 2018/9/25 18:20
  */
-public interface ITopicExtService extends IService<Long, BtTopicExt> {
+public interface ITopicExtService extends IService<BtTopicExt> {
 
     List<BtTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username);
 

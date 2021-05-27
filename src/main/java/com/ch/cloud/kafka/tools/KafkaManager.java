@@ -1,22 +1,18 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
+import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
-import com.ch.utils.ExceptionUtils;
-import com.ch.utils.JSONUtils;
 import com.google.common.collect.Maps;
 import kafka.cluster.Broker;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.exception.ZkTimeoutException;
-import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.collection.Iterator;
 import scala.collection.Seq;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**

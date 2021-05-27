@@ -9,12 +9,12 @@ import com.ch.cloud.kafka.pojo.TopicDto;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
-import com.ch.mybatis.service.BaseService;
+import com.ch.mybatis.service.ServiceImpl;
 import com.ch.mybatis.utils.ExampleUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.ExceptionUtils;
 import com.ch.utils.SQLUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -22,7 +22,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.Sqls;
 
@@ -35,20 +34,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2018/9/25 19:14
  */
 @Service
-public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITopicService {
+public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implements ITopicService {
 
-    @Autowired(required = false)
-    private BtTopicMapper topicMapper;
     @Autowired
     private ClusterConfigService clusterConfigService;
 
     @Value("${share.path.libs}")
     private String libsDir;
-
-    @Override
-    protected Mapper<BtTopic> getMapper() {
-        return topicMapper;
-    }
 
     @Override
     public BtTopic findByClusterAndTopic(String cluster, String topic) {
@@ -135,6 +127,6 @@ public class TopicServiceImpl extends BaseService<Long, BtTopic> implements ITop
     public int update(BtTopic srcRecord, BtTopic targetRecord) {
         Example example = ExampleUtils.create(srcRecord);
 
-        return topicMapper.updateByExampleSelective(targetRecord, example);
+        return getMapper().updateByExampleSelective(targetRecord, example);
     }
 }
