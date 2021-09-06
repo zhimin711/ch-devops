@@ -1,7 +1,7 @@
 nacos:
   config:
-    namespace:
-    server-addr: 192.168.199.194:8848
+    namespace: local
+    server-addr: nacos.12301.io:80
 spring:
   devtools:
     restart:
@@ -11,16 +11,12 @@ spring:
       exclude: static/**,assets/**,templates/**
   application:
     name: ch-kafka
-  profiles:
-    active: local
-  main:
-    allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
   cloud:
     nacos:
       discovery:
         server-addr: ${nacos.config.server-addr}
-        namespace: ${nacos.namespace:}
+        namespace: ${nacos.config.namespace:}
       config:
         server-addr: ${nacos.config.server-addr}
-        namespace: ${nacos.namespace:}
-        shared-dataids: ch-kafka.yml #,ch-sentinel.properties
+        namespace: ${nacos.config.namespace:}
+        file-extension: yml

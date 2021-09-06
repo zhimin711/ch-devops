@@ -18,7 +18,7 @@ ext {
     springCloudVersion = 'Greenwich.RELEASE'
     springOauth2 = '2.3.4.RELEASE'
     alicloudVersion = '+' //0.2.1.RELEASE,0.9.0.RELEASE
-    chVersion = '1.0.5-SNAPSHOT' //0.2.1.RELEASE
+    chVersion = '2.0.0-SNAPSHOT' //0.2.1.RELEASE
     rocketmqVersion = '4.0.0-incubating' //0.2.1.RELEASE
 }
 configurations {
