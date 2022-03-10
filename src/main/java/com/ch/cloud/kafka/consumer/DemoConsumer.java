@@ -21,21 +21,22 @@ public class DemoConsumer {
     private Logger logger = LoggerFactory.getLogger(DemoConsumer.class);
 
     private String topic;
+
     private ConsumerConnector consumer;
 
     public DemoConsumer(String servers, String groupId, String topic) {
         Properties props = new Properties();
 
         props.put("zookeeper.connect", servers);
-//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.202.34.28:9093,10.202.34.29:9093,10.202.34.30:9093");
+//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.20.211:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
 
-//  smallest,earliest,largest
+        //  smallest,earliest,largest
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "smallest");
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
-//        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 
         props.put("zookeeper.session.timeout.ms", "400");
         props.put("zookeeper.sync.time.ms", "200");

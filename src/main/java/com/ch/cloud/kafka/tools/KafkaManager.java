@@ -37,13 +37,13 @@ public class KafkaManager {
 
             zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
 
-            Seq<Broker> brokersInCluster = ZkUtils.getAllBrokersInCluster(zkClient);
+           /* Seq<Broker> brokersInCluster = ZkUtils.getAllBrokersInCluster(zkClient);
             Iterator<Broker> iterator = brokersInCluster.iterator();
             while (iterator.hasNext()) {
                 Broker broker = iterator.next();
                 logger.info("broker host: {}, port: {}.", broker.host(), broker.port());
                 brokers.put(broker.host(), broker.port());
-            }
+            }*/
         } catch (ZkTimeoutException e) {
             ExceptionUtils._throw(PubError.CONNECT, "连接错误，请稍后重试...", e);
         } catch (Exception e) {

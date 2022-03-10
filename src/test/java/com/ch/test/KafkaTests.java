@@ -8,12 +8,12 @@ import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.cloud.kafka.tools.TopicManager;
 import com.ch.utils.JSONUtils;
-import kafka.api.OffsetRequest;
-import kafka.api.OffsetResponse;
-import kafka.api.PartitionOffsetRequestInfo;
-import kafka.api.TopicMetadataResponse;
-import kafka.common.TopicAndPartition;
-import kafka.consumer.SimpleConsumer;
+//import kafka.api.OffsetRequest;
+//import kafka.api.OffsetResponse;
+//import kafka.api.PartitionOffsetRequestInfo;
+//import kafka.api.TopicMetadataResponse;
+//import kafka.common.TopicAndPartition;
+//import kafka.consumer.SimpleConsumer;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -79,6 +79,7 @@ public class KafkaTests {
     public void testAdmin() {
 
     }
+/*
 
     @Test
     public void consumer() {
@@ -125,6 +126,7 @@ public class KafkaTests {
         long[] offsets = response.offsets(topic, partition);
         return offsets[0];
     }
+*/
 
 
     private Properties getProp() {

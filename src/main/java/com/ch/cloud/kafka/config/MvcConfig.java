@@ -35,7 +35,7 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                String user = request.getHeader(Constants.TOKEN_USER);
+                String user = request.getHeader(Constants.X_TOKEN_USER);
                 log.info("filter user: {}", user);
                 ContextUtil.setUser(user);
                 return true;

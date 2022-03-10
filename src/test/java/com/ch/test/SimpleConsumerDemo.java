@@ -81,8 +81,8 @@ public class SimpleConsumerDemo {
     }
     @Test
     public void get2() {
-        String zkServer = "100.80.131.199:2181,100.80.131.200:2181,100.80.131.201:2181,100.80.131.245:2181,100.80.131.246:2181/kafka/eos_tbp_core_vs7usn2s01";
-        DemoConsumer consumer = new DemoConsumer(zkServer,"KafkaZM","TDM_IOV_RUN_DATA");
+        String zkServer = "192.168.20.211:2181";
+        DemoConsumer consumer = new DemoConsumer(zkServer,"KafkaZM","myuu_pft_evolute_group_product");
 
         consumer.nextTuple();
 
@@ -291,9 +291,9 @@ public class SimpleConsumerDemo {
         }
         if (returnMetaData != null) {
             m_replicaBrokers.clear();
-            for (kafka.cluster.Broker replica : returnMetaData.replicas()) {
-                m_replicaBrokers.add(replica.host());
-            }
+//            for (kafka.cluster.Broker replica : returnMetaData.replicas()) {
+//                m_replicaBrokers.add(replica.host());
+//            }
         }
         return returnMetaData;
     }

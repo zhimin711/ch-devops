@@ -39,14 +39,14 @@ public class TopicManager {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(config.getZookeeper());
-            if (!AdminUtils.topicExists(zkClient, config.getTopicName())) {
+/*            if (!AdminUtils.topicExists(zkClient, config.getTopicName())) {
                 AdminUtils.createTopic(zkClient, config.getTopicName(), config.getPartitions(),
                         config.getReplicationFactor(), config.getProperties());
 
                 log.info("{}:successful create!", config.getTopicName());
             } else {
                 log.error(config.getTopicName() + " is exits!");
-            }
+            }*/
 
         } catch (Exception e) {
             log.error("zk connect or topic create error!", e);
@@ -100,7 +100,7 @@ public class TopicManager {
         List<String> topics = Lists.newArrayList();
         try {
             zkClient = new ZkClient(zkUrl);
-            Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
+            /*Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
             Iterator<String> iterator = topicSeq.iterator();
             while (iterator.hasNext()) {
                 String topic = iterator.next();
@@ -110,7 +110,7 @@ public class TopicManager {
                 } else {
                     topics.add(topic);
                 }
-            }
+            }*/
         } catch (Exception e) {
             log.error("zk connect or fetch topics error!" + topics, e);
         } finally {
@@ -130,10 +130,10 @@ public class TopicManager {
             zkClient = new ZkClient(zkUrl);
             zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
             //先取得原始的参数，然后添加新的参数同时去除需要去除的参数
-            Properties oldProperties = AdminUtils.fetchTopicConfig(zkClient, topicName);
+/*            Properties oldProperties = AdminUtils.fetchTopicConfig(zkClient, topicName);
             if (!oldProperties.isEmpty()) {
                 properties.putAll(new HashMap<>(oldProperties));
-            }
+            }*/
             // 增加topic级别属性
             properties.put("min.cleanable.dirty.ratio", "0.3");
             // 删除topic级别属性
@@ -154,7 +154,7 @@ public class TopicManager {
         ZkClient zkClient = null;
         try {
             zkClient = new ZkClient(zkUrl);
-            AdminUtils.deleteTopic(zkClient, topic);
+//            AdminUtils.deleteTopic(zkClient, topic);
         } catch (Exception e) {
             log.error("delete error! => " + topic, e);
         } finally {
@@ -171,12 +171,12 @@ public class TopicManager {
         try {
             zkClient = new ZkClient(zkUrl);
 
-            Map<String, Properties> configsMap = AdminUtils.fetchAllTopicConfigs(zkClient);
+         /*   Map<String, Properties> configsMap = AdminUtils.fetchAllTopicConfigs(zkClient);
             Iterator<Tuple2<String, Properties>> iterator = configsMap.iterator();
             while (iterator.hasNext()) {
                 Tuple2<String, Properties> tuple2 = iterator.next();
                 System.out.println(tuple2._1 + tuple2._2);
-            }
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -201,14 +201,14 @@ public class TopicManager {
 
         List<TopicInfo> topics = Lists.newArrayList();
         topicNames.forEach(e -> {
-            try {
+     /*       try {
                 boolean exists = AdminUtils.topicExists(zkClient, e);
                 if (!exists) return;
                 TopicInfo info = getTopicInfo(zkClient, e);
                 topics.add(info);
             } catch (Exception ex) {
                 log.error("get topic info error!", ex);
-            }
+            }*/
         });
         close(zkClient);
         return topics;
@@ -220,7 +220,7 @@ public class TopicManager {
         try {
             zkClient = new ZkClient(zkUrl, 360000);
             zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
-            Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
+      /*      Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
             Set<TopicMetadata> topicMetadataSet = AdminUtils.fetchTopicMetadataFromZk(topicSeq.toSet(), zkClient);
 
             Iterator<TopicMetadata> metadataIterator = topicMetadataSet.iterator();
@@ -228,7 +228,7 @@ public class TopicManager {
                 kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(metadataIterator.next());
                 TopicInfo info = convertTopicMeta(meta, meta.topic());
                 topics.add(info);
-            }
+            }*/
         } catch (Exception e) {
             log.error("zk connect or fetch topics error!");
         } finally {
@@ -255,13 +255,13 @@ public class TopicManager {
         try {
             zkClient = new ZkClient(zkUrl, 360000);
             zkClient.setZkSerializer(KafkaSerializeUtils.jsonZk());
-            Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
+            /*Seq<String> topicSeq = ZkUtils.getAllTopics(zkClient);
             Iterator<String> iter1 = topicSeq.iterator();
             while (iter1.hasNext()) {
                 String name = iter1.next();
                 TopicInfo info = getTopicInfo(zkClient, name);
                 topics.add(info);
-            }
+            }*/
         } catch (Exception e) {
             log.error("zk connect or fetch topics error!");
         } finally {
@@ -270,9 +270,9 @@ public class TopicManager {
         return topics;
     }
 
-    private static TopicInfo getTopicInfo(ZkClient zkClient, String name) {
+  /*  private static TopicInfo getTopicInfo(ZkClient zkClient, String name) {
         TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(name, zkClient);
         kafka.javaapi.TopicMetadata meta = new kafka.javaapi.TopicMetadata(topicMetadata);
         return convertTopicMeta(meta, name);
-    }
+    }*/
 }
