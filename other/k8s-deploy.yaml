@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: container-ncrbje
-          image: 'registry.kubeoperator.io:8082/ch/ch-upms:${DATETIME}'
+          image: 'registry.kubeoperator.io:8082/ch/ch-mq:${DATETIME}'
           ports:
             - name: tcp-8080
               containerPort: 8080
