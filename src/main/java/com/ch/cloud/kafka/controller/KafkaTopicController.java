@@ -33,7 +33,7 @@ import java.util.List;
 @Api(tags = "KAFKA主题配置模块")
 @RestController
 @RequestMapping("topic")
-public class TopicConfigController {
+public class KafkaTopicController {
 
     @Autowired
     private ITopicService topicService;

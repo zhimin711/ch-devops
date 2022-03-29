@@ -1,6 +1,5 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtTopic;
 import com.ch.cloud.kafka.model.BtTopicExt;
@@ -38,7 +37,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("topic/ext")
 @Slf4j
-public class TopicExtController {
+public class KafkaTopicExtController {
 
     @Autowired
     private ITopicExtService topicExtService;

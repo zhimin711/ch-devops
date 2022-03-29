@@ -27,7 +27,7 @@ import java.util.Set;
 @Api(tags = "KAFKA集群配置模块")
 @RestController
 @RequestMapping("cluster")
-public class ClusterConfigController {
+public class KafkaClusterController {
 
     @Autowired
     private ClusterConfigService clusterConfigService;
