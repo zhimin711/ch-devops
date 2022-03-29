@@ -65,7 +65,7 @@ public class KafkaContentTool {
         this.cluster = cluster;
         this.topic = topic;
 
-        brokers = KafkaManager.getAllBrokersInCluster(zookeeper);
+        brokers = KafkaClusterUtils.getAllBrokersInCluster(zookeeper);
         partitions = getTopicPartitions();
     }
 
@@ -73,7 +73,7 @@ public class KafkaContentTool {
         if (CommonUtils.isEmpty(zkUrl)) {
             throw ExceptionUtils.create(PubError.ARGS);
         }
-        brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
+        brokers = KafkaClusterUtils.getAllBrokersInCluster(zkUrl);
         this.topic = topic;
         partitions = getTopicPartitions();
     }

@@ -1,34 +1,38 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.cloud.kafka.pojo.ContentType;
-import com.ch.cloud.kafka.pojo.PartitionInfo;
-import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
-import com.ch.e.PubError;
+import com.ch.cloud.kafka.model.BtClusterConfig;
+import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.pojo.BrokerDTO;
+import com.ch.cloud.kafka.pojo.Partition;
+import com.ch.cloud.kafka.pojo.TopicInfo;
+import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.DateUtils;
-import com.ch.e.ExceptionUtils;
-import com.ch.utils.JSONUtils;
-import com.google.common.collect.Lists;
-import kafka.api.*;
-import kafka.common.TopicAndPartition;
-import kafka.consumer.SimpleConsumer;
-import kafka.javaapi.message.ByteBufferMessageSet;
-import kafka.message.MessageAndOffset;
+import org.apache.kafka.clients.admin.*;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.Node;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.TopicPartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
-import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author zhimin.ma
  * @date 2018/9/21 15:48
  */
+@Component
 public class KafkaTool {
 
     private Logger logger = LoggerFactory.getLogger(KafkaTool.class);
 
-    private int timeout = 100000;
+    private int timeout    = 100000;
     private int bufferSize = 64 * 1024;
 
     private Map<String, Integer> brokers;
@@ -37,207 +41,157 @@ public class KafkaTool {
         CONTENT, EARLIEST, LATEST
     }
 
-    public KafkaTool(String zkUrl) {
-        if (CommonUtils.isEmpty(zkUrl)) {
-            throw ExceptionUtils.create(PubError.ARGS);
+    @Autowired
+    private ClusterConfigService clusterConfigService;
+    @Autowired
+    private ITopicService        topicService;
+
+    public List<BrokerDTO> brokers(String topic, String clusterId) throws ExecutionException, InterruptedException {
+        BtClusterConfig config = clusterConfigService.findByClusterName(clusterId);
+        AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
+        DescribeClusterResult describeClusterResult = adminClient.describeCluster();
+        Collection<Node> clusterDetails = describeClusterResult.nodes().get();
+        List<BrokerDTO> brokers = new ArrayList<>(clusterDetails.size());
+        for (Node node : clusterDetails) {
+            BrokerDTO broker = new BrokerDTO();
+            broker.setId(node.id());
+            broker.setHost(node.host());
+            broker.setPort(node.port());
+            brokers.add(broker);
         }
-        brokers = KafkaManager.getAllBrokersInCluster(zkUrl);
-    }
 
-    public Map<Integer, Long> getEarliestOffset(String topic) {
-        //kafka.api.OffsetRequest.EarliestTime() = -2
-        return getTopicOffset(topic, kafka.api.OffsetRequest.EarliestTime());
-    }
-
-    /***
-     * 获取指定 topic 的所有分区 offset
-     * @param topic 主题
-     * @param whichTime   要获取offset的时间,-1 最新，-2 最早
-     * @return
-     */
-
-    public Map<Integer, Long> getTopicOffset(String topic, long whichTime) {
-        HashMap<Integer, Long> offsets = new HashMap<>();
-        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-        for (int partitionId : leaders.keySet()) {
-            kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
-            String leadBroker = metadata.leader().host();
-            int leadPort = metadata.leader().port();
-            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, getClientId(topic, partitionId));
-            long partitionOffset = this.getPartitionOffset(consumer, topic, partitionId, whichTime);
-            offsets.put(partitionId, partitionOffset);
+        Set<String> topicNames;
+        if (StringUtils.hasText(topic)) {
+            topicNames = new HashSet<>(Collections.singletonList(topic));
+        } else {
+            List<BtTopic> topics = topicService.findByClusterLikeTopic(clusterId, null);
+            if (CommonUtils.isNotEmpty(topics)) {
+                topicNames = topics.stream().map(BtTopic::getTopicName).collect(Collectors.toSet());
+            } else {
+                return brokers;
+            }
         }
-        return offsets;
-    }
 
+        Map<String, TopicDescription> stringTopicDescriptionMap = adminClient.describeTopics(topicNames).all().get();
+        for (TopicDescription topicDescription : stringTopicDescriptionMap.values()) {
+            List<TopicPartitionInfo> partitions = topicDescription.partitions();
+            for (TopicPartitionInfo partitionInfo : partitions) {
+                Node leader = partitionInfo.leader();
+                for (BrokerDTO broker : brokers) {
+                    if (leader != null && broker.getId() == leader.id()) {
+                        broker.getLeaderPartitions().add(partitionInfo.partition());
+                        break;
+                    }
+                }
+
+                List<Node> replicas = partitionInfo.replicas();
+                for (BrokerDTO
+                        broker : brokers) {
+                    for (Node replica : replicas) {
+                        if (broker.getId() == replica.id()) {
+                            broker.getFollowerPartitions().add(partitionInfo.partition());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (StringUtils.hasText(topic)) {
+            // 使用topic过滤时只展示相关的broker
+            brokers = brokers.stream()
+                    .filter(broker -> broker.getFollowerPartitions().size() > 0 || broker.getLeaderPartitions().size() > 0)
+                    .collect(Collectors.toList());
+        }
+
+        return brokers;
+    }
 
     /**
      * 获取指定 topic 的所有分区 offset
      *
-     * @param topic 主题
+     * @param topicName   主题
+     * @param clusterName 集群名称
      * @return
      */
-    public List<PartitionInfo> getTopicPartitions(String topic) {
-        List<PartitionInfo> partitions = Lists.newArrayList();
-        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-        for (int partitionId : leaders.keySet()) {
-            kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
-            PartitionInfo info = new PartitionInfo();
-            info.setId(partitionId);
-            info.setHost(metadata.leader().host());
-            info.setPort(metadata.leader().port());
-            SimpleConsumer consumer = new SimpleConsumer(info.getHost(), info.getPort(), timeout, bufferSize, getClientId(topic, partitionId));
-            long partitionOffset1 = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.EarliestTime());
-            long partitionOffset2 = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
-            info.setBegin(partitionOffset1);
-            info.setEnd(partitionOffset2);
-            info.setTotal(partitionOffset2 - partitionOffset1);
-            partitions.add(info);
-        }
-        return partitions;
-    }
 
-    /**
-     * 获取 offset
-     *
-     * @param consumer  SimpleConsumer
-     * @param topic     topic
-     * @param partition partition
-     * @param whichTime 要获取offset的时间,-1 最新，-2 最早
-     * @return
-     */
-    private long getPartitionOffset(SimpleConsumer consumer, String topic, int partition, long whichTime) {
-        long[] offsets = getPartitionOffsets(consumer, topic, partition, whichTime);
-        return offsets[0];
-    }
+    public List<Partition> partitions(String topicName, String clusterName) throws ExecutionException, InterruptedException {
+        BtClusterConfig config = clusterConfigService.findByClusterName(clusterName);
+        AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
+        try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
+            Map<String, TopicDescription> stringTopicDescriptionMap = adminClient.describeTopics(Collections.singletonList(topicName)).all().get();
+            TopicDescription topicDescription = stringTopicDescriptionMap.get(topicName);
 
-    /**
-     * 获取 offset
-     *
-     * @param consumer  SimpleConsumer
-     * @param topic     topic
-     * @param partition partition
-     * @param whichTime 要获取offset的时间,-1 最新，-2 最早
-     * @return
-     */
-    private long[] getPartitionOffsets(SimpleConsumer consumer, String topic, int partition, long whichTime) {
-        TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
-        Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<>();
-        // PartitionOffsetRequestInfo(long time, int maxNumOffsets)
-        // 第二个参数maxNumOffsets
-        // 1 时返回whichTime 对应的offset，
-        // 2 返回一个包含最大和最小offset的元组
-        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));
-        kafka.javaapi.OffsetRequest request = new kafka.javaapi.OffsetRequest(requestInfo, OffsetRequest.CurrentVersion(), consumer.clientId());
-        OffsetResponse resp = consumer.getOffsetsBefore(request.underlying());
-        kafka.javaapi.OffsetResponse response = new kafka.javaapi.OffsetResponse(resp);
-        if (response.hasError()) {
-            logger.error("Error fetching data Offset Data the Broker. Reason:{}", response.errorCode(topic, partition));
-            return new long[]{};
-        }
-        return response.offsets(topic, partition);
-    }
+            List<TopicPartitionInfo> partitionInfos = topicDescription.partitions();
+            List<TopicPartition> topicPartitions = partitionInfos.stream().map(x -> new TopicPartition(topicName, x.partition())).collect(Collectors.toList());
+            Map<TopicPartition, Long> beginningOffsets = kafkaConsumer.beginningOffsets(topicPartitions);
+            Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitions);
 
-    /***
-     * 获取每个 partition 元数据信息
-     * @param bootstraps (host,port)
-     * @param topic topic
-     * @return
-     */
-    private Map<Integer, kafka.javaapi.PartitionMetadata> findLeader(Map<String, Integer> bootstraps, String topic) {
-        Map<Integer, kafka.javaapi.PartitionMetadata> map = new TreeMap<>();
-        for (Map.Entry<String, Integer> bootstrap : bootstraps.entrySet()) {
-            SimpleConsumer consumer = null;
+            Iterator<TopicPartitionInfo> iterator = partitionInfos.iterator();
+            List<Partition> partitionArrayList = new ArrayList<>(partitionInfos.size());
+            while (iterator.hasNext()) {
+                TopicPartitionInfo partitionInfo = iterator.next();
+                Node leader = partitionInfo.leader();
+
+                Partition partition = new Partition();
+                partition.setPartition(partitionInfo.partition());
+                partition.setLeader(new Partition.Node(leader.id(), leader.host(), leader.port()));
+
+                List<Partition.Node> isr = partitionInfo.isr().stream().map(node -> new Partition.Node(node.id(), node.host(), node.port())).collect(Collectors.toList());
+                List<Partition.Node> replicas = partitionInfo.replicas().stream().map(node -> new Partition.Node(node.id(), node.host(), node.port())).collect(Collectors.toList());
+
+                partition.setIsr(isr);
+                partition.setReplicas(replicas);
+
+                partitionArrayList.add(partition);
+
+                for (TopicPartition topicPartition : topicPartitions) {
+                    if (partition.getPartition() == topicPartition.partition()) {
+                        Long beginningOffset = beginningOffsets.get(topicPartition);
+                        Long endOffset = endOffsets.get(topicPartition);
+                        partition.setBeginningOffset(beginningOffset);
+                        partition.setEndOffset(endOffset);
+                        break;
+                    }
+                }
+            }
+
+            List<Integer> brokerIds = brokers(topicName, clusterName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+            Map<Integer, Map<String, LogDirDescription>> integerMapMap = null;
             try {
-                consumer = new SimpleConsumer(bootstrap.getKey(), bootstrap.getValue(), timeout, bufferSize, getClientId(topic));
-                List<String> topics = Collections.singletonList(topic);
-                kafka.javaapi.TopicMetadataRequest req = new kafka.javaapi.TopicMetadataRequest(topics);
-
-                TopicMetadataResponse resp = consumer.send(req.underlying());
-                kafka.javaapi.TopicMetadataResponse response = new kafka.javaapi.TopicMetadataResponse(resp);
-
-                List<kafka.javaapi.TopicMetadata> metaData = response.topicsMetadata();
-                for (kafka.javaapi.TopicMetadata item : metaData) {
-                    for (kafka.javaapi.PartitionMetadata part : item.partitionsMetadata()) {
-                        map.put(part.partitionId(), part);
+                integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
+            } catch (InterruptedException | ExecutionException ignored) {
+                for (Partition partition : partitionArrayList) {
+                    for (Partition.Node replica : partition.getReplicas()) {
+                        replica.setLogSize(-1L);
                     }
                 }
-            } catch (Exception e) {
-                logger.error("Error communicating with Broker [{}] to find Leader for [{}] Reason: ", bootstrap, topic, e);
-            } finally {
-                if (consumer != null)
-                    consumer.close();
             }
-        }
-        return map;
-    }
-
-    private String getClientId(String topic) {
-        return "Client_" + topic;
-    }
-
-    private String getClientId(String topic, int partition) {
-        return "Client_" + topic + "_" + partition;
-    }
-
-
-    /**
-     * 获取指定 topic 的所有分区 offset
-     *
-     * @param topic 主题
-     * @return
-     */
-    public void getTopicContent(String topic) {
-        Map<Integer, kafka.javaapi.PartitionMetadata> leaders = this.findLeader(brokers, topic);
-
-        Map<Integer, Long> earliestOffsetMap = getEarliestOffset(topic);
-        for (int partitionId : leaders.keySet()) {
-            kafka.javaapi.PartitionMetadata metadata = leaders.get(partitionId);
-            String leadBroker = metadata.leader().host();
-            int leadPort = metadata.leader().port();
-            SimpleConsumer consumer = new SimpleConsumer(leadBroker, leadPort, timeout, bufferSize, getClientId(topic, partitionId));
-            long latestOffset = this.getPartitionOffset(consumer, topic, partitionId, OffsetRequest.LatestTime());
-            long[] latestOffsets = this.getPartitionOffsets(consumer, topic, partitionId, OffsetRequest.LatestTime());
-            long readOffset = earliestOffsetMap.get(partitionId);//this.getPartitionOffset(consumer, topic, partitionId, whichTime);
-            logger.info("info\t\t=====> partition: {}, earliestOffset: {}, latestOffset: {}. {}", partitionId, readOffset, latestOffset, latestOffsets);
-            while (readOffset < latestOffset) {
-                FetchRequest req = new FetchRequestBuilder()
-                        .clientId(getClientId(topic, partitionId))
-                        // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-                        .addFetch(topic, partitionId, readOffset, bufferSize)
-                        .build();
-                FetchResponse resp = consumer.fetch(req);
-                kafka.javaapi.FetchResponse response = new kafka.javaapi.FetchResponse(resp);
-                if (response.hasError()) {
-                    // Something went wrong!
-//                ErrorMapping.maybeThrowException();
-                    short code = response.errorCode(topic, partitionId);
-                    logger.error("Error fetching data from the Broker:{} Reason: {}", leadBroker, code);
-                    continue;
-                }
-                ByteBufferMessageSet msgSet = response.messageSet(topic, partitionId);
-                int msgCount = 0;
-                for (MessageAndOffset messageAndOffset : msgSet) {
-                    long currentOffset = messageAndOffset.offset();
-                    if (currentOffset < readOffset) {
-                        logger.error("Found an old offset: {}, Expecting: {}", currentOffset, readOffset);
-                        continue;
+            if (integerMapMap != null) {
+                for (Partition partition : partitionArrayList) {
+                    for (Partition.Node replica : partition.getReplicas()) {
+                        Map<String, LogDirDescription> logDirDescriptionMap = integerMapMap.get(replica.getId());
+                        if (logDirDescriptionMap != null) {
+                            for (LogDirDescription logDirDescription : logDirDescriptionMap.values()) {
+                                Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap = logDirDescription.replicaInfos();
+                                for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap.entrySet()) {
+                                    TopicPartition topicPartition = replicaInfoEntry.getKey();
+                                    if (Objects.equals(topicName, topicPartition.topic()) && topicPartition.partition() == partition.getPartition()) {
+                                        ReplicaInfo replicaInfo = replicaInfoEntry.getValue();
+                                        long size = replicaInfo.size();
+                                        replica.setLogSize(replica.getLogSize() + size);
+                                    }
+                                }
+                            }
+                        }
                     }
-                    readOffset = messageAndOffset.nextOffset();
-                    ByteBuffer payload = messageAndOffset.message().payload();
-
-                    byte[] bytes = new byte[payload.limit()];
-                    payload.get(bytes);
-                    logger.info("message\t=====>{}: {}", messageAndOffset.offset(), new String(bytes));
-                    msgCount++;
                 }
-                logger.info("result\t\t=====> count:{}, read last offset: {}", msgCount, readOffset);
             }
-            consumer.close();
+
+            return partitionArrayList;
         }
-
     }
-
+/*
     public List<String> searchTopicStringContent(String topic, String content, SearchType searchType, Class<?> clazz) {
         return searchTopicContent(ContentType.STRING, searchType, topic, content, clazz);
     }
@@ -340,7 +294,65 @@ public class KafkaTool {
             }
         }
         return resultList;
-    }
+    }*/
 
+
+    public TopicInfo info(String clusterId, String topicName) throws ExecutionException, InterruptedException {
+        BtClusterConfig config = clusterConfigService.findByClusterName(clusterId);
+        AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
+        try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
+            TopicDescription topicDescription = adminClient.describeTopics(Collections.singletonList(topicName)).all().get().get(topicName);
+            TopicInfo topicInfo = new TopicInfo();
+            topicInfo.setClusterId(clusterId);
+            topicInfo.setName(topicName);
+
+            List<TopicPartitionInfo> partitionInfos = topicDescription.partitions();
+            int replicaCount = 0;
+            for (TopicPartitionInfo topicPartitionInfo : partitionInfos) {
+                replicaCount += topicPartitionInfo.replicas().size();
+            }
+            topicInfo.setReplicaSize(replicaCount);
+
+            List<TopicPartition> topicPartitions = partitionInfos.stream().map(x -> new TopicPartition(topicName, x.partition())).collect(Collectors.toList());
+            Map<TopicPartition, Long> beginningOffsets = kafkaConsumer.beginningOffsets(topicPartitions);
+            Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitions);
+
+            List<TopicInfo.Partition> partitions = topicPartitions
+                    .stream()
+                    .map(topicPartition -> {
+                        Long beginningOffset = beginningOffsets.get(topicPartition);
+                        Long endOffset = endOffsets.get(topicPartition);
+                        return new TopicInfo.Partition(topicPartition.partition(), beginningOffset, endOffset);
+                    })
+                    .collect(Collectors.toList());
+
+            topicInfo.setPartitions(partitions);
+
+
+            List<Integer> brokerIds = brokers(topicName, clusterId).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+            Map<Integer, Map<String, LogDirDescription>> integerMapMap;
+            try {
+                integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
+                topicInfo.setTotalLogSize(0L);
+                for (Map<String, LogDirDescription> descriptionMap : integerMapMap.values()) {
+                    for (LogDirDescription logDirDescription : descriptionMap.values()) {
+                        Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap = logDirDescription.replicaInfos();
+                        for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap.entrySet()) {
+                            TopicPartition topicPartition = replicaInfoEntry.getKey();
+                            if (!Objects.equals(topicName, topicPartition.topic())) {
+                                continue;
+                            }
+                            ReplicaInfo replicaInfo = replicaInfoEntry.getValue();
+                            long size = replicaInfo.size();
+                            topicInfo.setTotalLogSize(topicInfo.getTotalLogSize() + size);
+                        }
+                    }
+                }
+            } catch (InterruptedException | ExecutionException ignored) {
+                topicInfo.setTotalLogSize(-1L);
+            }
+            return topicInfo;
+        }
+    }
 
 }

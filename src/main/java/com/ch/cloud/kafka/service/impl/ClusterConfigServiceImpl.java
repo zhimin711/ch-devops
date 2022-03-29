@@ -4,7 +4,7 @@ import com.ch.StatusS;
 import com.ch.cloud.kafka.mapper.BtClusterConfigMapper;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
-import com.ch.cloud.kafka.tools.KafkaManager;
+import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.JSONUtils;
@@ -23,14 +23,14 @@ public class ClusterConfigServiceImpl extends ServiceImpl<BtClusterConfigMapper,
 
     @Override
     public int save(BtClusterConfig record) {
-        Map<String, Integer> brokers = KafkaManager.getAllBrokersInCluster(record.getZookeeper());
+        Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
         record.setBrokers(JSONUtils.toJson(brokers));
         return super.save(record);
     }
 
     @Override
     public int update(BtClusterConfig record) {
-        Map<String, Integer> brokers = KafkaManager.getAllBrokersInCluster(record.getZookeeper());
+        Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
         record.setBrokers(JSONUtils.toJson(brokers));
         return super.update(record);
     }

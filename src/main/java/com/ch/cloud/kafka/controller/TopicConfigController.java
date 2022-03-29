@@ -1,6 +1,5 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
@@ -8,7 +7,7 @@ import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
-import com.ch.cloud.kafka.tools.TopicManager;
+import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.cloud.kafka.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
@@ -65,7 +64,7 @@ public class TopicConfigController {
         }
         return ResultUtils.wrapFail(() -> {
             BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
-            TopicInfo info = TopicManager.getInfo(cluster.getZookeeper(), record.getTopicName());
+            TopicInfo info = ZkTopicUtils.getInfo(cluster.getZookeeper(), record.getTopicName());
             if (info == null) {
                 createTopic(cluster, record);
             } else {
@@ -98,7 +97,7 @@ public class TopicConfigController {
         config.setPartitions(record.getPartitionSize());
         config.setReplicationFactor(record.getReplicaSize());
 //        TopicManager.createTopic(config);
-        TopicManager.createTopicByCommand(config);
+        ZkTopicUtils.createTopicByCommand(config);
     }
 
     @ApiOperation(value = "修改主题信息", notes = "")
@@ -125,7 +124,7 @@ public class TopicConfigController {
                 BtTopic topic = topicService.find(id);
                 BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
                 if (cluster != null)
-                    TopicManager.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
+                    ZkTopicUtils.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
             }
             return c;
         });
@@ -144,7 +143,7 @@ public class TopicConfigController {
             if (cluster == null) {
                 ExceptionUtils._throw(PubError.NOT_EXISTS);
             }
-            return TopicManager.getTopicsByName(cluster.getZookeeper(), topicName);
+            return ZkTopicUtils.getTopicsByName(cluster.getZookeeper(), topicName);
         });
     }
 
@@ -159,7 +158,7 @@ public class TopicConfigController {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
 
-            TopicManager.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
+            ZkTopicUtils.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
             createTopic(cluster, topic);
             return 1;
         });
@@ -173,7 +172,7 @@ public class TopicConfigController {
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
-            List<TopicInfo> topicList = TopicManager.getTopics(cluster.getZookeeper());
+            List<TopicInfo> topicList = ZkTopicUtils.getTopics(cluster.getZookeeper());
             return topicService.saveOrUpdate(topicList, topic.getClusterName(), ContextUtil.getUser());
         });
     }
@@ -192,7 +191,7 @@ public class TopicConfigController {
             p1.setStatus("1");
             List<BtTopic> topics = topicService.find(p1);
             if (topics.isEmpty()) return 0;
-            topics.parallelStream().forEach(r -> TopicManager.deleteTopic(cluster.getZookeeper(), r.getTopicName()));
+            topics.parallelStream().forEach(r -> ZkTopicUtils.deleteTopic(cluster.getZookeeper(), r.getTopicName()));
             Thread.sleep(10000);
             topics.parallelStream().forEach(r -> createTopic(cluster, r));
             return topics.size();

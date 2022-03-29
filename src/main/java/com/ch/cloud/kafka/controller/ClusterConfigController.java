@@ -1,26 +1,24 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.Constants;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
-import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
-import com.ch.cloud.kafka.tools.TopicManager;
+import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.cloud.kafka.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.DateUtils;
-import com.ch.e.ExceptionUtils;
 import com.github.pagehelper.PageInfo;
-import io.micrometer.core.instrument.binder.kafka.KafkaConsumerMetrics;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 /**
  * @author zhimin.ma
@@ -79,6 +77,19 @@ public class ClusterConfigController {
             targetRecord.setUpdateAt(DateUtils.current());
             int c2 = topicService.update(srcRecord, targetRecord);
             return clusterConfigService.delete(id);
+        });
+    }
+
+
+    @GetMapping("{id}")
+    public Result<BtClusterConfig> detail(@PathVariable Long id){
+        return ResultUtils.wrapFail(() -> {
+            BtClusterConfig config = clusterConfigService.find(id);
+            Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(config);
+            config.setTopicCount(topicNames.size());
+            config.setBrokerCount(KafkaClusterUtils.countBroker(config));
+            config.setConsumerCount(KafkaClusterUtils.countConsumerGroup(config));
+            return config;
         });
     }
 }

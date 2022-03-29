@@ -4,9 +4,8 @@ import com.ch.cloud.kafka.pojo.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.pojo.SearchType;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.kafka.tools.KafkaManager;
 import com.ch.cloud.kafka.tools.KafkaTool;
-import com.ch.cloud.kafka.tools.TopicManager;
+import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.utils.JSONUtils;
 //import kafka.api.OffsetRequest;
 //import kafka.api.OffsetResponse;
@@ -32,7 +31,7 @@ import java.util.*;
 public class KafkaTests {
 
     //dev sfst
-    final String zk = "10.202.34.30:2182/kafka/st";
+    final String zk = "192.168.20.211:2181";
     final String zk_dev_1 = "10.202.34.28:2182,10.202.34.29:2182,10.202.34.30:2182/kafka/other";
     final String zk4 = "100.80.129.164:2181/kafka/o2o_dds_kscs_ud7nr3lf01";
     //test bus
@@ -65,7 +64,7 @@ public class KafkaTests {
 //        TopicManager.listTopicAllConfig(zk2);
 //        KafkaManager.getAllBrokersInCluster(zk4);
 //        TopicManager.getInfo(zk2,"SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
-        TopicManager.getTopics(zk2);
+        ZkTopicUtils.getTopics(zk);
     }
 
     @Test
@@ -151,7 +150,7 @@ public class KafkaTests {
 
     @Test
     public void test() {
-        KafkaTool kafkaTool = new KafkaTool(zk_dev_1);
+//        KafkaTool kafkaTool = new KafkaTool(zk_dev_1);
         String topic = "GRD_DEV_01370603_01";
 //        topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
 //        topic = "SHIVA_OMCS_RUSSIAN_PLANNING_REQUIRE_INFO";
@@ -162,7 +161,7 @@ public class KafkaTests {
 //        kafkaTool.getTopicContextOffset(topic, OffsetRequest.EarliestTime());
 //        kafkaTool.getTopicContent(topic);
 //        o = kafkaTool.searchTopicStringContent(topic, "100", KafkaTool.SearchType.LATEST);
-        o = kafkaTool.searchTopicStringContent(topic, "10", KafkaTool.SearchType.LATEST, null);
+//        o = kafkaTool.searchTopicStringContent(topic, "10", KafkaTool.SearchType.LATEST, null);
 //        o = kafkaTool.searchTopicStringContent(topic, "111", KafkaTool.SearchType.LATEST, null);
 //        o = kafkaTool.searchTopicStringContent(topic,"666666752360");
 //        try {
@@ -177,17 +176,17 @@ public class KafkaTests {
 
     @Test
     public void getTopicInfo() {
-        TopicManager.getInfo(zk2, "SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
+        ZkTopicUtils.getInfo(zk2, "SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
     }
 
 
     @Test
     public void testOffsets() {
-        KafkaTool kafkaTool = new KafkaTool(zk2);
-        String topic = "SHIVA_TRTMS_GROUND_TEMP_REQUIRE";
+//        KafkaTool kafkaTool = new KafkaTool(zk);
+        String topic = "order_center_bt_order";
 
-        List<PartitionInfo> partitions = kafkaTool.getTopicPartitions(topic);
-        System.out.println(JSONUtils.toJson(partitions));
+//        List<PartitionInfo> partitions = kafkaTool.getTopicPartitions(topic);
+//        System.out.println(JSONUtils.toJson(partitions));
     }
 
     @Test
