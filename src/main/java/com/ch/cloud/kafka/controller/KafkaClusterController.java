@@ -49,7 +49,7 @@ public class KafkaClusterController {
         if (r != null) {
             return Result.error(PubError.EXISTS);
         }
-        record.setStatus(StatusS.ENABLED);
+        record.setStatus(StatusS.BEGIN);
         record.setCreateBy(ContextUtil.getUser());
         return ResultUtils.wrapFail(() -> clusterConfigService.save(record));
     }

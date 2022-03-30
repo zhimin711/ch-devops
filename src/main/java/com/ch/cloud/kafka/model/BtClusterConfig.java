@@ -37,13 +37,13 @@ public class BtClusterConfig implements Serializable {
     @Column(name = "BROKERS")
     private String brokers;
 
-    @Column(length = 200)
+    @Column(length = 200, name = "SECURITY_PROTOCOL")
     private String securityProtocol;
-    @Column(length = 200)
+    @Column(length = 200, name = "SASL_MECHANISM")
     private String saslMechanism;
-    @Column(length = 200)
+    @Column(length = 200, name = "AUTH_USERNAME")
     private String authUsername;
-    @Column(length = 200)
+    @Column(length = 200, name = "AUTH_PASSWORD")
     private String authPassword;
 
     /**
@@ -53,7 +53,7 @@ public class BtClusterConfig implements Serializable {
     private String description;
 
     /**
-     * 状态：0. 1. 2.
+     * 状态：0.待同步 1.已同步 2.已禁用
      */
     @Column(name = "STATUS")
     private String status;
@@ -83,9 +83,9 @@ public class BtClusterConfig implements Serializable {
     private String updateBy;
 
     @Transient
-    private Integer topicCount;
-    @Transient
     private Integer brokerCount;
+    @Transient
+    private Integer topicCount;
     @Transient
     private Integer consumerCount;
 
