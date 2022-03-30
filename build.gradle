@@ -58,6 +58,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jetty'
 //    implementation 'org.springframework.boot:spring-boot-starter-redis'
 
+    implementation 'org.springframework.kafka:spring-kafka'
+
     //数据源相关包
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
     implementation 'mysql:mysql-connector-java:8.0.28'
@@ -82,7 +84,6 @@ dependencies {
         exclude group: 'log4j', module: 'log4j'
         exclude group: 'org.slf4j'
     }
-    implementation 'org.springframework.kafka:spring-kafka:2.8.3'
 
     implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
     // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui

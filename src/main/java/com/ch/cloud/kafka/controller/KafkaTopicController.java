@@ -36,7 +36,7 @@ import java.util.List;
 public class KafkaTopicController {
 
     @Autowired
-    private ITopicService topicService;
+    private ITopicService        topicService;
     @Autowired
     private ClusterConfigService clusterConfigService;
 
@@ -50,6 +50,7 @@ public class KafkaTopicController {
     public PageResult<BtTopic> page(BtTopic record,
                                     @PathVariable(value = "num") int pageNum,
                                     @PathVariable(value = "size") int pageSize) {
+        ExceptionUtils.assertEmpty(record.getClusterName(), PubError.NON_NULL, "集群名称");
         PageInfo<BtTopic> pageInfo = topicService.findPage(record, pageNum, pageSize);
         return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
 
