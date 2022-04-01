@@ -23,15 +23,25 @@ public class ClusterConfigServiceImpl extends ServiceImpl<BtClusterConfigMapper,
 
     @Override
     public int save(BtClusterConfig record) {
-        Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
-        record.setBrokers(JSONUtils.toJson(brokers));
+        fetchBrokers(record);
         return super.save(record);
+    }
+
+    private void fetchBrokers(BtClusterConfig record) {
+        Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
+        if (!brokers.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            brokers.forEach((k, v) -> {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(k).append(":").append(v);
+            });
+            record.setBrokers(sb.toString());
+        }
     }
 
     @Override
     public int update(BtClusterConfig record) {
-        Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
-        record.setBrokers(JSONUtils.toJson(brokers));
+        fetchBrokers(record);
         return super.update(record);
     }
 

@@ -1,12 +1,9 @@
 package com.ch.test;
 
 import com.ch.cloud.kafka.pojo.ContentType;
-import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.pojo.SearchType;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.kafka.tools.KafkaTool;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
-import com.ch.utils.JSONUtils;
 //import kafka.api.OffsetRequest;
 //import kafka.api.OffsetResponse;
 //import kafka.api.PartitionOffsetRequestInfo;

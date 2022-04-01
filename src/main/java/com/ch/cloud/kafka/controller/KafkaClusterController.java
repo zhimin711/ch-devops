@@ -3,9 +3,11 @@ package com.ch.cloud.kafka.controller;
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.pojo.BrokerDTO;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
+import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import com.ch.cloud.kafka.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
@@ -32,7 +34,10 @@ public class KafkaClusterController {
     @Autowired
     private ClusterConfigService clusterConfigService;
     @Autowired
-    private ITopicService topicService;
+    private ITopicService        topicService;
+
+    @Autowired
+    private KafkaClusterManager kafkaTool;
 
     @GetMapping(value = {"{num}/{size}"})
     public PageResult<BtClusterConfig> page(BtClusterConfig record,
@@ -82,7 +87,7 @@ public class KafkaClusterController {
 
 
     @GetMapping("{id}")
-    public Result<BtClusterConfig> detail(@PathVariable Long id){
+    public Result<BtClusterConfig> detail(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             BtClusterConfig config = clusterConfigService.find(id);
             Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(config);
@@ -90,6 +95,14 @@ public class KafkaClusterController {
             config.setBrokerCount(KafkaClusterUtils.countBroker(config));
             config.setConsumerCount(KafkaClusterUtils.countConsumerGroup(config));
             return config;
+        });
+    }
+
+    @GetMapping("{id}/brokers")
+    public Result<BrokerDTO> brokers(@PathVariable Long id) {
+        return ResultUtils.wrapList(() -> {
+            BtClusterConfig config = clusterConfigService.find(id);
+            return kafkaTool.brokers("", config);
         });
     }
 }

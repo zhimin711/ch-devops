@@ -7,6 +7,8 @@ import com.ch.cloud.kafka.pojo.Partition;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.e.ExceptionUtils;
+import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -28,9 +30,9 @@ import java.util.stream.Collectors;
  * @date 2018/9/21 15:48
  */
 @Component
-public class KafkaTool {
+public class KafkaClusterManager {
 
-    private Logger logger = LoggerFactory.getLogger(KafkaTool.class);
+    private Logger logger = LoggerFactory.getLogger(KafkaClusterManager.class);
 
     private int timeout    = 100000;
     private int bufferSize = 64 * 1024;
@@ -46,8 +48,20 @@ public class KafkaTool {
     @Autowired
     private ITopicService        topicService;
 
+
+    public AdminClient getAdminClient(Long id) {
+        BtClusterConfig config = clusterConfigService.find(id);
+        ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + id);
+        return KafkaClusterUtils.getAdminClient(config);
+    }
+
     public List<BrokerDTO> brokers(String topic, String clusterId) throws ExecutionException, InterruptedException {
         BtClusterConfig config = clusterConfigService.findByClusterName(clusterId);
+        return brokers(topic, config);
+    }
+
+    public List<BrokerDTO> brokers(String topic, BtClusterConfig config) throws ExecutionException, InterruptedException {
+        ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster config");
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         DescribeClusterResult describeClusterResult = adminClient.describeCluster();
         Collection<Node> clusterDetails = describeClusterResult.nodes().get();
@@ -64,7 +78,7 @@ public class KafkaTool {
         if (StringUtils.hasText(topic)) {
             topicNames = new HashSet<>(Collections.singletonList(topic));
         } else {
-            List<BtTopic> topics = topicService.findByClusterLikeTopic(clusterId, null);
+            List<BtTopic> topics = topicService.findByClusterLikeTopic(config.getClusterName(), null);
             if (CommonUtils.isNotEmpty(topics)) {
                 topicNames = topics.stream().map(BtTopic::getTopicName).collect(Collectors.toSet());
             } else {
@@ -85,8 +99,7 @@ public class KafkaTool {
                 }
 
                 List<Node> replicas = partitionInfo.replicas();
-                for (BrokerDTO
-                        broker : brokers) {
+                for (BrokerDTO broker : brokers) {
                     for (Node replica : replicas) {
                         if (broker.getId() == replica.id()) {
                             broker.getFollowerPartitions().add(partitionInfo.partition());
@@ -99,9 +112,7 @@ public class KafkaTool {
 
         if (StringUtils.hasText(topic)) {
             // 使用topic过滤时只展示相关的broker
-            brokers = brokers.stream()
-                    .filter(broker -> broker.getFollowerPartitions().size() > 0 || broker.getLeaderPartitions().size() > 0)
-                    .collect(Collectors.toList());
+            brokers = brokers.stream().filter(broker -> broker.getFollowerPartitions().size() > 0 || broker.getLeaderPartitions().size() > 0).collect(Collectors.toList());
         }
 
         return brokers;
@@ -317,14 +328,11 @@ public class KafkaTool {
             Map<TopicPartition, Long> beginningOffsets = kafkaConsumer.beginningOffsets(topicPartitions);
             Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitions);
 
-            List<TopicInfo.Partition> partitions = topicPartitions
-                    .stream()
-                    .map(topicPartition -> {
-                        Long beginningOffset = beginningOffsets.get(topicPartition);
-                        Long endOffset = endOffsets.get(topicPartition);
-                        return new TopicInfo.Partition(topicPartition.partition(), beginningOffset, endOffset);
-                    })
-                    .collect(Collectors.toList());
+            List<TopicInfo.Partition> partitions = topicPartitions.stream().map(topicPartition -> {
+                Long beginningOffset = beginningOffsets.get(topicPartition);
+                Long endOffset = endOffsets.get(topicPartition);
+                return new TopicInfo.Partition(topicPartition.partition(), beginningOffset, endOffset);
+            }).collect(Collectors.toList());
 
             topicInfo.setPartitions(partitions);
 

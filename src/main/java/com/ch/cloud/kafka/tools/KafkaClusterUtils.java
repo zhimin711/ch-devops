@@ -112,6 +112,7 @@ public class KafkaClusterUtils {
     }
 
     public static AdminClient getAdminClient(BtClusterConfig cluster) {
+        ExceptionUtils.assertEmpty(cluster, PubError.NOT_EXISTS, "cluster config");
         synchronized (cluster.getClusterName().intern()) {
             AdminClient adminClient = clients.get(cluster.getClusterName());
             if (adminClient == null) {
