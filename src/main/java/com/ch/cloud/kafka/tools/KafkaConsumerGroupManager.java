@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @date 2022/3/27 6:10 下午
  */
 @Service
-public class ConsumerGroupManager {
+public class KafkaConsumerGroupManager {
 
     @Autowired
     private ClusterConfigService clusterConfigService;
