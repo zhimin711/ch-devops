@@ -14,7 +14,6 @@ spec:
       app: ch-mq
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: ch-mq
     spec:
