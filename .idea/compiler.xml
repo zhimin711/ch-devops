@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="ch-devops-client" />
+        <module name="ch-devops-service" />
+        <module name="ch-devops-dao" />
+        <module name="ch-devops-web" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="devops-dev" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="ch-devops" options="" />
+      <module name="ch-devops-client" options="-parameters" />
+      <module name="ch-devops-dao" options="-parameters" />
+      <module name="ch-devops-service" options="-parameters" />
+      <module name="ch-devops-web" options="-parameters" />
+      <module name="devops-dev" options="-parameters" />
+    </option>
+  </component>
+</project>

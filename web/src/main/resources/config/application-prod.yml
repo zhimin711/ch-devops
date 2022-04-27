@@ -1,0 +1,39 @@
+server:
+  port: 8001
+spring:
+  application:
+    name: CH-SYS
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+#    type: com.ch.jdbc.pool.ZhDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://172.18.91.48:3306/admin
+    username: admin
+    password: 123456
+  thymeleaf:
+    mode: HTML5
+    cache: false
+  http:
+    multipart:
+      max-file-size: 20MB
+#  mail:
+#    host: smtp.163.com
+#    username: hua5040@163.com
+#    password:
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#ZooKeeper
+dubbo:
+  registry:
+    address: 172.18.91.48:2181
+logging:
+  config: classpath:config/logback.xml
+  path: /mnt/logs/ch-sys
+  level:
+    com:
+      ch: info
+app:
+  share:
+    path: /mnt/share/ch-sys
