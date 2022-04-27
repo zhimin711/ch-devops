@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ch-mq
+  name: ch-devops
   namespace: ch
   labels:
-    app: ch-mq
+    app: ch-devops
   annotations:
     kubesphere.io/creator: zhimin
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ch-mq
+      app: ch-devops
   template:
     metadata:
       labels:
-        app: ch-mq
+        app: ch-devops
     spec:
       containers:
-        - name: container-ncrbje
-          image: 'registry.kubeoperator.io:8082/ch/ch-mq:${DATETIME}'
+        - name: container-ncrbja
+          image: 'registry.kubeoperator.io:8082/ch/ch-devops:${DATETIME}'
           ports:
             - name: tcp-8080
               containerPort: 8080
