@@ -5,7 +5,15 @@
 *.ear
 hs_err_pid*
 
-/target
+target/
+build/
+dist/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
 
 ## OS Specific
 .DS_Store
