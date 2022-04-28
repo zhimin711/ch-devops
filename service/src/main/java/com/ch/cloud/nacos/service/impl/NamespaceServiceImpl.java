@@ -1,11 +1,17 @@
 package com.ch.cloud.nacos.service.impl;
 
+import com.ch.Constants;
 import com.ch.mybatis.service.ServiceImpl;;
+import com.ch.mybatis.utils.ExampleUtils;
 import com.ch.utils.CommonUtils;
 import org.springframework.stereotype.Service;
 import com.ch.cloud.nacos.mapper.NamespaceMapper;
 import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.service.INamespaceService;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.Sqls;
+
+import java.util.List;
 
 /**
  * 业务-命名空间Service业务层处理
@@ -18,9 +24,26 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
 
     @Override
     public Namespace findByUid(String uid) {
-        if (CommonUtils.isEmpty(uid)) return null;
+        if (CommonUtils.isEmpty(uid))
+            return null;
         Namespace record = new Namespace();
         record.setUid(uid);
         return getMapper().selectOne(record);
+    }
+
+    @Override
+    public List<Namespace> findByClusterIdAndName(Long clusterId, String name) {
+        if (CommonUtils.isEmpty(clusterId))
+            return null;
+        Namespace record = new Namespace();
+        record.setClusterId(clusterId);
+        Sqls sqls = Sqls.custom();
+        ExampleUtils.dynCommon(sqls, record);
+        ExampleUtils.dynEqual(sqls, record, "clusterId");
+
+        Example ex = Example.builder(Namespace.class)
+                .where(sqls).orderByDesc("createAt", "id")
+                .build();
+        return getMapper().selectByExample(ex);
     }
 }

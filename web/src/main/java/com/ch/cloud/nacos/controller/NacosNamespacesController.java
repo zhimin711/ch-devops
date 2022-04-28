@@ -1,6 +1,9 @@
 package com.ch.cloud.nacos.controller;
 
 
+import com.ch.cloud.client.UpmsProjectClientService;
+import com.ch.cloud.client.UpmsTenantClientService;
+import com.ch.cloud.client.dto.ProjectDto;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.domain.Namespace;
@@ -41,8 +44,11 @@ public class NacosNamespacesController {
     private INamespaceService    namespaceService;
     @Autowired
     private INacosClusterService nacosClusterService;
-//    @Autowired
-//    private IProjectService      projectService;
+
+    @Autowired
+    private UpmsProjectClientService projectClientService;
+    @Autowired
+    private UpmsTenantClientService tenantClientService;
 
     @Autowired
     private NacosNamespacesClient nacosNamespacesClient;
@@ -54,7 +60,7 @@ public class NacosNamespacesController {
                                       @PathVariable(value = "num") int pageNum,
                                       @PathVariable(value = "size") int pageSize) {
         record.setType(NamespaceType.NACOS);
-        return ResultUtils.wrapPage(() -> namespaceService.findPage2(record, pageNum, pageSize));
+        return ResultUtils.wrapPage(() -> namespaceService.invokerPage(record, pageNum, pageSize));
     }
 
 
@@ -98,7 +104,8 @@ public class NacosNamespacesController {
     public Result<NamespaceDto> find(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             Namespace namespace = namespaceService.find(id);
-            if (namespace == null) return null;
+            if (namespace == null)
+                return null;
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             NamespaceDto dto = BeanUtilsV2.clone(namespace, NamespaceDto.class);
             namespace.setAddr(cluster.getUrl());
@@ -137,7 +144,8 @@ public class NacosNamespacesController {
     }
 
     private void saveNacosNamespaces(List<NacosNamespace> list, Long clusterId) {
-        if (list.isEmpty()) return;
+        if (list.isEmpty())
+            return;
         list.forEach(e -> {
             Namespace record = new Namespace();
             record.setClusterId(clusterId);
@@ -158,8 +166,9 @@ public class NacosNamespacesController {
     @GetMapping({"{id}/projects"})
     public Result<VueRecord> findProjects(@PathVariable Long id, @RequestParam(value = "s", required = false) String name) {
         return ResultUtils.wrapList(() -> {
-//            List<Project> projects = projectService.findByNamespaceIdAndName(id, name);
-            return VueRecordUtils.covertIdList(null);
+            projectClientService.findUsers(1L);
+            Result<ProjectDto> projects = tenantClientService.findProjects(id);
+            return VueRecordUtils.covertIdList(projects.getRows());
         });
     }
 }

@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.controller;
 
 import com.ch.cloud.nacos.client.NacosClusterClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
+import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INamespaceService;
 import com.ch.e.ExceptionUtils;
@@ -15,6 +16,8 @@ import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * desc:nacos集群Controller
@@ -39,7 +42,7 @@ public class NacosClusterController {
     public PageResult<NacosCluster> page(NacosCluster record,
                                          @PathVariable(value = "num") int pageNum,
                                          @PathVariable(value = "size") int pageSize) {
-        PageInfo<NacosCluster> page = nacosClusterService.findPage(record,pageNum,pageSize);
+        PageInfo<NacosCluster> page = nacosClusterService.findPage(record, pageNum, pageSize);
         return PageResult.success(page.getTotal(), page.getList());
     }
 
@@ -69,7 +72,7 @@ public class NacosClusterController {
         return result;
     }
 
-    @ApiOperation(value = "删除", notes = "删除nacos集群")
+    //    @ApiOperation(value = "删除", notes = "删除nacos集群")
     //@DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> nacosClusterService.delete(id));
@@ -78,9 +81,8 @@ public class NacosClusterController {
     @GetMapping({"{id:[0-9]+}/namespaces"})
     public Result<VueRecord> findNamespaces(@PathVariable Long id, @RequestParam(name = "s", required = false) String name) {
         return ResultUtils.wrapList(() -> {
-//            Wrapper<Namespace> wrapper = Wrappers.lambdaQuery(Namespace.class).eq(Namespace::getType, NamespaceType.NACOS.getCode()).eq(Namespace::getClusterId, id).like(CommonUtils.isNotEmpty(name), Namespace::getName, name);
-//            List<Namespace> list = namespaceService.list(wrapper);
-            return VueRecordUtils.covertIdTree(null);
+            List<Namespace> list = namespaceService.findByClusterIdAndName(id, name);
+            return VueRecordUtils.covertIdTree(list);
         });
     }
 }

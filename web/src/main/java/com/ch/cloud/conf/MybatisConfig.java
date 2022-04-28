@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.config;
+package com.ch.cloud.conf;
 
 import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.plugin.Interceptor;
@@ -26,7 +26,7 @@ import java.util.Properties;
  */
 @Configuration
 @EnableTransactionManagement
-@MapperScan(basePackages = {"com.ch.cloud.kafka.**.mapper"},
+@MapperScan(basePackages = {"com.ch.cloud.**.mapper"},
         properties = {"mappers=tk.mybatis.mapper.common.Mapper,tk.mybatis.mapper.common.special.InsertListMapper"})
 public class MybatisConfig {
 
@@ -50,7 +50,7 @@ public class MybatisConfig {
         pageInterceptor.setProperties(properties);
 
         //添加插件
-        bean.setPlugins(new Interceptor[]{pageInterceptor});
+        bean.setPlugins(pageInterceptor);
 
         //添加XML目录
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();

@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.config;
+package com.ch.cloud.conf;
 
 import com.ch.Constants;
 import com.google.common.base.Predicate;
@@ -88,7 +88,7 @@ public class Swagger2Config {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 //页面标题
-                .title("朝华 MQ RESTFUL API")
+                .title("朝华 DevOps RESTFUL API")
                 //创建人
                 .contact(new Contact("CHAO HUA", "http://www.chaohua.com", "zhimin711@sina.com"))
                 //版本号
