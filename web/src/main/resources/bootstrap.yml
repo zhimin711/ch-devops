@@ -17,4 +17,3 @@ spring:
           -
             dataId: ch-devops.yml
             refresh: true
-        enabled: false
