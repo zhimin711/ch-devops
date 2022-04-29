@@ -26,7 +26,7 @@ import java.util.List;
  * @date 2022/4/23 22:44
  */
 @RestController
-@RequestMapping("/nacos/cluster")
+@RequestMapping("/nacos/clusters")
 public class NacosClusterController {
 
     @Autowired

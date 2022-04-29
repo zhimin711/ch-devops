@@ -8,6 +8,7 @@ hs_err_pid*
 target/
 build/
 dist/
+logs/
 
 ### IntelliJ IDEA ###
 .idea

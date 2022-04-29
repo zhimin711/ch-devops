@@ -46,4 +46,9 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
                 .build();
         return getMapper().selectByExample(ex);
     }
+
+    @Override
+    public Namespace findAuth(Integer namespaceId, String userId) {
+        return null;
+    }
 }

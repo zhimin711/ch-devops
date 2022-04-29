@@ -16,4 +16,6 @@ public interface INamespaceService extends IService<Namespace> {
     Namespace findByUid(String uid);
 
     List<Namespace> findByClusterIdAndName(Long clusterId, String name);
+
+    Namespace findAuth(Integer namespaceId, String userId);
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -26,7 +27,7 @@ public class Namespace extends BaseEntity {
     /**
      * $column.columnComment
      */
-    @ApiModelProperty(name = "")
+    @ApiModelProperty(name = "集群ID")
     private Long clusterId;
 
     /**
