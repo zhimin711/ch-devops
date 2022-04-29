@@ -57,8 +57,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
             new CacheLoader<String, List<String>>() {
                 @Override
                 public List<String> load(String key) {
-                    List<String> list = Lists.newArrayList();
-                    return list;
+                    return Lists.newArrayList();
                 }
             }
         );
@@ -73,8 +72,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
             new CacheLoader<String, List<String>>() {
                 @Override
                 public List<String> load(String key) {
-                    List<String> list = Lists.newArrayList();
-                    return list;
+                    return Lists.newArrayList();
                 }
             }
         );
