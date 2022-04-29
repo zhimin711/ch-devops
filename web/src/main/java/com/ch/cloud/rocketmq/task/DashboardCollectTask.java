@@ -49,7 +49,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Component
-
 @ConditionalOnProperty(prefix = "rocketmq.namesrv", value = { "addr" })
 public class DashboardCollectTask {
     private Date currentDate = new Date();
@@ -93,10 +92,10 @@ public class DashboardCollectTask {
                     if (masterAddr != null) {
                         try {
                             stopwatch.start();
-                            log.info("start time: {}", stopwatch.toString());
+                            log.info("start time: {}", stopwatch);
                             BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.TOPIC_PUT_NUMS, topic);
                             stopwatch.stop();
-                            log.info("stop time : {}", stopwatch.toString());
+                            log.info("stop time : {}", stopwatch);
                             stopwatch.reset();
                             inTPS += bsd.getStatsMinute().getTps();
                             inMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);

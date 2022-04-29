@@ -52,12 +52,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         .concurrencyLevel(10)
         .recordStats()
         .ticker(Ticker.systemTicker())
-        .removalListener(new RemovalListener<Object, Object>() {
-            @Override
-            public void onRemoval(RemovalNotification<Object, Object> notification) {
-                log.debug(notification.getKey() + " was removed, cause is " + notification.getCause());
-            }
-        })
+        .removalListener(notification -> log.debug(notification.getKey() + " was removed, cause is " + notification.getCause()))
         .build(
             new CacheLoader<String, List<String>>() {
                 @Override
@@ -73,12 +68,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         .concurrencyLevel(10)
         .recordStats()
         .ticker(Ticker.systemTicker())
-        .removalListener(new RemovalListener<Object, Object>() {
-            @Override
-            public void onRemoval(RemovalNotification<Object, Object> notification) {
-                log.debug(notification.getKey() + " was removed, cause is " + notification.getCause());
-            }
-        })
+        .removalListener(notification -> log.debug(notification.getKey() + " was removed, cause is " + notification.getCause()))
         .build(
             new CacheLoader<String, List<String>>() {
                 @Override
