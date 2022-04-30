@@ -9,8 +9,8 @@ package com.ch.cloud.nacos;
 public interface NacosAPI {
 
     String CLUSTER_NODES = "/core/cluster/nodes";
-    String NAMESPACES = "/nacos/v1/console/namespaces";
-    String CONFIGS = "/nacos/v1/cs/configs";
-    String SERVICES = "/nacos/v1/ns/catalog/services";
-    String SUBSCRIBERS = "/nacos/v1/ns/service/subscribers";
+    String NAMESPACES = "/console/namespaces";
+    String CONFIGS = "/cs/configs";
+    String SERVICES = "/ns/catalog/services";
+    String SUBSCRIBERS = "/ns/service/subscribers";
 }

@@ -11,6 +11,7 @@ import com.ch.pojo.VueRecord;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.utils.AssertUtils;
 import com.ch.utils.VueRecordUtils;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
@@ -49,12 +50,18 @@ public class NacosClusterController {
     @ApiOperation(value = "添加", notes = "添加nacos集群")
     @PostMapping
     public Result<Integer> add(@RequestBody NacosCluster record) {
-        return ResultUtils.wrapFail(() -> nacosClusterService.save(record));
+        return ResultUtils.wrapFail(() -> {
+            NacosCluster cluster = nacosClusterService.findByUrl(record.getUrl());
+            ExceptionUtils.assertTrue(cluster != null, PubError.EXISTS, record.getUrl());
+            record.setUrl(record.getUrl().trim());
+            return nacosClusterService.save(record);
+        });
     }
 
     @ApiOperation(value = "修改", notes = "修改nacos集群")
     @PutMapping({"{id:[0-9]+}"})
     public Result<Integer> edit(@RequestBody NacosCluster record) {
+        record.setUrl(null);
         return ResultUtils.wrapFail(() -> nacosClusterService.update(record));
     }
 
@@ -62,7 +69,7 @@ public class NacosClusterController {
     public Result<NacosCluster> find(@PathVariable Long id) {
         Result<NacosCluster> result = ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(id);
-            ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos cluster");
+            AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster");
             return cluster;
         });
         if (result.isSuccess()) {

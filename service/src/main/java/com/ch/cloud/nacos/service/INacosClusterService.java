@@ -10,4 +10,5 @@ import com.ch.cloud.nacos.domain.NacosCluster;
  * @date 2022-04-27 13:43:58
  */
 public interface INacosClusterService extends IService<NacosCluster> {
+    NacosCluster findByUrl(String url);
 }
