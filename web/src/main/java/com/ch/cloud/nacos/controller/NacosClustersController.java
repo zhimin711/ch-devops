@@ -28,7 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/nacos/clusters")
-public class NacosClusterController {
+public class NacosClustersController {
 
     @Autowired
     private INacosClusterService nacosClusterService;
@@ -89,6 +89,14 @@ public class NacosClusterController {
     public Result<VueRecord> findNamespaces(@PathVariable Long id, @RequestParam(name = "s", required = false) String name) {
         return ResultUtils.wrapList(() -> {
             List<Namespace> list = namespaceService.findByClusterIdAndName(id, name);
+            return VueRecordUtils.covertIdTree(list);
+        });
+    }
+
+    @GetMapping
+    public Result<VueRecord> list() {
+        return ResultUtils.wrapList(() -> {
+            List<NacosCluster> list = nacosClusterService.findPageList(new NacosCluster(), 1, 100);
             return VueRecordUtils.covertIdTree(list);
         });
     }
