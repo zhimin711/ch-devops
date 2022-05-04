@@ -22,11 +22,15 @@ import com.ch.toolkit.UUIDGenerator;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -48,7 +52,7 @@ public class NacosNamespacesController {
     @Autowired
     private UpmsProjectClientService projectClientService;
     @Autowired
-    private UpmsTenantClientService tenantClientService;
+    private UpmsTenantClientService  tenantClientService;
 
     @Autowired
     private NacosNamespacesClient nacosNamespacesClient;
@@ -130,14 +134,29 @@ public class NacosNamespacesController {
     }
 
     @ApiOperation(value = "同步", notes = "同步-NACOS命名空间")
-    @GetMapping({"/sync/{clusterId}"})
+    @PostMapping({"/sync/{clusterId}"})
     public Result<Boolean> sync(@PathVariable Long clusterId) {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(clusterId);
-            ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos address");
+            ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
             List<NacosNamespace> list = nacosNamespacesClient.fetchAll(cluster.getUrl());
-            if (CommonUtils.isNotEmpty(list)) {
+            List<Namespace> list2 = namespaceService.findByClusterIdAndName(clusterId, null);
+            Map<String, NacosNamespace> nacosMap = CommonUtils.isNotEmpty(list) ? list.stream().collect(Collectors.toMap(NacosNamespace::getNamespace, e -> e)) : Maps.newHashMap();
+            Map<String, Namespace> localMap = CommonUtils.isNotEmpty(list2) ? list2.stream().collect(Collectors.toMap(Namespace::getUid, e -> e)) : Maps.newHashMap();
+
+            if (localMap.isEmpty()) {
                 saveNacosNamespaces(list, clusterId);
+            } else if (nacosMap.isEmpty()) {
+                list2.forEach(nacosNamespacesClient::add);
+            } else {
+                List<NacosNamespace> newList = Lists.newArrayList();
+                nacosMap.forEach((k, v) -> {
+                    if (!localMap.containsKey(k)) newList.add(v);
+                });
+                saveNacosNamespaces(newList, clusterId);
+                localMap.forEach((k, v) -> {
+                    if (!nacosMap.containsKey(k)) nacosNamespacesClient.add(v);
+                });
             }
             return true;
         });
