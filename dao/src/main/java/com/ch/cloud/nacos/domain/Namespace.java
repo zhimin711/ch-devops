@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.Column;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -40,6 +41,7 @@ public class Namespace extends BaseEntity {
      * 命名空间类型：NACOS rocketMQ Kafka
      */
     @ApiModelProperty(name = "命名空间类型")
+    @Column
     private NamespaceType type;
 
     /**
