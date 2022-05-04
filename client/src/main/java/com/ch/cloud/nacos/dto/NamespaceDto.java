@@ -1,5 +1,6 @@
 package com.ch.cloud.nacos.dto;
 
+import com.ch.cloud.types.NamespaceType;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,6 +18,8 @@ public class NamespaceDto {
 
 
     private Long id;
+
+    private Long clusterId;
 
     /**
      * 命名空间唯一标识
@@ -36,7 +39,7 @@ public class NamespaceDto {
     /**
      * 同步到Nacos状态：0.未同步 1.已同步
      */
-    private Boolean syncNacos;
+    private NamespaceType type;
 
     /**
      * 创建时间
