@@ -8,15 +8,15 @@ package com.ch.cloud.types;
  */
 public enum NamespaceType {
 
-    NACOS("1"), ROCKET_MQ("2"), KAFKA("3");
+    NACOS(1), ROCKET_MQ(2), KAFKA(3);
 
-    private final String code;
+    private final int code;
 
-    NamespaceType(String code) {
+    NamespaceType(int code) {
         this.code = code;
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 }
