@@ -15,6 +15,7 @@ import com.ch.cloud.types.NamespaceType;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
+import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
@@ -64,7 +65,19 @@ public class NacosNamespacesController {
                                       @PathVariable(value = "num") int pageNum,
                                       @PathVariable(value = "size") int pageSize) {
         record.setType(NamespaceType.NACOS);
-        return ResultUtils.wrapPage(() -> namespaceService.invokerPage(record, pageNum, pageSize));
+        return ResultUtils.wrapPage(() -> {
+            InvokerPage.Page<Namespace> page = namespaceService.invokerPage(record, pageNum, pageSize);
+            if (page.getTotal() > 0) {
+                page.getRows().forEach(e -> {
+                    NacosCluster cluster = nacosClusterService.find(e.getClusterId());
+                    e.setAddr(cluster.getUrl());
+                    NacosNamespace r = nacosNamespacesClient.fetch(e);
+                    e.setConfigCount(r.getConfigCount());
+                    e.setQuota(r.getQuota());
+                });
+            }
+            return page;
+        });
     }
 
 
@@ -96,6 +109,9 @@ public class NacosNamespacesController {
     }
 
     private void checkSaveOrUpdate(Namespace record) {
+        NacosCluster cluster = nacosClusterService.find(record.getClusterId());
+        ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos cluster" + record.getClusterId());
+        record.setAddr(cluster.getUrl());
         record.setType(NamespaceType.NACOS);
         if (record.getId() != null) {
             Namespace orig = namespaceService.find(record.getId());

@@ -2,12 +2,11 @@ package com.ch.cloud.nacos.domain;
 
 import com.ch.cloud.types.NamespaceType;
 import com.ch.mybatis.context.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import javax.persistence.Column;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -41,7 +40,7 @@ public class Namespace extends BaseEntity {
      * 命名空间类型：NACOS rocketMQ Kafka
      */
     @ApiModelProperty(name = "命名空间类型")
-    @Column
+//    @ColumnType(typeHandler = EnumOrdinalTypeHandler<String>.class)
     private NamespaceType type;
 
     /**
@@ -58,4 +57,9 @@ public class Namespace extends BaseEntity {
 
     @Transient
     private String addr;
+
+    @Transient
+    private Integer configCount;
+    @Transient
+    private Integer quota;
 }

@@ -36,7 +36,6 @@ public class NacosNamespacesClient {
     }
 
     private boolean saveNacosNamespace(Namespace record, boolean isNew) {
-        NacosCluster cluster = new NacosCluster();
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
         param.add("namespaceDesc", record.getDescription());
         if (isNew) {
@@ -51,10 +50,10 @@ public class NacosNamespacesClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(param, headers);
         if (isNew) {
-            sync = restTemplate.postForObject(cluster.getUrl() + NacosAPI.NAMESPACES, httpEntity, Boolean.class);
+            sync = restTemplate.postForObject(record.getAddr() + NacosAPI.NAMESPACES, httpEntity, Boolean.class);
         } else {
 //            restTemplate.put(nacosUrl + NAMESPACE_ADDR, param);
-            ResponseEntity<Boolean> resp = restTemplate.exchange(cluster.getUrl() + NacosAPI.NAMESPACES, HttpMethod.PUT, httpEntity, Boolean.class);
+            ResponseEntity<Boolean> resp = restTemplate.exchange(record.getAddr() + NacosAPI.NAMESPACES, HttpMethod.PUT, httpEntity, Boolean.class);
             if (resp.getStatusCode() == HttpStatus.OK) {
                 sync = resp.getBody();
             } else {
