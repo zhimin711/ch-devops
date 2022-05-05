@@ -1,8 +1,11 @@
 package com.ch.cloud.rocketmq.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 描述：Broker Collected Data
@@ -11,11 +14,15 @@ import java.math.BigDecimal;
  * @since 2022/4/29
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class BrokerCollectDTO {
+
+    private Long clusterId;
 
     private String broker;
 
-    private Long timestamp;
+    private Date timestamp;
 
     private BigDecimal totalTps;
 

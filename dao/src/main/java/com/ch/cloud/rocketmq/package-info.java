@@ -4,4 +4,4 @@
  * @author zhimin
  * @date 2022/4/27 22:34
  */
-package com.ch.cloud.nacos;
+package com.ch.cloud.rocketmq;
