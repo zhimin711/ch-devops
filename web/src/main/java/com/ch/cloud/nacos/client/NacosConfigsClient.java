@@ -1,5 +1,6 @@
 package com.ch.cloud.nacos.client;
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
@@ -63,8 +64,9 @@ public class NacosConfigsClient {
 
     public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
-        log.debug("fetchPage params: {}", param);
-        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS, JSONObject.class, param);
+        String urlParams = HttpUtil.toParams(param);
+        log.debug("fetchPage params: {}", urlParams);
+        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS+"?"+urlParams, JSONObject.class);
         if (resp != null && resp.containsKey("totalCount")) {
             Integer count = resp.getInteger("totalCount");
             if (count <= 0) {
