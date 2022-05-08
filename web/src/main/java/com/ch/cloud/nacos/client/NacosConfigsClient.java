@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.ConfigDTO;
+import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsQueryVO;
 import com.ch.result.InvokerPage;
@@ -65,8 +66,7 @@ public class NacosConfigsClient {
     public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
         String urlParams = HttpUtil.toParams(param);
-        log.debug("fetchPage params: {}", urlParams);
-        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS+"?"+urlParams, JSONObject.class);
+        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
         if (resp != null && resp.containsKey("totalCount")) {
             Integer count = resp.getInteger("totalCount");
             if (count <= 0) {
@@ -81,5 +81,13 @@ public class NacosConfigsClient {
 
     public void delete(ClientEntity<String> entity) {
 
+    }
+
+    public ConfigDTO fetch(ClientEntity<ConfigQueryVO> entity) {
+        Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
+        String urlParams = HttpUtil.toParams(param);
+        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
+        if (resp != null) return resp.toJavaObject(ConfigDTO.class);
+        return null;
     }
 }

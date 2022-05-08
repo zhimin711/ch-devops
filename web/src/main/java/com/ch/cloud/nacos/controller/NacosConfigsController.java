@@ -5,6 +5,7 @@ import com.ch.cloud.nacos.client.ClientEntity;
 import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsQueryVO;
 import com.ch.e.ExceptionUtils;
@@ -38,7 +39,6 @@ public class NacosConfigsController {
         return ResultUtils.wrapPage(() -> {
             ExceptionUtils.assertEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
             Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
-
             ExceptionUtils.assertNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
             record.setNamespaceId(null);
             record.setTenant(namespace.getUid());
@@ -52,6 +52,19 @@ public class NacosConfigsController {
         return ResultUtils.wrapFail(() -> {
 //            checkSaveOrUpdate(record);
             return nacosConfigsClient.add(new ClientEntity<>());
+        });
+    }
+
+    @ApiOperation(value = "查询", notes = "查询命名空间详情")
+    @GetMapping({"{namespaceId:[0-9]+}"})
+    public Result<ConfigDTO> get(ConfigQueryVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ExceptionUtils.assertEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
+            Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
+            ExceptionUtils.assertNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
+            record.setNamespaceId(namespace.getUid());
+            record.setTenant(namespace.getUid());
+            return nacosConfigsClient.fetch(new ClientEntity<>(namespace.getAddr(), record));
         });
     }
 
