@@ -3,6 +3,7 @@ package com.ch.cloud.nacos.service;
 import com.ch.mybatis.service.IService;
 import com.ch.cloud.nacos.domain.Namespace;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -18,4 +19,6 @@ public interface INamespaceService extends IService<Namespace> {
     List<Namespace> findByClusterIdAndName(Long clusterId, String name);
 
     Namespace findAuth(Integer namespaceId, String userId);
+
+    Namespace findWithCluster(Serializable namespaceId);
 }

@@ -1,0 +1,81 @@
+package com.ch.cloud.nacos.client;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.ch.cloud.nacos.NacosAPI;
+import com.ch.cloud.nacos.dto.ConfigDTO;
+import com.ch.cloud.nacos.vo.ConfigVO;
+import com.ch.cloud.nacos.vo.ConfigsQueryVO;
+import com.ch.result.InvokerPage;
+import com.ch.utils.BeanUtilsV2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * desc:
+ *
+ * @author zhimin
+ * @date 2022/4/25 23:31
+ */
+@Component
+public class NacosConfigsClient {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    public int add(ClientEntity<ConfigVO> entity) {
+        return save(entity, true);
+    }
+
+    public int edit(ClientEntity<ConfigVO> entity) {
+        return save(entity, false);
+    }
+
+    private int save(ClientEntity<ConfigVO> entity, boolean isNew) {
+        Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
+//        Boolean sync;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(param, headers);
+        Boolean ok = restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
+//        if (isNew) {
+//        } else {
+////            restTemplate.put(nacosUrl + NAMESPACE_ADDR, param);
+//            ResponseEntity<Boolean> resp = restTemplate.exchange(record.getAddr() + NacosAPI.NAMESPACES, HttpMethod.PUT, httpEntity, Boolean.class);
+//            if (resp.getStatusCode() == HttpStatus.OK) {
+//                sync = resp.getBody();
+//            } else {
+//                return false;
+//            }
+//        }
+        return 0;
+    }
+
+    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
+        Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
+        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS, JSONObject.class, param);
+        if (resp != null && resp.containsKey("totalCount")) {
+            Integer count = resp.getInteger("totalCount");
+            if (count <= 0) {
+                return InvokerPage.build();
+            }
+            JSONArray arr = resp.getJSONArray("pageItems");
+            List<ConfigDTO> records = arr.toJavaList(ConfigDTO.class);
+            return InvokerPage.build(count, records);
+        }
+        return InvokerPage.build();
+    }
+
+    public void delete(ClientEntity<String> entity) {
+
+    }
+}

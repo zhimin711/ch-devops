@@ -1,9 +1,12 @@
 package com.ch.cloud.nacos.service.impl;
 
 import com.ch.Constants;
+import com.ch.cloud.nacos.domain.NacosCluster;
+import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.mybatis.service.ServiceImpl;;
 import com.ch.mybatis.utils.ExampleUtils;
 import com.ch.utils.CommonUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ch.cloud.nacos.mapper.NamespaceMapper;
 import com.ch.cloud.nacos.domain.Namespace;
@@ -11,6 +14,7 @@ import com.ch.cloud.nacos.service.INamespaceService;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.Sqls;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -21,6 +25,9 @@ import java.util.List;
  */
 @Service
 public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace> implements INamespaceService {
+
+    @Autowired
+    private INacosClusterService nacosClusterService;
 
     @Override
     public Namespace findByUid(String uid) {
@@ -50,5 +57,15 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
     @Override
     public Namespace findAuth(Integer namespaceId, String userId) {
         return null;
+    }
+
+    @Override
+    public Namespace findWithCluster(Serializable namespaceId) {
+        Namespace n = super.find(namespaceId);
+        if (n != null) {
+            NacosCluster s = nacosClusterService.find(n.getClusterId());
+            if (s != null) n.setAddr(s.getUrl());
+        }
+        return n;
     }
 }
