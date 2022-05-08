@@ -8,13 +8,12 @@ import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsQueryVO;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.Map;
  * @date 2022/4/25 23:31
  */
 @Component
+@Slf4j
 public class NacosConfigsClient {
 
     @Autowired
@@ -62,6 +62,7 @@ public class NacosConfigsClient {
 
     public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
+        log.debug("fetchPage params: {}", param);
         JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS, JSONObject.class, param);
         if (resp != null && resp.containsKey("totalCount")) {
             Integer count = resp.getInteger("totalCount");
