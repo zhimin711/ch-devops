@@ -49,7 +49,8 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
         ExampleUtils.dynEqual(sqls, record, "clusterId");
 
         Example ex = Example.builder(Namespace.class)
-                .where(sqls).orderByDesc("createAt", "id")
+                .where(sqls)
+//                .orderByDesc("createAt", "id")
                 .build();
         return getMapper().selectByExample(ex);
     }
