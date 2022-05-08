@@ -47,6 +47,7 @@ public class NacosConfigsClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(param, headers);
         Boolean ok = restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
+        if (ok) return 1;
 //        if (isNew) {
 //        } else {
 ////            restTemplate.put(nacosUrl + NAMESPACE_ADDR, param);
