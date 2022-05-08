@@ -201,8 +201,8 @@ public class NacosNamespacesController {
     @GetMapping({"{id}/projects"})
     public Result<VueRecord> findProjects(@PathVariable Long id, @RequestParam(value = "s", required = false) String name) {
         return ResultUtils.wrapList(() -> {
-            projectClientService.findUsers(1L);
-            Result<ProjectDto> projects = tenantClientService.findProjects(id);
+            List<Long> projectIds = namespaceService.findProjectIds(id);
+            Result<ProjectDto> projects = projectClientService.findByIds(projectIds);
             return VueRecordUtils.covertIdList(projects.getRows());
         });
     }

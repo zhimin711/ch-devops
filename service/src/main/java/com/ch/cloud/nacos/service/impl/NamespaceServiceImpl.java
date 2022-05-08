@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.service.impl;
 
 import com.ch.Constants;
 import com.ch.cloud.nacos.domain.NacosCluster;
+import com.ch.cloud.nacos.mapper2.NamespaceProjectsMapper;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.mybatis.service.ServiceImpl;;
 import com.ch.mybatis.utils.ExampleUtils;
@@ -28,6 +29,9 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
 
     @Autowired
     private INacosClusterService nacosClusterService;
+
+    @Autowired
+    private NamespaceProjectsMapper namespaceProjectsMapper;
 
     @Override
     public Namespace findByUid(String uid) {
@@ -68,5 +72,10 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
             if (s != null) n.setAddr(s.getUrl());
         }
         return n;
+    }
+
+    @Override
+    public List<Long> findProjectIds(Long id) {
+        return namespaceProjectsMapper.findProjectId(id);
     }
 }

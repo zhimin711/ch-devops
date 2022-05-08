@@ -21,4 +21,6 @@ public interface INamespaceService extends IService<Namespace> {
     Namespace findAuth(Integer namespaceId, String userId);
 
     Namespace findWithCluster(Serializable namespaceId);
+
+    List<Long> findProjectIds(Long id);
 }
