@@ -30,7 +30,7 @@ public class NacosCluster extends BaseEntity {
     /**
      * 空间名称
      */
-    @ApiModelProperty(name = "空间名称")
+    @ApiModelProperty(name = "集群名称")
     private String name;
 
     /**

@@ -18,6 +18,8 @@ package com.ch.cloud.rocketmq.task;
 
 import com.ch.cloud.rocketmq.admin.annotation.MultiMQAdminCmdMethod;
 import com.ch.cloud.rocketmq.config.RMQConfigure;
+import com.ch.cloud.rocketmq.dto.BrokerCollectDTO;
+import com.ch.cloud.rocketmq.dto.TopicCollectDTO;
 import com.ch.cloud.rocketmq.service.DashboardCollectService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.google.common.base.Stopwatch;
@@ -49,11 +51,11 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Component
-@ConditionalOnProperty(prefix = "rocketmq.namesrv", value = { "addr" })
+@ConditionalOnProperty(prefix = "rocketmq.namesrv", value = {"addr"})
 public class DashboardCollectTask {
-    private Date currentDate = new Date();
+    private Date         currentDate = new Date();
     @Resource
-    private MQAdminExt mqAdminExt;
+    private MQAdminExt   mqAdminExt;
     @Resource
     private RMQConfigure rmqConfigure;
 
@@ -99,9 +101,8 @@ public class DashboardCollectTask {
                             stopwatch.reset();
                             inTPS += bsd.getStatsMinute().getTps();
                             inMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
-                        }
-                        catch (Exception e) {
-//                            throw Throwables.propagate(e);
+                        } catch (Exception e) {
+                            //                            throw Throwables.propagate(e);
                         }
                     }
                 }
@@ -117,9 +118,8 @@ public class DashboardCollectTask {
                                     BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.GROUP_GET_NUMS, statsKey);
                                     outTPS += bsd.getStatsMinute().getTps();
                                     outMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
-                                }
-                                catch (Exception e) {
-//                                    throw Throwables.propagate(e);
+                                } catch (Exception e) {
+                                    //                                    throw Throwables.propagate(e);
                                 }
                             }
                         }
@@ -129,22 +129,20 @@ public class DashboardCollectTask {
                 List<String> list;
                 try {
                     list = dashboardCollectService.getTopicMap().get(topic);
-                }
-                catch (ExecutionException e) {
+                } catch (ExecutionException e) {
                     throw Throwables.propagate(e);
                 }
                 if (null == list) {
                     list = Lists.newArrayList();
                 }
-
+                TopicCollectDTO dto = new TopicCollectDTO(topic, date, new BigDecimal(inTPS), inMsgCntToday, new BigDecimal(outTPS), outMsgCntToday);
                 list.add(date.getTime() + "," + new BigDecimal(inTPS).setScale(5, BigDecimal.ROUND_HALF_UP) + "," + inMsgCntToday + "," + new BigDecimal(outTPS).setScale(5, BigDecimal.ROUND_HALF_UP) + "," + outMsgCntToday);
                 dashboardCollectService.getTopicMap().put(topic, list);
 
             }
 
             log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
@@ -180,12 +178,12 @@ public class DashboardCollectTask {
                     totalTps = totalTps.add(new BigDecimal(tps));
                 }
                 BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length), 5, BigDecimal.ROUND_HALF_UP);
+                BrokerCollectDTO dto = new BrokerCollectDTO(1L, entry.getValue(), date,averageTps);
                 list.add(date.getTime() + "," + averageTps.toString());
                 dashboardCollectService.getBrokerMap().put(entry.getValue(), list);
             }
             log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -196,12 +194,10 @@ public class DashboardCollectTask {
         }
         try {
             return mqAdminExt.fetchBrokerRuntimeStats(brokerAddr);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             try {
                 Thread.sleep(1000);
-            }
-            catch (InterruptedException e1) {
+            } catch (InterruptedException e1) {
                 throw Throwables.propagate(e1);
             }
             fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
@@ -228,16 +224,14 @@ public class DashboardCollectTask {
             Map<String, List<String>> topicFileMap;
             if (brokerFile.exists()) {
                 brokerFileMap = dashboardCollectService.jsonDataFile2map(brokerFile);
-            }
-            else {
+            } else {
                 brokerFileMap = Maps.newHashMap();
                 Files.createParentDirs(brokerFile);
             }
 
             if (topicFile.exists()) {
                 topicFileMap = dashboardCollectService.jsonDataFile2map(topicFile);
-            }
-            else {
+            } else {
                 topicFileMap = Maps.newHashMap();
                 Files.createParentDirs(topicFile);
             }
@@ -250,20 +244,17 @@ public class DashboardCollectTask {
             log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
             log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private void writeFile(LoadingCache<String, List<String>> map, Map<String, List<String>> fileMap,
-                           File file) throws IOException {
+    private void writeFile(LoadingCache<String, List<String>> map, Map<String, List<String>> fileMap, File file) throws IOException {
         Map<String, List<String>> newMap = map.asMap();
         Map<String, List<String>> resultMap = Maps.newHashMap();
         if (fileMap.size() == 0) {
             resultMap = newMap;
-        }
-        else {
+        } else {
             for (Map.Entry<String, List<String>> entry : fileMap.entrySet()) {
                 List<String> oldList = entry.getValue();
                 List<String> newList = newMap.get(entry.getKey());
