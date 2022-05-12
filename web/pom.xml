@@ -260,7 +260,8 @@
                     </archive>
                     <excludes>
                         <exclude>**/*.properties</exclude>
-                        <exclude>config/application-*.xml</exclude>
+                        <exclude>config/application-*.yml</exclude>
+                        <exclude>config/application-*.yaml</exclude>
                         <exclude>static/**</exclude>
                         <exclude>public/**</exclude>
                         <exclude>templates/**</exclude>
