@@ -6,7 +6,7 @@ spring:
     name: ch-kafka
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.0.202:3306/ch_mq?characterEncoding=UTF-8&serverTimezone=GMT
+    url: jdbc:mysql://192.168.0.200:3306/ch_mq?characterEncoding=UTF-8&serverTimezone=GMT
     username: admin
     password: 123456
     type: com.zaxxer.hikari.HikariDataSource
