@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.model;
+package com.ch.cloud.kafka.dto;
 
 import java.io.Serializable;
 
@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author 01370603
  * @date Tue Oct 13 17:39:34 CST 2020
  */
-public class TopicExtPropDto implements Serializable {
+public class TopicExtPropDTO implements Serializable {
     
     private static final long serialVersionUID = 1L;
 

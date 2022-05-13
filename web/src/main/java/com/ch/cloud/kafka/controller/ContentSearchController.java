@@ -1,18 +1,21 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.Constants;
+import com.ch.cloud.kafka.dto.ContentSearchDTO;
+import com.ch.cloud.kafka.dto.TopicDTO;
+import com.ch.cloud.kafka.enums.ContentType;
+import com.ch.cloud.kafka.enums.SearchType;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtContentSearch;
 import com.ch.cloud.kafka.model.BtTopic;
-import com.ch.cloud.kafka.pojo.*;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.cloud.kafka.service.IContentSearchService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.kafka.utils.ContextUtil;
+import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
+import com.ch.cloud.kafka.vo.ContentQuery;
 import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
@@ -50,11 +53,11 @@ public class ContentSearchController {
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
     public Result<?> search(ContentQuery record) {
-        Result<TopicDto> res1 = ResultUtils.wrapFail(() -> topicService.check(record.getCluster(), record.getTopic()));
+        Result<TopicDTO> res1 = ResultUtils.wrapFail(() -> topicService.check(record.getCluster(), record.getTopic()));
         if (res1.isEmpty()) {
             return res1;
         }
-        TopicDto topicDto = res1.get();
+        TopicDTO topicDto = res1.get();
         KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
         contentTool.setContentSearchService(contentSearchService);
         contentTool.setContentRecordService(contentRecordService);
@@ -119,12 +122,12 @@ public class ContentSearchController {
     }
 
     @PostMapping("send")
-    public Result<Integer> sendMessage(@RequestBody ContentSearchDto searchDto) {
+    public Result<Integer> sendMessage(@RequestBody ContentSearchDTO searchDto) {
         return ResultUtils.wrap(() -> {
             if (CommonUtils.isEmpty(searchDto.getContent())) {
                 throw ExceptionUtils.create(PubError.NON_NULL, "发送消息不能为空!");
             }
-            TopicDto topicDto = topicService.check(searchDto.getCluster(), searchDto.getTopic());
+            TopicDTO topicDto = topicService.check(searchDto.getCluster(), searchDto.getTopic());
 
             KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
 
@@ -137,7 +140,7 @@ public class ContentSearchController {
     public Result<Integer> resendMessage(@PathVariable Long sid, @RequestBody String content) {
         return ResultUtils.wrap(() -> {
             BtContentSearch searchRecord = contentSearchService.find(sid);
-            TopicDto topicDto = topicService.check(searchRecord.getCluster(), searchRecord.getTopic());
+            TopicDTO topicDto = topicService.check(searchRecord.getCluster(), searchRecord.getTopic());
 
             KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
 

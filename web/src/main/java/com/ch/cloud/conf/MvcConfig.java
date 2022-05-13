@@ -1,12 +1,8 @@
-package com.ch.cloud.kafka.config;
+package com.ch.cloud.conf;
 
 import com.ch.Constants;
-import com.ch.cloud.kafka.utils.ContextUtil;
+import com.ch.cloud.utils.ContextUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;

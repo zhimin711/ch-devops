@@ -7,7 +7,7 @@ import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicExtService;
 import com.ch.cloud.kafka.service.ITopicService;
-import com.ch.cloud.kafka.utils.ContextUtil;
+import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;

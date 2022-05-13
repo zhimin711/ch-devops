@@ -1,17 +1,12 @@
-package com.ch.cloud.kafka.pojo;
+package com.ch.cloud.kafka.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.Date;
 
 @Data
 @ApiModel("Kafka 主题配置信息")
-public class TopicDto {
+public class TopicDTO {
 
 
     /**

@@ -8,7 +8,7 @@ import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
-import com.ch.cloud.kafka.utils.ContextUtil;
+import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;

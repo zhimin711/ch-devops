@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.cloud.kafka.pojo.ConsumerGroupDTO;
-import com.ch.cloud.kafka.pojo.ConsumerGroupDescribeDTO;
+import com.ch.cloud.kafka.dto.ConsumerGroupDTO;
+import com.ch.cloud.kafka.dto.ConsumerGroupDescribeDTO;
 import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.pojo;
+package com.ch.cloud.kafka.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

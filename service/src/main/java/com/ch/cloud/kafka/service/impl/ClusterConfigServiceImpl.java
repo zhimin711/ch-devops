@@ -7,7 +7,6 @@ import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.JSONUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

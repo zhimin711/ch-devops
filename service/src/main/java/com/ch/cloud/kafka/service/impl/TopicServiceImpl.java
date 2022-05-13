@@ -5,7 +5,7 @@ import com.ch.StatusS;
 import com.ch.cloud.kafka.mapper.BtTopicMapper;
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
-import com.ch.cloud.kafka.pojo.TopicDto;
+import com.ch.cloud.kafka.dto.TopicDTO;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;
 import com.ch.cloud.kafka.service.ITopicService;
@@ -106,7 +106,7 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
     }
 
     @Override
-    public TopicDto check(String cluster, String topic) {
+    public TopicDTO check(String cluster, String topic) {
         BtClusterConfig config = clusterConfigService.findByClusterName(cluster);
         if (config == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
@@ -115,7 +115,7 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
         if (topicExt == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
         }
-        TopicDto dto = new TopicDto();
+        TopicDTO dto = new TopicDTO();
         BeanUtils.copyProperties(topicExt, dto);
         dto.setZookeeper(config.getZookeeper());
         String path = libsDir + File.separator + topicExt.getClassFile();

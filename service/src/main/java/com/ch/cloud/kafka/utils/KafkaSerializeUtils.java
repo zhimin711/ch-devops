@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.utils;
 
-import com.ch.cloud.kafka.pojo.ContentType;
-import com.ch.cloud.kafka.pojo.TopicDto;
+import com.ch.cloud.kafka.enums.ContentType;
+import com.ch.cloud.kafka.dto.TopicDTO;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.JSONUtils;
@@ -108,7 +108,7 @@ public class KafkaSerializeUtils {
     }
 
 
-    public static byte[] convertContent(TopicDto topicDto, String contentMsg) {
+    public static byte[] convertContent(TopicDTO topicDto, String contentMsg) {
 
         ContentType contentType = ContentType.from(topicDto.getType());
         if (contentType == ContentType.PROTO_STUFF) {

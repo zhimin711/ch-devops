@@ -1,9 +1,6 @@
-package com.ch.cloud.kafka.pojo;
+package com.ch.cloud.kafka.dto;
 
 import lombok.Data;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * ContentSearchDto 扩展对象
@@ -12,7 +9,7 @@ import java.util.Date;
  * @date Wed Oct 30 17:38:37 CST 2019
  */
 @Data
-public class ContentSearchDto {
+public class ContentSearchDTO {
 
     /**
      * 集群

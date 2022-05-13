@@ -1,7 +1,7 @@
 package com.ch.test;
 
-import com.ch.cloud.kafka.pojo.ContentType;
-import com.ch.cloud.kafka.pojo.SearchType;
+import com.ch.cloud.kafka.enums.ContentType;
+import com.ch.cloud.kafka.enums.SearchType;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
 //import kafka.api.OffsetRequest;

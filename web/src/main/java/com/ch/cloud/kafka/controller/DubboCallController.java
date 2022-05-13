@@ -1,6 +1,5 @@
 package com.ch.cloud.kafka.controller;
 
-import com.ch.Constants;
 import com.ch.cloud.kafka.pojo.DubboCall2;
 import com.ch.cloud.kafka.utils.DubboCallUtils;
 import com.ch.result.Result;

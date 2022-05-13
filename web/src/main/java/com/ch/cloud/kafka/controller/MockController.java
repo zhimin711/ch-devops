@@ -3,17 +3,15 @@ package com.ch.cloud.kafka.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.ch.Constants;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
-import com.ch.cloud.kafka.pojo.TopicDto;
+import com.ch.cloud.kafka.dto.TopicDTO;
 import com.ch.cloud.kafka.service.ITopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.cloud.kafka.utils.MapUtils;
 import com.ch.cloud.kafka.utils.MockUtil;
 import com.ch.cloud.mock.pojo.MockProp;
-import com.ch.cloud.mock.util.RandomUtils;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
@@ -64,7 +62,7 @@ public class MockController {
                 int ts = CommonUtils.isNotEmpty(record.getThreadSize()) ? record.getThreadSize() : 1;
                 int bs = CommonUtils.isNotEmpty(record.getBatchSize()) ? record.getBatchSize() : 1;
 
-                TopicDto topicDto = topicService.check(record.getClusterName(), record.getTopicName());
+                TopicDTO topicDto = topicService.check(record.getClusterName(), record.getTopicName());
                 KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
 
                 List<Future<List<Object>>> futures = Lists.newArrayList();
@@ -158,7 +156,7 @@ public class MockController {
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
 
-                TopicDto topicDto = topicService.check(record.getClusterName(), record.getTopicName());
+                TopicDTO topicDto = topicService.check(record.getClusterName(), record.getTopicName());
                 KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
                 List<Future<List<Object>>> futures = Lists.newArrayList();
                 for (int i = 0; i < record.getThreadSize(); i++) {

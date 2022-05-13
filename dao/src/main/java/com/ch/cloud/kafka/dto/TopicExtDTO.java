@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.pojo;
+package com.ch.cloud.kafka.dto;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -9,7 +9,7 @@ import java.util.Date;
  * @author 01370603
  * @date Tue Oct 13 13:43:34 CST 2020
  */
-public class TopicExtDto implements Serializable {
+public class TopicExtDTO implements Serializable {
     
     private static final long serialVersionUID = 1L;
 

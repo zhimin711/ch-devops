@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.utils;
+package com.ch.cloud.utils;
 
 import com.ch.utils.CommonUtils;
 

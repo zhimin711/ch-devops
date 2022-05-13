@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.pojo;
+package com.ch.cloud.kafka.dto;
 
 import lombok.Data;
 

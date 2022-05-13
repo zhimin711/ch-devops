@@ -2,7 +2,7 @@ package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.model.BtClusterConfig;
 import com.ch.cloud.kafka.model.BtTopic;
-import com.ch.cloud.kafka.pojo.BrokerDTO;
+import com.ch.cloud.kafka.dto.BrokerDTO;
 import com.ch.cloud.kafka.pojo.Partition;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.ClusterConfigService;

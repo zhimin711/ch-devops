@@ -1,8 +1,8 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.pojo.ConsumerGroupDTO;
-import com.ch.cloud.kafka.pojo.ConsumerGroupDescribeDTO;
+import com.ch.cloud.kafka.dto.ConsumerGroupDTO;
+import com.ch.cloud.kafka.dto.ConsumerGroupDescribeDTO;
 import com.ch.cloud.kafka.pojo.ResetOffset;
 import com.ch.cloud.kafka.pojo.TopicOffset;
 import com.ch.cloud.kafka.service.ClusterConfigService;

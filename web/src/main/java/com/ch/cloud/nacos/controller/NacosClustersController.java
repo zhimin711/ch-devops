@@ -52,7 +52,7 @@ public class NacosClustersController {
     public Result<Integer> add(@RequestBody NacosCluster record) {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.findByUrl(record.getUrl());
-            ExceptionUtils.assertTrue(cluster != null, PubError.EXISTS, record.getUrl());
+            AssertUtils.isTrue(cluster != null, PubError.EXISTS, record.getUrl());
             record.setUrl(record.getUrl().trim());
             return nacosClusterService.save(record);
         });

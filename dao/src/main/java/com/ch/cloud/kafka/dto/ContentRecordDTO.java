@@ -1,4 +1,4 @@
-package com.ch.cloud.kafka.pojo;
+package com.ch.cloud.kafka.dto;
 
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @date Wed Oct 30 17:36:47 CST 2019
  */
 @Data
-public class ContentRecordDto implements Serializable {
+public class ContentRecordDTO implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
