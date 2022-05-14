@@ -1,17 +1,18 @@
 package com.ch.cloud.nacos.controller;
 
 
-import com.ch.cloud.client.UpmsProjectClientService;
-import com.ch.cloud.client.UpmsTenantClientService;
-import com.ch.cloud.client.dto.ProjectDto;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.dto.NacosNamespace;
 import com.ch.cloud.nacos.dto.NamespaceDto;
 import com.ch.cloud.nacos.service.INacosClusterService;
+import com.ch.cloud.nacos.service.INamespaceProjectService;
 import com.ch.cloud.nacos.service.INamespaceService;
 import com.ch.cloud.types.NamespaceType;
+import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.client.UpmsTenantClientService;
+import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
@@ -20,6 +21,7 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.toolkit.UUIDGenerator;
+import com.ch.utils.AssertUtils;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
@@ -46,9 +48,11 @@ import java.util.stream.Collectors;
 public class NacosNamespacesController {
 
     @Autowired
-    private INamespaceService    namespaceService;
+    private INamespaceService        namespaceService;
     @Autowired
-    private INacosClusterService nacosClusterService;
+    private INamespaceProjectService namespaceProjectService;
+    @Autowired
+    private INacosClusterService     nacosClusterService;
 
     @Autowired
     private UpmsProjectClientService projectClientService;
@@ -71,7 +75,9 @@ public class NacosNamespacesController {
                 page.getRows().forEach(e -> {
                     NacosCluster cluster = nacosClusterService.find(e.getClusterId());
                     e.setAddr(cluster.getUrl());
-                    NacosNamespace r = nacosNamespacesClient.fetch(e);
+
+                    NacosNamespace r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(e));
+                    if (r == null) return;
                     e.setConfigCount(r.getConfigCount());
                     e.setQuota(r.getQuota());
                 });
@@ -143,7 +149,10 @@ public class NacosNamespacesController {
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
+            List<Long> projectIds = namespaceProjectService.findProjectIdsByNamespaceId(id);
+            AssertUtils.isTrue(CommonUtils.isNotEmpty(projectIds),PubError.NOT_ALLOWED,"存在关联项目不允许删除");
             Namespace orig = namespaceService.find(id);
+            AssertUtils.isTrue(CommonUtils.isEmpty(orig.getUid()),PubError.NOT_ALLOWED,"保留空间不允许删除");
             nacosNamespacesClient.delete(orig);
             return namespaceService.delete(id);
         });
@@ -198,13 +207,20 @@ public class NacosNamespacesController {
     }
 
 
-    @GetMapping({"{id}/projects"})
-    public Result<VueRecord> findProjects(@PathVariable Long id, @RequestParam(value = "s", required = false) String name) {
+    @GetMapping({"{id:[0-9]+}/projects"})
+    public Result<VueRecord> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
-            List<Long> projectIds = namespaceService.findProjectIds(id);
+            List<Long> projectIds = namespaceProjectService.findProjectIdsByNamespaceId(id);
             Result<ProjectDto> projects = projectClientService.findByIds(projectIds);
             return VueRecordUtils.covertIdList(projects.getRows());
         });
     }
+
+
+    @PostMapping({"{id:[0-9]+}/projects"})
+    public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> projectIds) {
+        return ResultUtils.wrap(() -> namespaceProjectService.assignNamespaceProjects(id, projectIds));
+    }
+
 }
 

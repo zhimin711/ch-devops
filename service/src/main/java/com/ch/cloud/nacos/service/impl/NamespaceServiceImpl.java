@@ -1,17 +1,15 @@
 package com.ch.cloud.nacos.service.impl;
 
-import com.ch.Constants;
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.nacos.mapper2.NamespaceProjectsMapper;
+import com.ch.cloud.nacos.domain.Namespace;
+import com.ch.cloud.nacos.mapper.NamespaceMapper;
 import com.ch.cloud.nacos.service.INacosClusterService;
-import com.ch.mybatis.service.ServiceImpl;;
+import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.mybatis.service.ServiceImpl;
 import com.ch.mybatis.utils.ExampleUtils;
 import com.ch.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ch.cloud.nacos.mapper.NamespaceMapper;
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.service.INamespaceService;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.Sqls;
 
@@ -30,8 +28,6 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
     @Autowired
     private INacosClusterService nacosClusterService;
 
-    @Autowired
-    private NamespaceProjectsMapper namespaceProjectsMapper;
 
     @Override
     public Namespace findByUid(String uid) {
@@ -74,8 +70,4 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
         return n;
     }
 
-    @Override
-    public List<Long> findProjectIds(Long id) {
-        return namespaceProjectsMapper.findProjectId(id);
-    }
 }

@@ -3,11 +3,14 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
-import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.dto.NacosNamespace;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -22,10 +25,13 @@ import java.util.List;
  * @date 2022/4/25 23:31
  */
 @Component
+@Slf4j
 public class NacosNamespacesClient {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private RestTemplate  restTemplate;
+    @Autowired
+    private RetryTemplate retryTemplate;
 
     public Boolean add(Namespace record) {
         return saveNacosNamespace(record, true);
@@ -64,8 +70,15 @@ public class NacosNamespacesClient {
     }
 
     public NacosNamespace fetch(Namespace namespace) {
-        String param = "show=all&namespaceId=" + namespace.getUid();
-        NacosNamespace nn = restTemplate.getForObject(namespace.getAddr() + NacosAPI.NAMESPACES + "?" + param, NacosNamespace.class);
+        String param = "?show=all&namespaceId=" + namespace.getUid();
+        NacosNamespace nn = null;
+        try {
+            nn = retryTemplate.execute((RetryCallback<NacosNamespace, Throwable>) retryContext ->
+                    restTemplate.getForObject(namespace.getAddr() + NacosAPI.NAMESPACES + param,
+                            NacosNamespace.class));
+        } catch (Throwable e) {
+            log.error(param + " fetch error!", e);
+        }
         return nn;
     }
 
@@ -78,7 +91,13 @@ public class NacosNamespacesClient {
         return null;
     }
 
-    public void delete(Namespace orig) {
-
+    public Boolean delete(Namespace namespace) {
+        String url = namespace.getAddr() + NacosAPI.NAMESPACES + "?namespaceId=" + namespace.getUid();
+//        restTemplate.delete();
+        ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, null, Boolean.class);
+        if (resp.getStatusCode() == HttpStatus.OK) {
+            return resp.getBody();
+        }
+        return false;
     }
 }

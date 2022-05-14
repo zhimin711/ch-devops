@@ -22,5 +22,4 @@ public interface INamespaceService extends IService<Namespace> {
 
     Namespace findWithCluster(Serializable namespaceId);
 
-    List<Long> findProjectIds(Long id);
 }
