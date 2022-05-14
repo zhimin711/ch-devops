@@ -151,9 +151,12 @@ public class NacosNamespacesController {
         return ResultUtils.wrapFail(() -> {
             List<Long> projectIds = namespaceProjectService.findProjectIdsByNamespaceId(id);
             AssertUtils.isTrue(CommonUtils.isNotEmpty(projectIds),PubError.NOT_ALLOWED,"存在关联项目不允许删除");
-            Namespace orig = namespaceService.find(id);
-            AssertUtils.isTrue(CommonUtils.isEmpty(orig.getUid()),PubError.NOT_ALLOWED,"保留空间不允许删除");
-            nacosNamespacesClient.delete(orig);
+            Namespace namespace = namespaceService.find(id);
+            AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()),PubError.NOT_ALLOWED,"保留空间不允许删除");
+
+            NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
+            namespace.setAddr(cluster.getUrl());
+            nacosNamespacesClient.delete(namespace);
             return namespaceService.delete(id);
         });
     }
