@@ -66,8 +66,8 @@ public class NacosConfigsController {
         });
     }
 
-    @ApiOperation(value = "修改", notes = "修改配置")
-    @PutMapping
+    @ApiOperation(value = "删除", notes = "删除配置")
+    @DeleteMapping
     public Result<Boolean> delete(@RequestBody ConfigDeleteVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validConfig(record);
