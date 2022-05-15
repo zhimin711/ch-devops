@@ -38,6 +38,16 @@ public class NacosConfigsController {
         });
     }
 
+    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @GetMapping
+    public Result<ConfigDTO> get(ConfigQueryVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            record.setTenant(record.getNamespaceId());
+            return nacosConfigsClient.fetch(clientEntity);
+        });
+    }
+
     @ApiOperation(value = "添加", notes = "添加配置")
     @PostMapping
     public Result<Boolean> add(@RequestBody ConfigVO record) {
@@ -47,13 +57,13 @@ public class NacosConfigsController {
         });
     }
 
-    @ApiOperation(value = "查询", notes = "查询配置详情")
-    @GetMapping
-    public Result<ConfigDTO> get(ConfigQueryVO record) {
+    @ApiOperation(value = "克隆", notes = "克隆配置")
+    @PostMapping("clone")
+    public Result<?> clone(ConfigPolicyVO record,
+                                 @RequestBody ConfigCloneVO[] records) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.validConfig(record);
-            record.setTenant(record.getNamespaceId());
-            return nacosConfigsClient.fetch(clientEntity);
+            ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            return nacosConfigsClient.clone(clientEntity, records);
         });
     }
 

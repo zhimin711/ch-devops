@@ -6,7 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.vo.*;
+import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
+import com.ch.utils.AssertUtils;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -80,8 +82,9 @@ public class NacosConfigsClient {
     }
 
     public Boolean delete(ClientEntity<ConfigDeleteVO> entity) {
+        boolean isBatch = CommonUtils.isNotEmpty(entity.getData().getIds());
         String urlParams;
-        if (CommonUtils.isNotEmpty(entity.getData().getIds())) {
+        if (isBatch) {
             urlParams = "delType=ids&ids=" + entity.getData().getIds();
         } else {
             urlParams = "dataId=" + entity.getData().getDataId()
@@ -97,7 +100,16 @@ public class NacosConfigsClient {
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
 
         String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+
+        if (isBatch) {
+            ResponseEntity<JSONObject> resp = restTemplate.exchange(url, HttpMethod.DELETE, httpEntity, JSONObject.class);
+            if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
+                return resp.getBody().containsKey("data") && resp.getBody().getBoolean("data");
+            }
+            return false;
+        }
         ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, httpEntity, Boolean.class);
+
         return resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null ? resp.getBody() : false;
     }
 
@@ -106,6 +118,25 @@ public class NacosConfigsClient {
         String urlParams = HttpUtil.toParams(param);
         JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
         if (resp != null) return resp.toJavaObject(ConfigDTO.class);
+        return null;
+    }
+
+    public JSONObject clone(ClientEntity<ConfigPolicyVO> clientEntity, ConfigCloneVO[] records) {
+        String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?clone=true&tenant="
+                + clientEntity.getData().getNamespaceId()
+                + "&policy=" + clientEntity.getData().getPolicy()
+                + "&namespaceId=";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ConfigCloneVO[]> httpEntity = new HttpEntity<>(records, headers);
+
+        JSONObject resp = restTemplate.postForObject(url, httpEntity, JSONObject.class);
+        AssertUtils.isNull(resp, PubError.CONNECT);
+        if (resp.containsKey("code") && resp.getInteger("code") == 200) {
+            return resp.getJSONObject("data");
+        }
         return null;
     }
 }
