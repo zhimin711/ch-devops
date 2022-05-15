@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2022/5/14 21:52
  */
 @RestController
-@RequestMapping("/nacos/project")
+@RequestMapping("/nacos/projects")
 public class NacosProjectAPIController {
 
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询nacos集群")
+    @ApiOperation(value = "分页查询", notes = "分页查询nacos项目")
     @GetMapping(value = {"list"})
     public Result<VueRecord> list(String name, String tenant) {
         return ResultUtils.wrapList(()->{

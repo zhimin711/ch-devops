@@ -57,7 +57,9 @@ public class NacosConfigsClient {
     public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
         String urlParams = HttpUtil.toParams(param);
-        JSONObject resp = restTemplate.getForObject(entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
+        String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+        log.info("nacos configs page url: {}", url);
+        JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("totalCount")) {
             Integer count = resp.getInteger("totalCount");
             if (count <= 0) {
