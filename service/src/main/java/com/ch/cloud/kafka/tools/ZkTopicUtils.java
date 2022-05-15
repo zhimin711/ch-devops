@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/19 16:36
+ * @since 2018/9/19 16:36
  */
 @Slf4j
 public class ZkTopicUtils {

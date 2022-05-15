@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -22,7 +21,7 @@ import java.util.List;
  * desc:
  *
  * @author zhimin
- * @date 2022/4/25 23:31
+ * @since 2022/4/25 23:31
  */
 @Component
 @Slf4j
@@ -96,6 +95,7 @@ public class NacosNamespacesClient {
 //        restTemplate.delete();
         ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, null, Boolean.class);
         if (resp.getStatusCode() == HttpStatus.OK) {
+            log.info("delete namespace: {}", resp.getBody());
             return resp.getBody();
         }
         return false;

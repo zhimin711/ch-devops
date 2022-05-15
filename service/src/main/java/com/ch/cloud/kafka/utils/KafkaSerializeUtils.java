@@ -23,7 +23,7 @@ import java.util.Map;
  * decs:
  *
  * @author zhimin.ma
- * @date 2019/10/30
+ * @since 2019/10/30
  */
 @Slf4j
 public class KafkaSerializeUtils {

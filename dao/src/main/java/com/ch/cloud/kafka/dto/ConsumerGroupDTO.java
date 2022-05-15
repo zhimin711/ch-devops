@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * @author zhimin
- * @date 2022/4/2 20:35 下午
+ * @since 2022/4/2 20:35 下午
  */
 @Data
 public class ConsumerGroupDTO {

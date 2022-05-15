@@ -18,7 +18,7 @@ import static com.ch.cloud.redis.utils.SignUtil.MINUS;
 
 /**
  * @author Jay.H.Zou
- * @date 7/26/2019
+ * @since 7/26/2019
  */
 public class RedisUtil {
 

@@ -5,7 +5,7 @@ import java.io.*;
 /**
  * @author :  peng.liu
  * @description : 字符串工具
- * @date :    2018/7/13 11:09
+ * @since :    2018/7/13 11:09
  */
 public class StringUtil {
 

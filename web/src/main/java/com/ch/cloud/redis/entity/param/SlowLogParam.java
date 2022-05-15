@@ -2,7 +2,7 @@ package com.ch.cloud.redis.entity.param;
 
 /**
  * @author Jay.H.Zou
- * @date 7/26/2019
+ * @since 7/26/2019
  */
 public class SlowLogParam {
 

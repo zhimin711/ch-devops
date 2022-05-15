@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
  * decs:
  *
  * @author zhimin.ma
- * @date 2019/10/30
+ * @since 2019/10/30
  */
 @Service
 public class ContentSearchServiceImpl extends ServiceImpl<BtContentSearchMapper, BtContentSearch> implements IContentSearchService {

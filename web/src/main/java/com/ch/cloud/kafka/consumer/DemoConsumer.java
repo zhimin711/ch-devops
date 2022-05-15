@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/21 11:47
+ * @since 2018/9/21 11:47
  */
 public class DemoConsumer {
     private Logger logger = LoggerFactory.getLogger(DemoConsumer.class);

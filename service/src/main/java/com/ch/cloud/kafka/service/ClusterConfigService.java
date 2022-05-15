@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/25 18:20
+ * @since 2018/9/25 18:20
  */
 public interface ClusterConfigService extends IService< BtClusterConfig> {
 

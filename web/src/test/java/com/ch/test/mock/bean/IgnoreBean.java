@@ -5,7 +5,7 @@ import com.ch.cloud.mock.annotation.MockIgnore;
 /**
  * @author :  peng.liu
  * @description : 测试忽略 属性 的bean
- * @date :    2018/7/16 10:13
+ * @since :    2018/7/16 10:13
  */
 public class IgnoreBean {
     @MockIgnore

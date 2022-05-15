@@ -7,7 +7,7 @@ import org.junit.Test;
  * decs:
  *
  * @author zhimin.ma
- * @date 2020/6/16
+ * @since 2020/6/16
  */
 public class DubboTests {
     String address = "zookeeper://10.202.39.19:2181?backup=10.202.39.20:2181,10.202.39.21:2181";

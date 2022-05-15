@@ -6,7 +6,7 @@ import lombok.Data;
  * ContentSearchDto 扩展对象
  * 
  * @author zhimin.ma
- * @date Wed Oct 30 17:38:37 CST 2019
+ * @since Wed Oct 30 17:38:37 CST 2019
  */
 @Data
 public class ContentSearchDTO {

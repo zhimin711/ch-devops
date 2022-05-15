@@ -4,7 +4,7 @@ package com.ch.cloud.types;
  * desc:命名空间类型
  *
  * @author zhimin
- * @date 2022/4/26 00:11
+ * @since 2022/4/26 00:11
  */
 public enum NamespaceType {
 

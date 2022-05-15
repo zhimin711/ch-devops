@@ -4,7 +4,7 @@ import lombok.Data;
 
 /**
  * @author zhimin
- * @date 2022/3/27 7:07 下午
+ * @since 2022/3/27 7:07 下午
  */
 @Data
 public class TopicOffset {

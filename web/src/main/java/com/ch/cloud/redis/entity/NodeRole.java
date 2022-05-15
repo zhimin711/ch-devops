@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  * @author Jay.H.Zou
- * @date 2019/8/2
+ * @since 2019/8/2
  */
 public enum NodeRole {
 

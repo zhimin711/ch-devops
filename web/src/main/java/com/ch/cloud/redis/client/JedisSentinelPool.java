@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * decs:
  *
  * @author 01370603
- * @date 2021/1/13
+ * @since 2021/1/13
  */
 public class JedisSentinelPool {
 

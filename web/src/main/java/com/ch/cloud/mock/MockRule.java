@@ -5,7 +5,7 @@ package com.ch.cloud.mock;
  * 系统根据表达示计算出
  *
  * @author zhimi
- * @date 2020/12/9 22:28
+ * @since 2020/12/9 22:28
  */
 public enum MockRule {
     /**

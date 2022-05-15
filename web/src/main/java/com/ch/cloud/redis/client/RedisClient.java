@@ -26,7 +26,7 @@ import java.util.*;
 
 /**
  * @author Jay.H.Zou
- * @date 2019/7/22
+ * @since 2019/7/22
  */
 public class RedisClient implements IRedisClient {
     private static final Logger logger = LoggerFactory.getLogger(RedisClient.class);

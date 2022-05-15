@@ -11,7 +11,7 @@ import javax.persistence.Table;
  * 业务-nacos集群对象 bt_nacos_cluster
  *
  * @author admin
- * @date 2022-04-27 13:43:58
+ * @since 2022-04-27 13:43:58
  */
 @Data
 @EqualsAndHashCode(callSuper = false)

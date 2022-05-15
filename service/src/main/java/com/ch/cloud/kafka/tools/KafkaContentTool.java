@@ -33,7 +33,7 @@ import java.util.*;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/21 15:48
+ * @since 2018/9/21 15:48
  */
 @Slf4j
 public class KafkaContentTool {

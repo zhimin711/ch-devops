@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * @author zhimin.ma
  * @description json工具类
- * @date 2018/7/13 15:08
+ * @since 2018/7/13 15:08
  */
 public class JsonUtil {
 

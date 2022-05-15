@@ -12,7 +12,7 @@ import static com.ch.cloud.redis.utils.RedisUtil.nodesToHostAndPortSet;
  * Redis connection param
  *
  * @author Jay.H.Zou
- * @date 2019/7/18
+ * @since 2019/7/18
  */
 public class RedisURI {
 

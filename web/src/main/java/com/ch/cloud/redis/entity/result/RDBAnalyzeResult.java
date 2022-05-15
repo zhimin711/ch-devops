@@ -4,7 +4,7 @@ package com.ch.cloud.redis.entity.result;
 
 /**
  * @author Kyle.K.Zhao
- * @date 1/8/2020 16:26
+ * @since 1/8/2020 16:26
  */
 public class RDBAnalyzeResult {
 	private Long id;

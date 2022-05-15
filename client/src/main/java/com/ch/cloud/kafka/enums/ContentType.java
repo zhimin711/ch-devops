@@ -2,7 +2,7 @@ package com.ch.cloud.kafka.enums;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/25 20:13
+ * @since 2018/9/25 20:13
  */
 public enum ContentType {
     STRING, JSON, PROTO_STUFF, UNKNOWN;

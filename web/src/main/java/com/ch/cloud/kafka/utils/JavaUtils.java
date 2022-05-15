@@ -12,7 +12,7 @@ import java.util.Collections;
  * @link https://blog.csdn.net/zhao_xinhu/article/details/82499062
  *
  * @author zhimin.ma
- * @date 2020/10/10
+ * @since 2020/10/10
  */
 public class JavaUtils {
 

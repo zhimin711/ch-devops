@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * @author zhimin.ma
- * @date 2022/4/2 20:32 上午
+ * @since 2022/4/2 20:32 上午
  */
 @Data
 public class Partition {

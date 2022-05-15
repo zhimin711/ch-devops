@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.controller;
 
 
+import cn.hutool.core.lang.Assert;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.domain.Namespace;
@@ -92,7 +93,12 @@ public class NacosNamespacesController {
     public Result<Integer> add(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
             checkSaveOrUpdate(record);
-            record.setUid(UUIDGenerator.generateUid().toString());
+            if (CommonUtils.isEmpty(record.getUid())) {
+                record.setUid(UUIDGenerator.generateUid().toString());
+            } else {
+                NacosNamespace namespace = nacosNamespacesClient.fetch(record);
+                AssertUtils.notNull(namespace, PubError.EXISTS,"id");
+            }
             boolean syncOk = nacosNamespacesClient.add(record);
             if (!syncOk) {
                 ExceptionUtils._throw(PubError.CONNECT, "create nacos namespace failed!");
@@ -150,9 +156,9 @@ public class NacosNamespacesController {
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             List<Long> projectIds = namespaceProjectService.findProjectIdsByNamespaceId(id);
-            AssertUtils.isTrue(CommonUtils.isNotEmpty(projectIds),PubError.NOT_ALLOWED,"存在关联项目不允许删除");
+            AssertUtils.isTrue(CommonUtils.isNotEmpty(projectIds), PubError.NOT_ALLOWED, "存在关联项目不允许删除");
             Namespace namespace = namespaceService.find(id);
-            AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()),PubError.NOT_ALLOWED,"保留空间不允许删除");
+            AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()), PubError.NOT_ALLOWED, "保留空间不允许删除");
 
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             namespace.setAddr(cluster.getUrl());

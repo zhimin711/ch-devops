@@ -6,7 +6,7 @@ import lombok.Data;
  * desc:
  *
  * @author zhimin
- * @date 2022/5/8 16:58
+ * @since 2022/5/8 16:58
  */
 @Data
 public class ConfigDTO {

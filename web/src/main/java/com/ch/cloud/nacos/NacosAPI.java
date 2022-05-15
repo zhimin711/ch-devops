@@ -4,7 +4,7 @@ package com.ch.cloud.nacos;
  * desc:base url [/nacos/v1]
  *
  * @author zhimin
- * @date 2022/4/23 16:04
+ * @since 2022/4/23 16:04
  */
 public interface NacosAPI {
 

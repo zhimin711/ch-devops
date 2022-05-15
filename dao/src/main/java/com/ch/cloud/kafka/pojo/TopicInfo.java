@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/19 17:00
+ * @since 2018/9/19 17:00
  */
 @Data
 public class TopicInfo {

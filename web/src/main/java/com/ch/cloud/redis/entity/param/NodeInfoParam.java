@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * @author Jay.H.Zou
- * @date 7/23/2019
+ * @since 7/23/2019
  */
 public class NodeInfoParam {
 

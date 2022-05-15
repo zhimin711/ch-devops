@@ -8,7 +8,7 @@ import lombok.Data;
  * 内容搜索条件
  *
  * @author zhimin.ma
- * @date 2018/9/19 17:00
+ * @since 2018/9/19 17:00
  */
 @ApiModel("Kafka消息搜索参数")
 @Data

@@ -15,7 +15,7 @@ import javax.persistence.Transient;
  * 业务-命名空间对象 bt_namespace
  *
  * @author admin
- * @date 2022-04-27 14:33:17
+ * @since 2022-04-27 14:33:17
  */
 @Data
 @EqualsAndHashCode(callSuper = false)

@@ -8,7 +8,7 @@ import java.util.List;
  * decs:
  *
  * @author zhimin.ma
- * @date 2020/1/6
+ * @since 2020/1/6
  */
 @Data
 public class DubboCall2 {

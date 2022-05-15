@@ -2,7 +2,7 @@ package com.ch.cloud.redis.utils;
 
 /**
  * @author Jay.H.Zou
- * @date 8/7/2019
+ * @since 8/7/2019
  */
 public class SignUtil {
 

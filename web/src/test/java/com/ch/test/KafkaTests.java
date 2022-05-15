@@ -23,7 +23,7 @@ import java.util.*;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/19 17:27
+ * @since 2018/9/19 17:27
  */
 public class KafkaTests {
 

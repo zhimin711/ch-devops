@@ -22,7 +22,7 @@ import java.sql.Timestamp;
  * cluster_stats_messages_received:3031358
  *
  * @author Jay.H.Zou
- * @date 7/19/2019
+ * @since 7/19/2019
  */
 public class Cluster {
 

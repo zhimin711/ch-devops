@@ -4,7 +4,7 @@ import lombok.Data;
 
 /**
  * @author zhimin
- * @date 2022/4/18 10:10 下午
+ * @since 2022/4/18 10:10 下午
  */
 @Data
 public class ConsumerGroupDescribeDTO {

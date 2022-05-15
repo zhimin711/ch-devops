@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/25 20:29
+ * @since 2018/9/25 20:29
  */
 @Api(tags = "KAFKA主题扩展信息配置模块")
 @RestController

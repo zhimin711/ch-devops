@@ -8,7 +8,7 @@ import java.sql.Timestamp;
  * For
  *
  * @author Jay.H.Zou
- * @date 7/25/2019
+ * @since 7/25/2019
  */
 public class RedisNode {
 

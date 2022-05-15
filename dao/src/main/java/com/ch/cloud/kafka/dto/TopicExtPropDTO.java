@@ -6,7 +6,7 @@ import java.io.Serializable;
  * TopicExtPropDto 扩展对象
  * 
  * @author 01370603
- * @date Tue Oct 13 17:39:34 CST 2020
+ * @since Tue Oct 13 17:39:34 CST 2020
  */
 public class TopicExtPropDTO implements Serializable {
     

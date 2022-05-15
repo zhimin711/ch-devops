@@ -5,7 +5,7 @@ import redis.clients.jedis.ScanParams;
 
 /**
  * @author Jay.H.Zou
- * @date 8/8/2019
+ * @since 8/8/2019
  */
 public class AutoCommandParam extends DataCommandsParam {
 

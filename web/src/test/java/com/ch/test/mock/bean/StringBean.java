@@ -5,7 +5,7 @@ import com.ch.cloud.mock.annotation.MockIgnore;
 /**
  * @author :  peng.liu
  * @description : 字符串bean
- * @date :    2018/7/17 13:29
+ * @since :    2018/7/17 13:29
  */
 public class StringBean {
     @MockIgnore

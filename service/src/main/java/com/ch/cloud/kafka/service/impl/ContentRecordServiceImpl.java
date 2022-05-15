@@ -13,7 +13,7 @@ import java.util.List;
  * decs:
  *
  * @author zhimin.ma
- * @date 2019/10/30
+ * @since 2019/10/30
  */
 @Service
 public class ContentRecordServiceImpl extends ServiceImpl<BtContentRecordMapper, BtContentRecord> implements IContentRecordService {

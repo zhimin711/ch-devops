@@ -7,7 +7,7 @@ import java.util.Date;
  * TopicExtDto 扩展对象
  * 
  * @author 01370603
- * @date Tue Oct 13 13:43:34 CST 2020
+ * @since Tue Oct 13 13:43:34 CST 2020
  */
 public class TopicExtDTO implements Serializable {
     

@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * @author zhimin.ma
- * @date 2018/9/25 20:29
+ * @since 2018/9/25 20:29
  */
 @Api(tags = "KAFKA主题配置模块")
 @RestController

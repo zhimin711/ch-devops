@@ -8,7 +8,7 @@ import java.util.List;
  * desc:
  *
  * @author zhimin
- * @date 2022/5/9 00:29
+ * @since 2022/5/9 00:29
  */
 @Mapper
 public interface NamespaceProjectsMapper {

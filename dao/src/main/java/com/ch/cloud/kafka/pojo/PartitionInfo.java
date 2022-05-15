@@ -6,7 +6,7 @@ import lombok.Data;
  * decs:主题分区信息
  *
  * @author zhimin.ma
- * @date 2019/10/29
+ * @since 2019/10/29
  */
 @Data
 public class PartitionInfo {

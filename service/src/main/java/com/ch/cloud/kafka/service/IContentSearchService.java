@@ -7,7 +7,7 @@ import com.ch.mybatis.service.IService;
  * decs:
  *
  * @author zhimin.ma
- * @date 2019/10/30
+ * @since 2019/10/30
  */
 public interface IContentSearchService extends IService<BtContentSearch> {
 

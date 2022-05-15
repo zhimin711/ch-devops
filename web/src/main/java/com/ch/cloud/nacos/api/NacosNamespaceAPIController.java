@@ -19,7 +19,7 @@ import java.util.List;
  * desc:
  *
  * @author zhimin
- * @date 2022/5/14 21:52
+ * @since 2022/5/14 21:52
  */
 @RestController
 @RequestMapping("/nacos/namespace")

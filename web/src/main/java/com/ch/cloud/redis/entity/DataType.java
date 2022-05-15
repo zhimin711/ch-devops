@@ -2,7 +2,7 @@ package com.ch.cloud.redis.entity;
 
 /**
  * @author Jay.H.Zou
- * @date 9/25/2019
+ * @since 9/25/2019
  */
 public class DataType {
 
