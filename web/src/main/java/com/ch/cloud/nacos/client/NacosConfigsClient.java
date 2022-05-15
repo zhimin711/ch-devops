@@ -63,7 +63,7 @@ public class NacosConfigsClient {
         return restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
     }
 
-    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
+    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsPageVO> entity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
         String urlParams = HttpUtil.toParams(param);
         String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;

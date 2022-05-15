@@ -28,10 +28,10 @@ public class NacosConfigsController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询nacos配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
-    public PageResult<ConfigDTO> page(ConfigsQueryVO record) {
+    public PageResult<ConfigDTO> page(ConfigsPageVO record) {
 
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<ConfigsQueryVO> entity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigsPageVO> entity = nacosNamespaceValidator.validConfig(record);
             record.setTenant(record.getNamespaceId());
             record.setNamespaceId(null);
             return nacosConfigsClient.fetchPage(entity);
@@ -57,22 +57,22 @@ public class NacosConfigsController {
         });
     }
 
-    @ApiOperation(value = "克隆", notes = "克隆配置")
-    @PostMapping("clone")
-    public Result<?> clone(ConfigPolicyVO record,
-                                 @RequestBody ConfigCloneVO[] records) {
-        return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.validConfig(record);
-            return nacosConfigsClient.clone(clientEntity, records);
-        });
-    }
-
     @ApiOperation(value = "修改", notes = "修改配置")
     @PutMapping
     public Result<Boolean> edit(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
             return nacosConfigsClient.edit(clientEntity);
+        });
+    }
+
+    @ApiOperation(value = "克隆", notes = "克隆配置")
+    @PostMapping("clone")
+    public Result<?> clone(ConfigPolicyVO record,
+                           @RequestBody ConfigCloneVO[] records) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            return nacosConfigsClient.clone(clientEntity, records);
         });
     }
 

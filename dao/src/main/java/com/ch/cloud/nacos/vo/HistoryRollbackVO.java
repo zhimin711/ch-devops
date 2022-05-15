@@ -11,6 +11,16 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ServicesQueryVO extends NamespaceVO {
+public class HistoryRollbackVO extends NamespaceVO {
+
+    private String appName;
+
+    private String tenant;
+
+    private String dataId;
+
+    private String group;
+
+    private String content;
 
 }

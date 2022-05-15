@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigsQueryVO extends NamespaceVO {
+public class HistoryPageVO extends NamespaceVO {
 
     private String search;
 
@@ -20,10 +20,6 @@ public class ConfigsQueryVO extends NamespaceVO {
     private String dataId;
 
     private String group;
-
-    private String appName;
-
-    private String config_tags;
 
     private int pageNo = 1;
 

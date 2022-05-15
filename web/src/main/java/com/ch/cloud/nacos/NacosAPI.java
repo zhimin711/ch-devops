@@ -13,4 +13,6 @@ public interface NacosAPI {
     String CONFIGS = "/cs/configs";
     String SERVICES = "/ns/catalog/services";
     String SUBSCRIBERS = "/ns/service/subscribers";
+
+    String HISTORY = "/cs/history";
 }

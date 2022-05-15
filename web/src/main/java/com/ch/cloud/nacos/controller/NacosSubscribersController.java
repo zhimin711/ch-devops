@@ -1,0 +1,40 @@
+package com.ch.cloud.nacos.controller;
+
+import com.ch.cloud.nacos.client.NacosSubscribesClient;
+import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
+import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.SubscribesPageVO;
+import com.ch.result.PageResult;
+import com.ch.result.ResultUtils;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 描述：
+ *
+ * @author Zhimin.Ma
+ * @since 2022/4/29
+ */
+@RestController
+@RequestMapping("/nacos/subscribers")
+public class NacosSubscribersController {
+
+    @Autowired
+    private NacosNamespaceValidator nacosNamespaceValidator;
+    @Autowired
+    private NacosSubscribesClient   nacosSubscribesClient;
+
+
+    @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
+    @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
+    public PageResult<SubscriberDTO> page(SubscribesPageVO record) {
+        return ResultUtils.wrapPage(() -> {
+            ClientEntity<SubscribesPageVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            return nacosSubscribesClient.fetchPage(clientEntity);
+        });
+    }
+}

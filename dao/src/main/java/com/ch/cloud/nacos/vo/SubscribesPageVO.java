@@ -9,11 +9,11 @@ import lombok.Data;
  * @since 2022/4/29
  */
 @Data
-public class PageSubcribersVO {
+public class SubscribesPageVO  extends NamespaceVO {
 
-    private Integer clusterId;
+    private int pageNo = 1;
 
-    private Integer namespaceId;
+    private int pageSize = 10;
 
     private String serviceName;
 
