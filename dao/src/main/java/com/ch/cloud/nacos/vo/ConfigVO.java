@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.vo;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -10,10 +11,9 @@ import java.util.Date;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigVO {
-
-    private String namespaceId;
+public class ConfigVO extends NamespaceVO {
 
     private String dataId;
 

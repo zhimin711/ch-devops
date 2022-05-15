@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.vo;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 描述：
@@ -8,10 +9,9 @@ import lombok.Data;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigQueryVO {
-
-    private String namespaceId;
+public class ConfigQueryVO extends NamespaceVO {
 
     private String show;
 

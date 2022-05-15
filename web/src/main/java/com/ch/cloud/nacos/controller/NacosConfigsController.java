@@ -1,10 +1,11 @@
 package com.ch.cloud.nacos.controller;
 
-import com.ch.cloud.nacos.client.ClientEntity;
+import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.client.NacosConfigsClient;
 import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsQueryVO;
@@ -18,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 描述：
+ * 描述：配置
  *
  * @author Zhimin.Ma
  * @since 2022/4/29
@@ -31,9 +32,11 @@ public class NacosConfigsController {
     private INamespaceService  namespaceService;
     @Autowired
     private NacosConfigsClient nacosConfigsClient;
+    @Autowired
+    private NacosNamespaceValidator nacosNamespaceValidator;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询nacos集群")
-    @GetMapping
+    @ApiOperation(value = "分页查询", notes = "分页查询nacos配置")
+    @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ConfigDTO> page(ConfigsQueryVO record) {
 
         return ResultUtils.wrapPage(() -> {
@@ -46,34 +49,31 @@ public class NacosConfigsController {
         });
     }
 
-    @ApiOperation(value = "添加", notes = "添加命名空间")
+    @ApiOperation(value = "添加", notes = "添加配置")
     @PostMapping
     public Result<Integer> add(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
-//            checkSaveOrUpdate(record);
-            return nacosConfigsClient.add(new ClientEntity<>());
+            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            return nacosConfigsClient.add(clientEntity);
         });
     }
 
-    @ApiOperation(value = "查询", notes = "查询命名空间详情")
-    @GetMapping({"{namespaceId:[0-9]+}"})
+    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @GetMapping
     public Result<ConfigDTO> get(ConfigQueryVO record) {
         return ResultUtils.wrapFail(() -> {
-            AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
-            Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
-            AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
-            record.setNamespaceId(namespace.getUid());
-            record.setTenant(namespace.getUid());
-            return nacosConfigsClient.fetch(new ClientEntity<>(namespace.getAddr(), record));
+            ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            record.setTenant(record.getNamespaceId());
+            return nacosConfigsClient.fetch(clientEntity);
         });
     }
 
-    @ApiOperation(value = "修改", notes = "修改命名空间")
-    @PutMapping({"{id:[0-9]+}"})
+    @ApiOperation(value = "修改", notes = "修改配置")
+    @PutMapping
     public Result<Integer> edit(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
-//            checkSaveOrUpdate(record);
-            return nacosConfigsClient.edit(new ClientEntity<>());
+            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            return nacosConfigsClient.edit(clientEntity);
         });
     }
 

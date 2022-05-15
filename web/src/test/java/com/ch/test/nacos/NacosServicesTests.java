@@ -2,12 +2,9 @@ package com.ch.test.nacos;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.common.http.HttpUtils;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ServicesQueryVO;
 import com.ch.utils.BeanUtilsV2;
-import com.ch.utils.NetUtils;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
 

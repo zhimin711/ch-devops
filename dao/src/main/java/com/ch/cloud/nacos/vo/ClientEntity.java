@@ -1,4 +1,4 @@
-package com.ch.cloud.nacos.client;
+package com.ch.cloud.nacos.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.ConfigDTO;
+import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsQueryVO;
@@ -49,17 +50,7 @@ public class NacosConfigsClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(param, headers);
         Boolean ok = restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
-        if (ok) return 1;
-//        if (isNew) {
-//        } else {
-////            restTemplate.put(nacosUrl + NAMESPACE_ADDR, param);
-//            ResponseEntity<Boolean> resp = restTemplate.exchange(record.getAddr() + NacosAPI.NAMESPACES, HttpMethod.PUT, httpEntity, Boolean.class);
-//            if (resp.getStatusCode() == HttpStatus.OK) {
-//                sync = resp.getBody();
-//            } else {
-//                return false;
-//            }
-//        }
+        if (Boolean.TRUE.equals(ok)) return 1;
         return 0;
     }
 
