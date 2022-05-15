@@ -36,12 +36,12 @@ public class NacosProjectsController {
     @Autowired
     private INamespaceService        namespaceService;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询nacos集群")
+    @ApiOperation(value = "分页查询", notes = "分页查询项目")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
     public PageResult<ProjectDto> page(ProjectDto record,
                                        @PathVariable(value = "num") int pageNum,
                                        @PathVariable(value = "size") int pageSize) {
-      return   upmsProjectClientService.page(record,pageNum,pageSize);
+        return upmsProjectClientService.page(pageNum, pageSize, record.getCode(), record.getName(), record.getTenantName());
 //        PageInfo<ProjectDto> page = nacosClusterService.findPage(record, pageNum, pageSize);
 
     }
