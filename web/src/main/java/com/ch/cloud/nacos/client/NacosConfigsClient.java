@@ -11,12 +11,15 @@ import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsQueryVO;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
+import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -44,11 +47,22 @@ public class NacosConfigsClient {
     }
 
     private int save(ClientEntity<ConfigVO> entity, boolean isNew) {
+        if (isNew) {
+            entity.getData().setTenant(entity.getData().getNamespaceId());
+        }
+        if (CommonUtils.isEmpty(entity.getData().getAppName())) {
+            entity.getData().setAppName("");
+        }
+        if (CommonUtils.isEmpty(entity.getData().getConfigTags())) {
+            entity.getData().setConfigTags("");
+        }
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
-//        Boolean sync;
+        MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
+        param.forEach(postParameters::add);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(param, headers);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(postParameters, headers);
         Boolean ok = restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
         if (Boolean.TRUE.equals(ok)) return 1;
         return 0;

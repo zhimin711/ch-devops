@@ -40,12 +40,10 @@ public class NacosConfigsController {
     public PageResult<ConfigDTO> page(ConfigsQueryVO record) {
 
         return ResultUtils.wrapPage(() -> {
-            AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
-            Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
-            AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
+            ClientEntity<ConfigsQueryVO> entity = nacosNamespaceValidator.validConfig(record);
+            record.setTenant(record.getNamespaceId());
             record.setNamespaceId(null);
-            record.setTenant(namespace.getUid());
-            return nacosConfigsClient.fetchPage(new ClientEntity<>(namespace.getAddr(), record));
+            return nacosConfigsClient.fetchPage(entity);
         });
     }
 
