@@ -1,19 +1,12 @@
 package com.ch.cloud.nacos.controller;
 
-import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.client.NacosConfigsClient;
-import com.ch.cloud.nacos.domain.Namespace;
 import com.ch.cloud.nacos.dto.ConfigDTO;
-import com.ch.cloud.nacos.service.INamespaceService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
-import com.ch.cloud.nacos.vo.ConfigQueryVO;
-import com.ch.cloud.nacos.vo.ConfigVO;
-import com.ch.cloud.nacos.vo.ConfigsQueryVO;
-import com.ch.e.PubError;
+import com.ch.cloud.nacos.vo.*;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
-import com.ch.utils.AssertUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/nacos/configs")
 public class NacosConfigsController {
 
-    @Autowired
-    private INamespaceService  namespaceService;
     @Autowired
     private NacosConfigsClient nacosConfigsClient;
     @Autowired
@@ -49,7 +40,7 @@ public class NacosConfigsController {
 
     @ApiOperation(value = "添加", notes = "添加配置")
     @PostMapping
-    public Result<Integer> add(@RequestBody ConfigVO record) {
+    public Result<Boolean> add(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
             return nacosConfigsClient.add(clientEntity);
@@ -68,12 +59,20 @@ public class NacosConfigsController {
 
     @ApiOperation(value = "修改", notes = "修改配置")
     @PutMapping
-    public Result<Integer> edit(@RequestBody ConfigVO record) {
+    public Result<Boolean> edit(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
             return nacosConfigsClient.edit(clientEntity);
         });
     }
 
+    @ApiOperation(value = "修改", notes = "修改配置")
+    @PutMapping
+    public Result<Boolean> delete(@RequestBody ConfigDeleteVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            return nacosConfigsClient.delete(clientEntity);
+        });
+    }
 
 }

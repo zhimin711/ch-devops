@@ -5,18 +5,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.ConfigDTO;
-import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.ConfigQueryVO;
-import com.ch.cloud.nacos.vo.ConfigVO;
-import com.ch.cloud.nacos.vo.ConfigsQueryVO;
+import com.ch.cloud.nacos.vo.*;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -38,15 +33,15 @@ public class NacosConfigsClient {
     @Autowired
     private RestTemplate restTemplate;
 
-    public int add(ClientEntity<ConfigVO> entity) {
+    public Boolean add(ClientEntity<ConfigVO> entity) {
         return save(entity, true);
     }
 
-    public int edit(ClientEntity<ConfigVO> entity) {
+    public Boolean edit(ClientEntity<ConfigVO> entity) {
         return save(entity, false);
     }
 
-    private int save(ClientEntity<ConfigVO> entity, boolean isNew) {
+    private Boolean save(ClientEntity<ConfigVO> entity, boolean isNew) {
         if (isNew) {
             entity.getData().setTenant(entity.getData().getNamespaceId());
         }
@@ -57,15 +52,13 @@ public class NacosConfigsClient {
             entity.getData().setConfigTags("");
         }
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
-        MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
-        param.forEach(postParameters::add);
+        MultiValueMap<String, Object> formParameters = new LinkedMultiValueMap<>();
+        param.forEach(formParameters::add);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(postParameters, headers);
-        Boolean ok = restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
-        if (Boolean.TRUE.equals(ok)) return 1;
-        return 0;
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
+        return restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
     }
 
     public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsQueryVO> entity) {
@@ -86,8 +79,26 @@ public class NacosConfigsClient {
         return InvokerPage.build();
     }
 
-    public void delete(ClientEntity<String> entity) {
+    public Boolean delete(ClientEntity<ConfigDeleteVO> entity) {
+        String urlParams;
+        if (CommonUtils.isNotEmpty(entity.getData().getIds())) {
+            urlParams = "delType=ids&ids=" + entity.getData().getIds();
+        } else {
+            urlParams = "dataId=" + entity.getData().getDataId()
+                    + "&group=" + entity.getData().getGroup()
+                    + "&tenant=" + entity.getData().getNamespaceId();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+        MultiValueMap<String, Object> formParameters = new LinkedMultiValueMap<>();
+        formParameters.add("namespaceId", entity.getData().getNamespaceId());
+
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
+
+        String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+        ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, httpEntity, Boolean.class);
+        return resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null ? resp.getBody() : false;
     }
 
     public ConfigDTO fetch(ClientEntity<ConfigQueryVO> entity) {
