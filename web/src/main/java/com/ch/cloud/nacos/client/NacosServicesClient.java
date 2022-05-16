@@ -39,7 +39,7 @@ public class NacosServicesClient {
      * @return Page
      */
     public InvokerPage.Page<ServiceDTO> fetchPage(ClientEntity<ServicesPageVO> clientEntity) {
-        log.info("client data: {}", clientEntity.getData());
+        log.info("namespace: {}, client data: {}", clientEntity.getData().getNamespaceId(), clientEntity.getData());
         Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
         String urlParams = HttpUtil.toParams(param);
         String url = clientEntity.getUrl() + NacosAPI.SERVICES + "?" + urlParams;
