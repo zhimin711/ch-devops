@@ -4,7 +4,9 @@ import com.ch.pojo.VueRecord;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 描述：
@@ -17,5 +19,12 @@ public class UserNamespaceDTO {
 
     private List<VueRecord> clusters = new ArrayList<>();
 
-    private List<VueRecord> namespaces = new ArrayList<>();;
+    public Map<Long, List<VueRecord>> namespacesMap;
+
+    public void putNamespaces(Long clusterId, List<VueRecord> namespaces) {
+        if (namespacesMap == null) {
+            namespacesMap = new HashMap<>();
+        }
+        namespacesMap.put(clusterId, namespaces);
+    }
 }

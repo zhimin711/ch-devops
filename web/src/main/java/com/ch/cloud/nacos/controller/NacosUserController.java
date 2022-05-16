@@ -9,6 +9,7 @@ import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.utils.ContextUtil;
+import com.ch.pojo.VueRecord;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,11 +52,16 @@ public class NacosUserController {
         return ResultUtils.wrap(() -> {
             UserNamespaceDTO dto = new UserNamespaceDTO();
             List<NamespaceDto> namespaces = userNamespaceService.findNamespacesByUsernameAndProjectId(ContextUtil.getUser(), projectId, NamespaceType.NACOS);
-            if(CommonUtils.isEmpty(namespaces)) return dto;
+            if (CommonUtils.isEmpty(namespaces)) return dto;
             Set<Long> ids = namespaces.stream().map(NamespaceDto::getClusterId).collect(Collectors.toSet());
             List<NacosCluster> clusters = nacosClusterService.findByPrimaryKeys(ids);
             dto.setClusters(VueRecordUtils.covertIdList(clusters));
-            dto.setNamespaces(VueRecordUtils.covertIdList(namespaces));
+//            dto.setNamespaces(VueRecordUtils.covertIdList(namespaces));
+            Map<Long, List<NamespaceDto>> map = namespaces.stream().collect(Collectors.groupingBy(NamespaceDto::getClusterId));
+            map.forEach((k, v) -> {
+                List<VueRecord> nsList = VueRecordUtils.covertIdList(v);
+                dto.putNamespaces(k, nsList);
+            });
             return dto;
         });
     }
