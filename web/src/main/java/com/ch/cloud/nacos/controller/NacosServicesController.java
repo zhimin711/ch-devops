@@ -29,7 +29,7 @@ public class NacosServicesController {
     private NacosServicesClient     nacosServicesClient;
 
 
-    @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
+    @ApiOperation(value = "分页查询", notes = "分页查询服务")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ServiceDTO> page(ServicesPageVO record) {
         return ResultUtils.wrapPage(() -> {
