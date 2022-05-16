@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * 描述：
@@ -11,6 +12,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@ToString
 public class ServicesPageVO extends NamespaceVO {
 
     private boolean hasIpCount = true;
