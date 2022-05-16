@@ -1,10 +1,10 @@
-package com.ch.cloud.nacos.service.impl;
+package com.ch.cloud.devops.service.impl;
 
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.mapper.NamespaceMapper;
+import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.mapper.NamespaceMapper;
 import com.ch.cloud.nacos.service.INacosClusterService;
-import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.mybatis.utils.ExampleUtils;
 import com.ch.utils.CommonUtils;

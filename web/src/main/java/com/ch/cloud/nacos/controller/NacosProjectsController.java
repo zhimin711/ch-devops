@@ -1,8 +1,8 @@
 package com.ch.cloud.nacos.controller;
 
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.service.INamespaceProjectService;
-import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
+import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.pojo.VueRecord;
@@ -32,9 +32,9 @@ public class NacosProjectsController {
     private UpmsProjectClientService upmsProjectClientService;
 
     @Autowired
-    private INamespaceProjectService namespaceProjectService;
+    private INacosNamespaceProjectService namespaceProjectService;
     @Autowired
-    private INamespaceService        namespaceService;
+    private INamespaceService namespaceService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询项目")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})

@@ -32,8 +32,10 @@ public class MvcConfig implements WebMvcConfigurer {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
                 String user = request.getHeader(Constants.X_TOKEN_USER);
-                log.info("filter user: {}", user);
+                String tenant = request.getHeader(Constants.X_TOKEN_TENANT);
+                log.info("filter user: {}, tenant: {}", user, tenant);
                 ContextUtil.setUser(user);
+                ContextUtil.setTenant(tenant);
                 return true;
             }
         }).addPathPatterns("/**").excludePathPatterns("/webjars/**");

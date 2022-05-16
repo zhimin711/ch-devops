@@ -1,15 +1,13 @@
 package com.ch.cloud.nacos.controller;
 
-
-import cn.hutool.core.lang.Assert;
+import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.dto.NacosNamespace;
-import com.ch.cloud.nacos.dto.NamespaceDto;
+import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import com.ch.cloud.nacos.service.INacosClusterService;
-import com.ch.cloud.nacos.service.INamespaceProjectService;
-import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.client.UpmsTenantClientService;
@@ -49,9 +47,9 @@ import java.util.stream.Collectors;
 public class NacosNamespacesController {
 
     @Autowired
-    private INamespaceService        namespaceService;
+    private INamespaceService namespaceService;
     @Autowired
-    private INamespaceProjectService namespaceProjectService;
+    private INacosNamespaceProjectService nacosNamespaceProjectService;
     @Autowired
     private INacosClusterService     nacosClusterService;
 
@@ -77,7 +75,7 @@ public class NacosNamespacesController {
                     NacosCluster cluster = nacosClusterService.find(e.getClusterId());
                     e.setAddr(cluster.getUrl());
 
-                    NacosNamespace r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(e));
+                    NacosNamespaceDTO r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(e));
                     if (r == null) return;
                     e.setConfigCount(r.getConfigCount());
                     e.setQuota(r.getQuota());
@@ -96,7 +94,7 @@ public class NacosNamespacesController {
             if (CommonUtils.isEmpty(record.getUid())) {
                 record.setUid(UUIDGenerator.generateUid().toString());
             } else {
-                NacosNamespace namespace = nacosNamespacesClient.fetch(record);
+                NacosNamespaceDTO namespace = nacosNamespacesClient.fetch(record);
                 AssertUtils.notNull(namespace, PubError.EXISTS,"id");
             }
             boolean syncOk = nacosNamespacesClient.add(record);
@@ -141,7 +139,7 @@ public class NacosNamespacesController {
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             NamespaceDto dto = BeanUtilsV2.clone(namespace, NamespaceDto.class);
             namespace.setAddr(cluster.getUrl());
-            NacosNamespace nn = nacosNamespacesClient.fetch(namespace);
+            NacosNamespaceDTO nn = nacosNamespacesClient.fetch(namespace);
             if (nn != null) {
                 dto.setConfigCount(nn.getConfigCount());
                 dto.setQuota(nn.getQuota());
@@ -155,7 +153,7 @@ public class NacosNamespacesController {
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
-            List<Long> projectIds = namespaceProjectService.findProjectIdsByNamespaceId(id);
+            List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
             AssertUtils.isTrue(CommonUtils.isNotEmpty(projectIds), PubError.NOT_ALLOWED, "存在关联项目不允许删除");
             Namespace namespace = namespaceService.find(id);
             AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()), PubError.NOT_ALLOWED, "保留空间不允许删除");
@@ -173,9 +171,9 @@ public class NacosNamespacesController {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(clusterId);
             ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
-            List<NacosNamespace> list = nacosNamespacesClient.fetchAll(cluster.getUrl());
+            List<NacosNamespaceDTO> list = nacosNamespacesClient.fetchAll(cluster.getUrl());
             List<Namespace> list2 = namespaceService.findByClusterIdAndName(clusterId, null);
-            Map<String, NacosNamespace> nacosMap = CommonUtils.isNotEmpty(list) ? list.stream().collect(Collectors.toMap(NacosNamespace::getNamespace, e -> e)) : Maps.newHashMap();
+            Map<String, NacosNamespaceDTO> nacosMap = CommonUtils.isNotEmpty(list) ? list.stream().collect(Collectors.toMap(NacosNamespaceDTO::getNamespace, e -> e)) : Maps.newHashMap();
             Map<String, Namespace> localMap = CommonUtils.isNotEmpty(list2) ? list2.stream().collect(Collectors.toMap(Namespace::getUid, e -> e)) : Maps.newHashMap();
 
             if (localMap.isEmpty()) {
@@ -183,7 +181,7 @@ public class NacosNamespacesController {
             } else if (nacosMap.isEmpty()) {
                 list2.forEach(nacosNamespacesClient::add);
             } else {
-                List<NacosNamespace> newList = Lists.newArrayList();
+                List<NacosNamespaceDTO> newList = Lists.newArrayList();
                 nacosMap.forEach((k, v) -> {
                     if (!localMap.containsKey(k)) newList.add(v);
                 });
@@ -196,7 +194,7 @@ public class NacosNamespacesController {
         });
     }
 
-    private void saveNacosNamespaces(List<NacosNamespace> list, Long clusterId) {
+    private void saveNacosNamespaces(List<NacosNamespaceDTO> list, Long clusterId) {
         if (list.isEmpty())
             return;
         list.forEach(e -> {
@@ -219,7 +217,7 @@ public class NacosNamespacesController {
     @GetMapping({"{id:[0-9]+}/projects"})
     public Result<VueRecord> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
-            List<Long> projectIds = namespaceProjectService.findProjectIdsByNamespaceId(id);
+            List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
             Result<ProjectDto> projects = projectClientService.findByIds(projectIds);
             return VueRecordUtils.covertIdList(projects.getRows());
         });
@@ -228,7 +226,7 @@ public class NacosNamespacesController {
 
     @PostMapping({"{id:[0-9]+}/projects"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> projectIds) {
-        return ResultUtils.wrap(() -> namespaceProjectService.assignNamespaceProjects(id, projectIds));
+        return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignNamespaceProjects(id, projectIds));
     }
 
 }

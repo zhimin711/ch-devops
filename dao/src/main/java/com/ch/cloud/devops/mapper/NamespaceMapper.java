@@ -1,6 +1,6 @@
-package com.ch.cloud.nacos.mapper;
+package com.ch.cloud.devops.mapper;
 
-import com.ch.cloud.nacos.domain.Namespace;
+import com.ch.cloud.devops.dto.Namespace;
 import tk.mybatis.mapper.common.Mapper;
 
 /**

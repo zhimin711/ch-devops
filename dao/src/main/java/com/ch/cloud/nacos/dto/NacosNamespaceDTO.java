@@ -11,7 +11,7 @@ import lombok.Data;
  * @since 2021/9/28
  */
 @Data
-public class NacosNamespace {
+public class NacosNamespaceDTO {
 
     /**
      * 当前配置数

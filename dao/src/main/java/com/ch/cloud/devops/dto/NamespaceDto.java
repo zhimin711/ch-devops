@@ -1,4 +1,4 @@
-package com.ch.cloud.nacos.dto;
+package com.ch.cloud.devops.dto;
 
 import com.ch.cloud.types.NamespaceType;
 import lombok.Data;

@@ -3,8 +3,8 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.dto.NacosNamespace;
+import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -68,24 +68,24 @@ public class NacosNamespacesClient {
         return sync != null && sync;
     }
 
-    public NacosNamespace fetch(Namespace namespace) {
+    public NacosNamespaceDTO fetch(Namespace namespace) {
         String param = "?show=all&namespaceId=" + namespace.getUid();
-        NacosNamespace nn = null;
+        NacosNamespaceDTO nn = null;
         try {
-            nn = retryTemplate.execute((RetryCallback<NacosNamespace, Throwable>) retryContext ->
+            nn = retryTemplate.execute((RetryCallback<NacosNamespaceDTO, Throwable>) retryContext ->
                     restTemplate.getForObject(namespace.getAddr() + NacosAPI.NAMESPACES + param,
-                            NacosNamespace.class));
+                            NacosNamespaceDTO.class));
         } catch (Throwable e) {
             log.error(param + " fetch error!", e);
         }
         return nn;
     }
 
-    public List<NacosNamespace> fetchAll(String url) {
+    public List<NacosNamespaceDTO> fetchAll(String url) {
         JSONObject resp = restTemplate.getForObject(url + NacosAPI.NAMESPACES, JSONObject.class);
         if (resp != null && resp.containsKey("data")) {
             JSONArray arr = resp.getJSONArray("data");
-            return arr.toJavaList(NacosNamespace.class);
+            return arr.toJavaList(NacosNamespaceDTO.class);
         }
         return null;
     }

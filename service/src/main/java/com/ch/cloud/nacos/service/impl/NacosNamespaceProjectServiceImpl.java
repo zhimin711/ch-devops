@@ -1,7 +1,7 @@
 package com.ch.cloud.nacos.service.impl;
 
-import com.ch.cloud.nacos.mapper2.NamespaceProjectsMapper;
-import com.ch.cloud.nacos.service.INamespaceProjectService;
+import com.ch.cloud.devops.mapper2.NamespaceProjectsMapper;
+import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 2022/5/14 10:42
  */
 @Service
-public class INamespaceProjectServiceImpl implements INamespaceProjectService {
+public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectService {
     @Autowired
     private NamespaceProjectsMapper namespaceProjectsMapper;
 

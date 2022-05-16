@@ -8,7 +8,7 @@ import java.util.List;
  * @author zhimin
  * @since 2022/5/14 10:41
  */
-public interface INamespaceProjectService {
+public interface INacosNamespaceProjectService {
 
     List<Long> findProjectIdsByNamespaceId(Long namespaceId);
 

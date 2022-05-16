@@ -1,9 +1,8 @@
 package com.ch.cloud.nacos.validators;
 
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.NamespaceVO;
 import com.ch.e.PubError;
 import com.ch.utils.AssertUtils;

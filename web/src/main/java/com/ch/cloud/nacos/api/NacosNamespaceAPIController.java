@@ -1,7 +1,7 @@
 package com.ch.cloud.nacos.api;
 
-import com.ch.cloud.nacos.domain.Namespace;
-import com.ch.cloud.nacos.service.INamespaceService;
+import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.pojo.VueRecord;
 import com.ch.result.Result;

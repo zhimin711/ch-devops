@@ -1,4 +1,4 @@
-package com.ch.cloud.nacos.mapper2;
+package com.ch.cloud.devops.mapper2;
 
 import org.apache.ibatis.annotations.*;
 
