@@ -4,17 +4,13 @@ import com.ch.cloud.nacos.client.NacosServicesClient;
 import com.ch.cloud.nacos.dto.ServiceDTO;
 import com.ch.cloud.nacos.dto.ServiceDetailDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
-import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.ServicesPageVO;
-import com.ch.cloud.nacos.vo.ServicesQueryVO;
+import com.ch.cloud.nacos.vo.*;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 描述：
@@ -47,6 +43,33 @@ public class NacosServicesController {
         return ResultUtils.wrap(() -> {
             ClientEntity<ServicesQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosServicesClient.fetch(clientEntity);
+        });
+    }
+
+    @ApiOperation(value = "添加", notes = "添加配置")
+    @PostMapping
+    public Result<Boolean> add(@RequestBody ServiceVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ServiceVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosServicesClient.save(clientEntity, true);
+        });
+    }
+
+    @ApiOperation(value = "修改", notes = "修改配置")
+    @PutMapping
+    public Result<Boolean> edit(@RequestBody ServiceVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ServiceVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosServicesClient.save(clientEntity, false);
+        });
+    }
+
+    @ApiOperation(value = "删除", notes = "删除配置")
+    @DeleteMapping
+    public Result<Boolean> delete(ServicesQueryVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ServicesQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosServicesClient.delete(clientEntity);
         });
     }
 
