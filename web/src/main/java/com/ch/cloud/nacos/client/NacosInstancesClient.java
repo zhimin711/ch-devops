@@ -40,7 +40,7 @@ public class NacosInstancesClient {
         Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
 //        log.info("namespace: {}, client data: {}", clientEntity.getData().getNamespaceId(), param);
         String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.SERVICES + "?" + urlParams;
+        String url = clientEntity.getUrl() + NacosAPI.INSTANCES + "?" + urlParams;
         log.info("nacos instances page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {
