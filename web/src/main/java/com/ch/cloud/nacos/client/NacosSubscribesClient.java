@@ -37,7 +37,7 @@ public class NacosSubscribesClient {
      * @return Page
      */
     public InvokerPage.Page<SubscriberDTO> fetchPage(ClientEntity<SubscribesPageVO> clientEntity) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
+        Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
         String urlParams = HttpUtil.toParams(param);
         String url = clientEntity.getUrl() + NacosAPI.SUBSCRIBERS + "?" + urlParams;
         log.info("nacos subscribes page url: {}", url);
