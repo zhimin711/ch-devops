@@ -79,7 +79,7 @@ public class NacosUserProjectController {
     @GetMapping(value = {"{projectId:[0-9]+}/history"})
     public PageResult<HistoryDTO> history(@PathVariable Long projectId, HistoryPageVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.valid(record);
+            ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
             return nacosHistoryClient.fetchPage(entity);
         });
