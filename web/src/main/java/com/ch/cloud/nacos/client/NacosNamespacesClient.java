@@ -92,7 +92,6 @@ public class NacosNamespacesClient {
 
     public Boolean delete(Namespace namespace) {
         String url = namespace.getAddr() + NacosAPI.NAMESPACES + "?namespaceId=" + namespace.getUid();
-//        restTemplate.delete();
         ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, null, Boolean.class);
         if (resp.getStatusCode() == HttpStatus.OK) {
             log.info("delete namespace: {}", resp.getBody());
