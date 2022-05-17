@@ -31,7 +31,7 @@ public class NacosConfigsController {
     public PageResult<ConfigDTO> page(ConfigsPageVO record) {
 
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<ConfigsPageVO> entity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigsPageVO> entity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
             record.setNamespaceId(null);
             return nacosConfigsClient.fetchPage(entity);
@@ -42,7 +42,7 @@ public class NacosConfigsController {
     @GetMapping
     public Result<ConfigDTO> get(ConfigQueryVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
             return nacosConfigsClient.fetch(clientEntity);
         });
@@ -52,7 +52,7 @@ public class NacosConfigsController {
     @PostMapping
     public Result<Boolean> add(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosConfigsClient.add(clientEntity);
         });
     }
@@ -61,7 +61,7 @@ public class NacosConfigsController {
     @PutMapping
     public Result<Boolean> edit(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosConfigsClient.edit(clientEntity);
         });
     }
@@ -71,7 +71,7 @@ public class NacosConfigsController {
     public Result<?> clone(ConfigPolicyVO record,
                            @RequestBody ConfigCloneVO[] records) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosConfigsClient.clone(clientEntity, records);
         });
     }
@@ -80,7 +80,7 @@ public class NacosConfigsController {
     @DeleteMapping
     public Result<Boolean> delete(ConfigDeleteVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosConfigsClient.delete(clientEntity);
         });
     }

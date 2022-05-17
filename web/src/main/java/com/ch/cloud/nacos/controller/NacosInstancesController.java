@@ -1,10 +1,10 @@
 package com.ch.cloud.nacos.controller;
 
-import com.ch.cloud.nacos.client.NacosSubscribesClient;
-import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.nacos.client.NacosInstancesClient;
+import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.SubscribesPageVO;
+import com.ch.cloud.nacos.vo.InstancesPageVO;
 import com.ch.result.PageResult;
 import com.ch.result.ResultUtils;
 import io.swagger.annotations.ApiOperation;
@@ -20,21 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2022/4/29
  */
 @RestController
-@RequestMapping("/nacos/subscribers")
-public class NacosSubscribersController {
+@RequestMapping("/nacos/instances")
+public class NacosInstancesController {
 
     @Autowired
     private NacosNamespaceValidator nacosNamespaceValidator;
     @Autowired
-    private NacosSubscribesClient   nacosSubscribesClient;
+    private NacosInstancesClient nacosInstancesClient;
 
-
-    @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
+    @ApiOperation(value = "查询分页", notes = "分页查询服务实例")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
-    public PageResult<SubscriberDTO> page(SubscribesPageVO record) {
+    public PageResult<InstanceDTO> instances(InstancesPageVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<SubscribesPageVO> clientEntity = nacosNamespaceValidator.valid(record);
-            return nacosSubscribesClient.fetchPage(clientEntity);
+            ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosInstancesClient.fetchPage(clientEntity);
         });
     }
+
 }

@@ -4,11 +4,9 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
-import com.ch.cloud.nacos.dto.ServiceDTO;
-import com.ch.cloud.nacos.dto.ServiceDetailDTO;
+import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.ServicesPageVO;
-import com.ch.cloud.nacos.vo.ServicesQueryVO;
+import com.ch.cloud.nacos.vo.InstancesPageVO;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
 import lombok.extern.slf4j.Slf4j;
@@ -27,40 +25,33 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class NacosServicesClient {
+public class NacosInstancesClient {
 
     @Autowired
     private RestTemplate restTemplate;
 
     /**
-     * fetch nacos services page
+     * fetch nacos instances page
      *
      * @param clientEntity query params
      * @return Page
      */
-    public InvokerPage.Page<ServiceDTO> fetchPage(ClientEntity<ServicesPageVO> clientEntity) {
+    public InvokerPage.Page<InstanceDTO> fetchPage(ClientEntity<InstancesPageVO> clientEntity) {
         Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
+//        log.info("namespace: {}, client data: {}", clientEntity.getData().getNamespaceId(), param);
         String urlParams = HttpUtil.toParams(param);
         String url = clientEntity.getUrl() + NacosAPI.SERVICES + "?" + urlParams;
-        log.info("nacos services page url: {}", url);
+        log.info("nacos instances page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {
             Integer count = resp.getInteger("count");
             if (count <= 0) {
                 return InvokerPage.build();
             }
-            JSONArray arr = resp.getJSONArray("serviceList");
-            List<ServiceDTO> records = arr.toJavaList(ServiceDTO.class);
+            JSONArray arr = resp.getJSONArray("list");
+            List<InstanceDTO> records = arr.toJavaList(InstanceDTO.class);
             return InvokerPage.build(count, records);
         }
         return InvokerPage.build();
-    }
-
-    public ServiceDetailDTO fetch(ClientEntity<ServicesQueryVO> clientEntity) {
-        Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.SERVICE + "?" + urlParams;
-        log.info("nacos service detail url: {}", url);
-        return restTemplate.getForObject(url, ServiceDetailDTO.class);
     }
 }

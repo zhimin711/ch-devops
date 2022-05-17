@@ -25,4 +25,9 @@ public class UserNamespaceServiceImpl implements IUserNamespaceService {
     public List<NamespaceDto> findNamespacesByUsernameAndProjectId(String username, Long projectId, NamespaceType type) {
         return userProjectNamespaceMapper.findNamespacesByUserIdAndProjectId(username, projectId, type.name());
     }
+
+    @Override
+    public boolean exists(String userId, String namespaceId, Long projectId) {
+        return userProjectNamespaceMapper.countByUserIdAndNamespaceIdAndProjectId(userId, namespaceId, projectId) > 0;
+    }
 }

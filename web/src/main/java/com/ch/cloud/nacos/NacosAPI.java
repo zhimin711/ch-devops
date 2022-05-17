@@ -12,6 +12,8 @@ public interface NacosAPI {
     String NAMESPACES = "/console/namespaces";
     String CONFIGS = "/cs/configs";
     String SERVICES = "/ns/catalog/services";
+    String SERVICE = "/ns/catalog/service";
+    String INSTANCES = "/ns/catalog/instances";
     String SUBSCRIBERS = "/ns/service/subscribers";
 
     String HISTORY = "/cs/history";

@@ -13,7 +13,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
-public class ServiceInstancesPageVO extends NamespaceVO {
+public class InstancesPageVO extends NamespaceVO {
 
     private int pageNo = 1;
 

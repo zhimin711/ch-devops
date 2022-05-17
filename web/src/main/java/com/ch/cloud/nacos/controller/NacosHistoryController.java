@@ -11,8 +11,6 @@ import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
-import com.ch.utils.AssertUtils;
-import com.ch.utils.BeanUtilsV2;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +36,7 @@ public class NacosHistoryController {
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<HistoryDTO> page(HistoryPageVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
             return nacosHistoryClient.fetchPage(entity);
         });
@@ -49,7 +47,7 @@ public class NacosHistoryController {
     @GetMapping
     public Result<HistoryDTO> get(HistoryQueryVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<HistoryQueryVO> clientEntity = nacosNamespaceValidator.validConfig(record);
+            ClientEntity<HistoryQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
             return nacosHistoryClient.fetch(clientEntity);
         });
@@ -75,14 +73,14 @@ public class NacosHistoryController {
     private Boolean save(HistoryRollbackVO record) {
         ConfigVO configVO = new ConfigVO();
         BeanUtil.copyProperties(record, configVO);
-        ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validConfig(configVO);
+        ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.valid(configVO);
         return nacosConfigsClient.add(clientEntity);
     }
 
     private Boolean delete(HistoryRollbackVO record) {
         ConfigDeleteVO deleteVO = new ConfigDeleteVO();
         BeanUtil.copyProperties(record, deleteVO);
-        ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validConfig(deleteVO);
+        ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.valid(deleteVO);
         return nacosConfigsClient.delete(clientEntity);
     }
 }

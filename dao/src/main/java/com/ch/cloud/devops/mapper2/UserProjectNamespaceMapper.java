@@ -38,4 +38,7 @@ public interface UserProjectNamespaceMapper {
 
     @Select("select USER_ID,PROJECT_ID,NAMESPACE_ID from rt_user_namespace where NAMESPACE_ID=#{namespaceId} and PROJECT_ID=#{projectId}")
     List<UserProjectNamespaceDto> findUsersByNamespaceIdAndProjectId(Long namespaceId, Long projectId);
+
+    @Select("select count(1) from rt_user_namespace where USER_ID=#{userId} and NAMESPACE_ID=#{namespaceId} and PROJECT_ID=#{projectId}")
+    int countByUserIdAndNamespaceIdAndProjectId(@Param("userId") String userId, @Param("namespaceId") String namespaceId, @Param("projectId") Long projectId);
 }
