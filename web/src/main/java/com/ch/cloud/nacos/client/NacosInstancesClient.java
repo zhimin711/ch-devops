@@ -48,9 +48,13 @@ public class NacosInstancesClient {
             if (count <= 0) {
                 return InvokerPage.build();
             }
-            JSONArray arr = resp.getJSONArray("list");
-            List<InstanceDTO> records = arr.toJavaList(InstanceDTO.class);
-            return InvokerPage.build(count, records);
+            if (resp.containsKey("list")) {
+                JSONArray arr = resp.getJSONArray("list");
+                List<InstanceDTO> records = arr.toJavaList(InstanceDTO.class);
+                return InvokerPage.build(count, records);
+            } else {
+                log.info("instances result: {}",resp.toJSONString());
+            }
         }
         return InvokerPage.build();
     }
