@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class NacosConfigsClient {
+public class NacosConfigsClient extends BaseClient {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -53,13 +53,10 @@ public class NacosConfigsClient {
         if (CommonUtils.isEmpty(entity.getData().getConfigTags())) {
             entity.getData().setConfigTags("");
         }
-        Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
-        MultiValueMap<String, Object> formParameters = new LinkedMultiValueMap<>();
-        param.forEach(formParameters::add);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters(entity), headers);
         return restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS, httpEntity, Boolean.class);
     }
 
