@@ -24,7 +24,7 @@ public abstract class BaseClient {
         return formParameters;
     }
 
-    protected <T> MultiValueMap<String, Object> formParametersWithNamespaceId(ClientEntity<T> clientEntity){
+    protected <T> MultiValueMap<String, Object> formParams(ClientEntity<T> clientEntity){
         MultiValueMap<String, Object> formParameters = new LinkedMultiValueMap<>();
         Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
         param.forEach(formParameters::add);

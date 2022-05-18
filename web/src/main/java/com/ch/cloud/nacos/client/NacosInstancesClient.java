@@ -1,6 +1,5 @@
 package com.ch.cloud.nacos.client;
 
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
@@ -8,21 +7,16 @@ import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.InstanceVO;
 import com.ch.cloud.nacos.vo.InstancesPageVO;
-import com.ch.e.ExceptionUtils;
-import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
-import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * desc: nacos 服务 client
@@ -67,7 +61,7 @@ public class NacosInstancesClient extends BaseClient {
     public Boolean save(ClientEntity<InstanceVO> clientEntity) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParametersWithNamespaceId(clientEntity), headers);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParams(clientEntity), headers);
         String resp = "";
         ResponseEntity<String> resp2 = restTemplate.exchange(clientEntity.getUrl() + NacosAPI.INSTANCE_OP, HttpMethod.PUT, httpEntity, String.class);
         if (resp2.getStatusCode() == HttpStatus.OK) resp = resp2.getBody();
