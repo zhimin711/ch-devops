@@ -67,7 +67,7 @@ public class NacosInstancesClient extends BaseClient {
     public Boolean save(ClientEntity<InstanceVO> clientEntity) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters(clientEntity), headers);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParametersWithNamespaceId(clientEntity), headers);
         String resp = "";
         ResponseEntity<String> resp2 = restTemplate.exchange(clientEntity.getUrl() + NacosAPI.INSTANCE_OP, HttpMethod.PUT, httpEntity, String.class);
         if (resp2.getStatusCode() == HttpStatus.OK) resp = resp2.getBody();
