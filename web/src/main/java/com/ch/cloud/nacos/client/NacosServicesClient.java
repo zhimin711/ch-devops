@@ -10,6 +10,8 @@ import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.ServiceVO;
 import com.ch.cloud.nacos.vo.ServicesPageVO;
 import com.ch.cloud.nacos.vo.ServicesQueryVO;
+import com.ch.e.ExceptionUtils;
+import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
@@ -19,6 +21,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -79,7 +82,14 @@ public class NacosServicesClient {
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
         String resp = "";
         if (isNew) {
-            resp = restTemplate.postForObject(clientEntity.getUrl() + NacosAPI.SERVICE_OP, httpEntity, String.class);
+            try {
+                resp = restTemplate.postForObject(clientEntity.getUrl() + NacosAPI.SERVICE_OP, httpEntity, String.class);
+            } catch (Exception e) {
+                if (e.getMessage().contains("already exists")) {
+                    ExceptionUtils._throw(PubError.EXISTS, clientEntity.getData().getServiceName() + "@" + clientEntity.getData().getGroupName());
+                }
+                throw e;
+            }
         } else {
             ResponseEntity<String> resp2 = restTemplate.exchange(clientEntity.getUrl() + NacosAPI.SERVICE_OP, HttpMethod.PUT, httpEntity, String.class);
             if (resp2.getStatusCode() == HttpStatus.OK) resp = resp2.getBody();
