@@ -15,6 +15,7 @@ import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
+import com.ch.pojo.VueRecord2;
 import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -215,11 +216,11 @@ public class NacosNamespacesController {
 
 
     @GetMapping({"{id:[0-9]+}/projects"})
-    public Result<VueRecord> findProjects(@PathVariable Long id) {
+    public Result<VueRecord2> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
             List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
             Result<ProjectDto> projects = projectClientService.findByIds(projectIds);
-            return VueRecordUtils.covertIdList(projects.getRows());
+            return VueRecordUtils.covert(projects.getRows());
         });
     }
 
