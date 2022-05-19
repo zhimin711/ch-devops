@@ -1,5 +1,6 @@
 package com.ch.cloud.nacos.controller;
 
+import com.ch.cloud.nacos.client.NacosClusterClient;
 import com.ch.cloud.nacos.client.NacosServicesClient;
 import com.ch.cloud.nacos.dto.ServiceDTO;
 import com.ch.cloud.nacos.dto.ServiceDetailDTO;
@@ -25,7 +26,9 @@ public class NacosServicesController {
     @Autowired
     private NacosNamespaceValidator nacosNamespaceValidator;
     @Autowired
-    private NacosServicesClient     nacosServicesClient;
+    private NacosServicesClient nacosServicesClient;
+    @Autowired
+    private NacosClusterClient  nacosClusterClient;
 
 
     @ApiOperation(value = "查询分页", notes = "分页查询服务")
@@ -46,7 +49,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "添加", notes = "添加配置")
+    @ApiOperation(value = "添加", notes = "添加服务")
     @PostMapping
     public Result<Boolean> add(@RequestBody ServiceVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -55,7 +58,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "修改", notes = "修改配置")
+    @ApiOperation(value = "修改", notes = "修改服务")
     @PutMapping
     public Result<Boolean> edit(@RequestBody ServiceVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -64,7 +67,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "删除", notes = "删除配置")
+    @ApiOperation(value = "删除", notes = "删除服务")
     @DeleteMapping
     public Result<Boolean> delete(ServicesQueryVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -73,4 +76,12 @@ public class NacosServicesController {
         });
     }
 
+    @ApiOperation(value = "修改", notes = "修改服务")
+    @PutMapping("cluster")
+    public Result<Boolean> editCluster(@RequestBody ServiceClusterVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<ServiceClusterVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosClusterClient.save(clientEntity);
+        });
+    }
 }

@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class NacosServicesClient {
+public class NacosServicesClient extends BaseClient {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -47,9 +47,7 @@ public class NacosServicesClient {
      * @return Page
      */
     public InvokerPage.Page<ServiceDTO> fetchPage(ClientEntity<ServicesPageVO> clientEntity) {
-        Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.SERVICES + "?" + urlParams;
+        String url = clientEntity.getUrl() + NacosAPI.SERVICES + "?" + urlParams(clientEntity);
         log.info("nacos services page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {
@@ -73,13 +71,10 @@ public class NacosServicesClient {
     }
 
     public Boolean save(ClientEntity<ServiceVO> clientEntity, boolean isNew) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
-        MultiValueMap<String, Object> formParameters = new LinkedMultiValueMap<>();
-        param.forEach(formParameters::add);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParams(clientEntity), headers);
         String resp = "";
         if (isNew) {
             try {

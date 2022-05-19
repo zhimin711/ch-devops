@@ -4,14 +4,15 @@ import com.ch.cloud.nacos.client.NacosInstancesClient;
 import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.InstanceVO;
 import com.ch.cloud.nacos.vo.InstancesPageVO;
+import com.ch.cloud.nacos.vo.ServiceVO;
 import com.ch.result.PageResult;
+import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 描述：
@@ -34,6 +35,15 @@ public class NacosInstancesController {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosInstancesClient.fetchPage(clientEntity);
+        });
+    }
+
+    @ApiOperation(value = "修改", notes = "修改实例配置")
+    @PutMapping
+    public Result<Boolean> edit(@RequestBody InstanceVO record) {
+        return ResultUtils.wrapFail(() -> {
+            ClientEntity<InstanceVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosInstancesClient.save(clientEntity);
         });
     }
 
