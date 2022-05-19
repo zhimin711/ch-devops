@@ -45,6 +45,7 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -141,7 +142,7 @@ public class DashboardCollectTask {
 
             }
 
-            log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
+//            log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
         } catch (Exception err) {
             throw Throwables.propagate(err);
         }
@@ -177,12 +178,12 @@ public class DashboardCollectTask {
                 for (String tps : tpsArray) {
                     totalTps = totalTps.add(new BigDecimal(tps));
                 }
-                BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length), 5, BigDecimal.ROUND_HALF_UP);
+                BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length), 5, RoundingMode.HALF_UP);
                 BrokerCollectDTO dto = new BrokerCollectDTO(1L, entry.getValue(), date,averageTps);
                 list.add(date.getTime() + "," + averageTps.toString());
                 dashboardCollectService.getBrokerMap().put(entry.getValue(), list);
             }
-            log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
+//            log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
