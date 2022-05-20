@@ -4,6 +4,8 @@ import com.ch.cloud.nacos.client.NacosConfigsClient;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
+import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
@@ -22,15 +24,19 @@ import org.springframework.web.bind.annotation.*;
 public class NacosUserConfigsController {
 
     @Autowired
-    private NacosConfigsClient nacosConfigsClient;
+    private NacosConfigsClient       nacosConfigsClient;
     @Autowired
-    private NacosNamespaceValidator nacosNamespaceValidator;
+    private NacosNamespaceValidator  nacosNamespaceValidator;
+    @Autowired
+    private UpmsProjectClientService upmsProjectClientService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ConfigDTO> configs(@PathVariable Long projectId, ConfigsPageVO record) {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<ConfigsPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setGroup(result.get().getCode());
             return nacosConfigsClient.fetchPage(clientEntity);
         });
     }
@@ -41,6 +47,7 @@ public class NacosUserConfigsController {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
+//            record.setAppName();
             return nacosConfigsClient.fetch(clientEntity);
         });
     }
@@ -50,15 +57,19 @@ public class NacosUserConfigsController {
     public Result<Boolean> add(@PathVariable Long projectId, @RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setGroup(result.get().getCode());
             return nacosConfigsClient.add(clientEntity);
         });
     }
 
     @ApiOperation(value = "修改", notes = "修改用户项目配置")
     @PutMapping
-    public Result<Boolean> edit(@PathVariable Long projectId,@RequestBody ConfigVO record) {
+    public Result<Boolean> edit(@PathVariable Long projectId, @RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setGroup(result.get().getCode());
             return nacosConfigsClient.edit(clientEntity);
         });
     }
@@ -69,6 +80,10 @@ public class NacosUserConfigsController {
                            @RequestBody ConfigCloneVO[] records) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            for (ConfigCloneVO cloneVO : records) {
+                cloneVO.setGroup(result.get().getCode());
+            }
             return nacosConfigsClient.clone(clientEntity, records);
         });
     }
@@ -78,6 +93,8 @@ public class NacosUserConfigsController {
     public Result<Boolean> delete(@PathVariable Long projectId, ConfigDeleteVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setGroup(result.get().getCode());
             return nacosConfigsClient.delete(clientEntity);
         });
     }
