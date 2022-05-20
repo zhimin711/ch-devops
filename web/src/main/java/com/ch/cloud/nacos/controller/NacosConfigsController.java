@@ -4,9 +4,12 @@ import com.ch.cloud.nacos.client.NacosConfigsClient;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
+import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.utils.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,8 @@ public class NacosConfigsController {
     private NacosConfigsClient nacosConfigsClient;
     @Autowired
     private NacosNamespaceValidator nacosNamespaceValidator;
+    @Autowired
+    private UpmsProjectClientService upmsProjectClientService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询nacos配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
@@ -53,6 +58,10 @@ public class NacosConfigsController {
     public Result<Boolean> add(@RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.valid(record);
+            if (CommonUtils.isDecimal(record.getAppName())) {
+                Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(Long.parseLong(record.getAppName()), null);
+                record.setGroup(result.get().getCode());
+            }
             return nacosConfigsClient.add(clientEntity);
         });
     }
