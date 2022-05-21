@@ -24,4 +24,10 @@ public interface NamespaceProjectsMapper {
 
     @Delete("delete from rt_project_namespace where namespace_id = #{namespaceId} and project_id = #{projectId}")
     int delete(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId);
+
+    @Select("SELECT distinct n.cluster_id FROM rt_project_namespace pn " +
+            "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
+            "WHERE pn.project_id = #{projectId} AND n.TYPE = #{namespaceType}")
+    List<Long> findClusterIdsByProjectIdAndNamespaceType(@Param("projectId") Long projectId, @Param("namespaceType") String namespaceType);
+
 }
