@@ -219,7 +219,7 @@ public class NacosNamespacesController {
     public Result<VueRecord2> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
             List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
-            Result<ProjectDto> projects = projectClientService.findByIds(projectIds);
+            Result<ProjectDto> projects = projectClientService.infoByIds(projectIds);
             return VueRecordUtils.covert(projects.getRows());
         });
     }
