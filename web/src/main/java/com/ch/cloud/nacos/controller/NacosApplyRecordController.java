@@ -12,11 +12,9 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
-import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
-import org.apache.kafka.common.requests.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,7 +52,7 @@ public class NacosApplyRecordController {
         return ResultUtils.wrapFail(() -> {
             NamespaceApplyRecord orig = namespaceApplyRecordService.find(record.getId());
             if (orig == null) ExceptionUtils._throw(PubError.NOT_EXISTS, record.getId());
-            if (!CommonUtils.isEquals(orig.getType(), "1")) {
+            if (NamespaceType.fromCode(orig.getType()) != NamespaceType.NACOS) {
                 ExceptionUtils._throw(PubError.NOT_ALLOWED, "approve type is not [nacos]!");
             }
             if (ApproveStatus.fromValue(record.getStatus()).availableApprove()) {

@@ -1,5 +1,7 @@
 package com.ch.cloud.types;
 
+import com.ch.utils.CommonUtils;
+
 /**
  * desc:命名空间类型
  *
@@ -14,6 +16,19 @@ public enum NamespaceType {
 
     NamespaceType(int code) {
         this.code = code;
+    }
+
+    public static NamespaceType fromCode(Integer code) {
+        if (code == null) return NamespaceType.NACOS;
+        for (NamespaceType type : NamespaceType.values()) {
+            if (type.code == code) return type;
+        }
+        return NamespaceType.NACOS;
+    }
+
+    public static NamespaceType fromCode(String code) {
+        if (!CommonUtils.isDecimal(code)) return NamespaceType.NACOS;
+        return fromCode(Integer.parseInt(code));
     }
 
     public int getCode() {
