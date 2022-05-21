@@ -102,11 +102,7 @@ public class NacosUserProjectController {
     @PostMapping({"apply/{projectId:[0-9]+}/namespaces"})
     public Result<Boolean> apply(@PathVariable Long projectId, @RequestBody List<Long> namespaceIds) {
         return ResultUtils.wrap(() -> {
-            for (Long namespaceId : namespaceIds) {
-                NamespaceVO record = new NamespaceVO(namespaceId + "");
-                ClientEntity<NamespaceVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
-            }
-
+            nacosNamespaceValidator.validProjectNamespace(projectId, namespaceIds);
             NamespaceApplyRecord record = new NamespaceApplyRecord();
             record.setCreateBy(ContextUtil.getUser());
             record.setType(NamespaceType.NACOS.getCode());
