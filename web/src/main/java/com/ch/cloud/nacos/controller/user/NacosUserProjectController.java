@@ -24,16 +24,19 @@ import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
+import com.ch.pojo.VueRecord2;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
+import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -67,9 +70,16 @@ public class NacosUserProjectController {
 
     @ApiOperation(value = "查询空间列表", notes = "查询用户命名空间")
     @GetMapping(value = {"{projectId:[0-9]+}/namespaces"})
-    public Result<NamespaceDto> namespaces(@PathVariable Long projectId) {
+    public Result<VueRecord2> namespaces(@PathVariable Long projectId) {
         return ResultUtils.wrap(() -> {
-            return userNamespaceService.findNamespacesByUsernameAndProjectId(ContextUtil.getUser(), projectId, NamespaceType.NACOS);
+            List<NamespaceDto> records = userNamespaceService.findNamespacesByUsernameAndProjectId(ContextUtil.getUser(), projectId, NamespaceType.NACOS);
+            return records.stream().map(e -> {
+                VueRecord2 record = new VueRecord2();
+                record.setValue(e.getId().toString());
+                record.setLabel(e.getName());
+                record.setKey(e.getUid());
+                return record;
+            }).collect(Collectors.toList());
         });
     }
 
