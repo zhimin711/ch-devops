@@ -99,7 +99,7 @@ public class NacosUserProjectController {
     }
 
 
-    @PostMapping({"apply/{projectId:[0-9]+}"})
+    @PostMapping({"apply/{projectId:[0-9]+}/namespaces"})
     public Result<Boolean> apply(@PathVariable Long projectId, @RequestBody List<Long> namespaceIds) {
         return ResultUtils.wrap(() -> {
             for (Long namespaceId : namespaceIds) {
