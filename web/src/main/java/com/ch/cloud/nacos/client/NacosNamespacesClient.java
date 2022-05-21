@@ -3,7 +3,7 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
-import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

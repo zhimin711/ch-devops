@@ -1,7 +1,7 @@
 package com.ch.cloud.devops.service.impl;
 
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.mapper.NamespaceMapper;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.devops.service.INamespaceService;

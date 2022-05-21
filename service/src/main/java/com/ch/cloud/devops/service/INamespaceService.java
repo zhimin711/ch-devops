@@ -1,7 +1,7 @@
 package com.ch.cloud.devops.service;
 
 import com.ch.mybatis.service.IService;
-import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.domain.Namespace;
 
 import java.io.Serializable;
 import java.util.List;

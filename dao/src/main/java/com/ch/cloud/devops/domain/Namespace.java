@@ -1,4 +1,4 @@
-package com.ch.cloud.devops.dto;
+package com.ch.cloud.devops.domain;
 
 import com.ch.cloud.types.NamespaceType;
 import com.ch.mybatis.context.BaseEntity;
