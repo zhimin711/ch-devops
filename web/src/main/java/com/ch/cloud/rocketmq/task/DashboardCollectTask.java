@@ -242,8 +242,8 @@ public class DashboardCollectTask {
 
             writeFile(dashboardCollectService.getBrokerMap(), brokerFileMap, brokerFile);
             writeFile(dashboardCollectService.getTopicMap(), topicFileMap, topicFile);
-            log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
-            log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
+//            log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
+//            log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
 
         } catch (IOException e) {
             throw Throwables.propagate(e);
