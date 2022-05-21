@@ -36,6 +36,7 @@ public class NacosUserConfigsController {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<ConfigsPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setTenant(record.getNamespaceId());
             record.setGroup(result.get().getCode());
             return nacosConfigsClient.fetchPage(clientEntity);
         });
