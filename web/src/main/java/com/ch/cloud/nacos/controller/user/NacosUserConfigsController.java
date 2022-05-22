@@ -11,7 +11,11 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 描述：配置
@@ -98,6 +102,18 @@ public class NacosUserConfigsController {
             record.setGroup(result.get().getCode());
             return nacosConfigsClient.delete(clientEntity);
         });
+    }
+
+
+    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @GetMapping("export")
+    public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportVO record) {
+        AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
+        Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
+        if(result.isSuccess()){
+            return nacosConfigsClient.export(clientEntity.get());
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 }

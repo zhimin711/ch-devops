@@ -29,7 +29,6 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
-import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/nacos/user")
-public class NacosUserProjectController {
+public class NacosUserController {
 
     @Autowired
     private INamespaceService            namespaceService;
