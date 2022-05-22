@@ -25,5 +25,5 @@ public class ConfigExportVO extends NamespaceVO {
 
     private String tenant;
 
-    private List<Long> ids;
+    private String ids;
 }
