@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -110,10 +111,21 @@ public class NacosUserConfigsController {
     public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportVO record) {
         AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
         Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
-        if(result.isSuccess()){
+        if (result.isSuccess()) {
             return nacosConfigsClient.export(clientEntity.get());
         }
         return ResponseEntity.badRequest().build();
+    }
+
+
+    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @PostMapping("import")
+    public Result<?> importZip(@PathVariable Long projectId, ConfigImportVO record, @RequestPart("file") MultipartFile file) {
+        return ResultUtils.wrap(() -> {
+            ClientEntity<ConfigImportVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            return nacosConfigsClient.importZip(clientEntity, file);
+        });
+
     }
 
 }

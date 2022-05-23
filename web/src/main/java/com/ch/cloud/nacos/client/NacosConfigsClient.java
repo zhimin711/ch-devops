@@ -1,5 +1,6 @@
 package com.ch.cloud.nacos.client;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -12,15 +13,20 @@ import com.ch.result.InvokerPage;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
+import com.ch.utils.FileUtilsV2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -38,6 +44,8 @@ public class NacosConfigsClient extends BaseClient {
 
     @Autowired
     private RestTemplate restTemplate;
+    @Value("${fs.path.tmp:/tmp}")
+    private String       fsTmp;
 
     public Boolean add(ClientEntity<ConfigVO> entity) {
         return save(entity, true);
@@ -149,7 +157,33 @@ public class NacosConfigsClient extends BaseClient {
     public ResponseEntity<Resource> export(ClientEntity<ConfigExportVO> clientEntity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
         String urlParams = HttpUtil.toParams(param);
-       return restTemplate.getForEntity(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, Resource.class);
+        return restTemplate.getForEntity(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, Resource.class);
     }
 
+    public JSONObject importZip(ClientEntity<ConfigImportVO> clientEntity, MultipartFile file) throws Exception {
+        String urlParams = "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username=" + ContextUtil.getUser();
+        MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
+
+        File f = new File(fsTmp, FileUtilsV2.generateDateUidFileName(file.getName()));
+        FileUtil.writeFromStream(file.getInputStream(), f);
+        FileSystemResource resource = new FileSystemResource(f);
+        //参数
+        param.add("file", resource);
+        param.add("policy", clientEntity.getData().getPolicy());
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(param, headers);
+        try {
+            JSONObject resp = restTemplate.postForObject(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, httpEntity, JSONObject.class);
+            AssertUtils.isNull(resp, PubError.CONNECT);
+            if (resp.containsKey("code") && resp.getInteger("code") == 200) {
+                return resp.getJSONObject("data");
+            }
+        } finally {
+            FileUtil.del(f);
+        }
+        return null;
+    }
 }
