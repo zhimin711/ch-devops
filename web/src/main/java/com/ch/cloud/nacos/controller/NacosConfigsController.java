@@ -99,7 +99,7 @@ public class NacosConfigsController {
         });
     }
 
-    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @ApiOperation(value = "导出配置", notes = "导出配置")
     @GetMapping("export")
     public ResponseEntity<Resource> export(ConfigExportVO record) {
         AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
@@ -111,7 +111,7 @@ public class NacosConfigsController {
     }
 
 
-    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @ApiOperation(value = "导入配置", notes = "导入配置")
     @PostMapping("import")
     public Result<?> importZip(ConfigImportVO record, @RequestPart("file") MultipartFile file) {
         return ResultUtils.wrap(() -> {

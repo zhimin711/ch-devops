@@ -118,7 +118,7 @@ public class NacosUserConfigsController {
     }
 
 
-    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @ApiOperation(value = "导入项目配置", notes = "导入项目配置")
     @PostMapping("import")
     public Result<?> importZip(@PathVariable Long projectId, ConfigImportVO record, @RequestPart("file") MultipartFile file) {
         return ResultUtils.wrap(() -> {
