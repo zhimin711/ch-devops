@@ -11,9 +11,11 @@ spring:
         server-addr: ${nacos.config.server-addr}
         namespace: ${nacos.config.namespace:}
       config:
+        group: ${spring.application.name}
         server-addr: ${nacos.config.server-addr}
         namespace: ${nacos.config.namespace:}
         shared-configs:
           -
             dataId: ch-devops.yml
             refresh: true
+            group: ${spring.application.name}
