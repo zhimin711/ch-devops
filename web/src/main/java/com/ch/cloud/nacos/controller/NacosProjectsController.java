@@ -38,11 +38,11 @@ public class NacosProjectsController {
     private UpmsProjectClientService upmsProjectClientService;
 
     @Autowired
-    private INacosNamespaceProjectService namespaceProjectService;
+    private INacosNamespaceProjectService nacosNamespaceProjectService;
     @Autowired
-    private INamespaceService    namespaceService;
+    private INamespaceService             namespaceService;
     @Autowired
-    private INacosClusterService nacosClusterService;
+    private INacosClusterService          nacosClusterService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询项目")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
@@ -54,42 +54,28 @@ public class NacosProjectsController {
 
     }
 
-
-    @GetMapping({"{id:[0-9]+}/namespaces"})
-    public Result<VueRecord> findNamespaces(@PathVariable Long id) {
+    @ApiOperation(value = "查询项目nacos集群空间列表", notes = "查询项目nacos集群空间列表")
+    @GetMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
+    public Result<VueRecord> findNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
         return ResultUtils.wrapList(() -> {
-            List<Long> namespaceIds = namespaceProjectService.findNamespaceIdsByProjectId(id);
-            List<Namespace> namespaces = namespaceService.findByPrimaryKeys(namespaceIds);
-            return VueRecordUtils.covertIdList(namespaces);
+            List<NamespaceDto> records = nacosNamespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId, clusterId);
+            return VueRecordUtils.covertIdList(records);
         });
     }
 
 
-    @PostMapping({"{id:[0-9]+}/namespaces"})
-    public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> namespaceIds) {
-        return ResultUtils.wrap(() -> namespaceProjectService.assignProjectNamespaces(id, namespaceIds));
+    @PostMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
+    public Result<Integer> saveProjectNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<Long> namespaceIds) {
+        return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignProjectNamespaces(projectId, clusterId, namespaceIds));
     }
 
     @GetMapping({"{id:[0-9]+}/clusters"})
     public Result<VueRecord> listCluster(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
-            List<Long> clusterIds = namespaceProjectService.findClusterIdsByProjectIdAndNamespaceType(id, NamespaceType.NACOS);
+            List<Long> clusterIds = nacosNamespaceProjectService.findClusterIdsByProjectIdAndNamespaceType(id, NamespaceType.NACOS);
             List<NacosCluster> clusters = nacosClusterService.findByPrimaryKeys(clusterIds);
             return VueRecordUtils.covertIdList(clusters);
         });
     }
 
-    @ApiOperation(value = "查询项目nacos集群空间列表", notes = "查询项目nacos集群空间列表")
-    @GetMapping(value = {"{projectId:[0-9]+}/namespaces/{clusterId:[0-9]+}"})
-    public Result<VueRecord2> projectClusterNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
-        return ResultUtils.wrap(() -> {
-            List<NamespaceDto> records = namespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId, clusterId);
-            return records.stream().map(e -> {
-                VueRecord2 record = new VueRecord2();
-                record.setValue(e.getId().toString());
-                record.setLabel(e.getName());
-                return record;
-            }).collect(Collectors.toList());
-        });
-    }
 }

@@ -47,8 +47,8 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
     }
 
     @Override
-    public Integer assignProjectNamespaces(Long projectId, List<Long> namespaceIds) {
-        List<Long> uList = namespaceProjectsMapper.findNamespaceIdByProjectId(projectId);
+    public Integer assignProjectNamespaces(Long projectId, Long clusterId, List<Long> namespaceIds) {
+        List<Long> uList = namespaceProjectsMapper.findNamespaceIdsByProjectIdAndClusterIdAndNamespaceType(clusterId, projectId, NamespaceType.NACOS.name());
 
         AtomicInteger c = new AtomicInteger();
         if (!namespaceIds.isEmpty()) {//1，2，3 | 3、4、5

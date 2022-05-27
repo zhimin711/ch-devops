@@ -19,7 +19,7 @@ public interface INacosNamespaceProjectService {
 
     List<Long> findNamespaceIdsByProjectId(Long projectId);
 
-    Integer assignProjectNamespaces(Long projectId, List<Long> namespaceIds);
+    Integer assignProjectNamespaces(Long projectId, Long clusterId, List<Long> namespaceIds);
 
     List<Long> findClusterIdsByProjectIdAndNamespaceType(Long projectId, NamespaceType namespaceType);
 
