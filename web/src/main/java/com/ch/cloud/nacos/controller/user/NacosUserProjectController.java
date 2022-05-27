@@ -12,6 +12,8 @@ import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
 import com.ch.cloud.types.NamespaceType;
+import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.pojo.VueRecord;
 import com.ch.result.PageResult;
@@ -53,6 +55,8 @@ public class NacosUserProjectController {
     private NacosInstancesClient nacosInstancesClient;
     @Autowired
     private NacosSubscribesClient nacosSubscribesClient;
+    @Autowired
+    private UpmsProjectClientService upmsProjectClientService;
 
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户命名空间")
@@ -81,6 +85,8 @@ public class NacosUserProjectController {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setGroup(result.get().getCode());
             return nacosHistoryClient.fetchPage(entity);
         });
     }
@@ -90,6 +96,8 @@ public class NacosUserProjectController {
     public PageResult<InstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setServiceName(result.get().getCode());
             return nacosInstancesClient.fetchPage(clientEntity);
         });
     }
@@ -99,6 +107,8 @@ public class NacosUserProjectController {
     public PageResult<SubscriberDTO> subscribers(@PathVariable Long projectId, SubscribesPageVO record) {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<SubscribesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setServiceName(result.get().getCode());
             return nacosSubscribesClient.fetchPage(clientEntity);
         });
     }
