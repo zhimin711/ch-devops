@@ -88,6 +88,8 @@ public class NacosUserController {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setGroup(result.get().getCode());
             return nacosHistoryClient.fetchPage(entity);
         });
     }
@@ -97,6 +99,8 @@ public class NacosUserController {
     public PageResult<InstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setServiceName(result.get().getCode());
             return nacosInstancesClient.fetchPage(clientEntity);
         });
     }
@@ -106,6 +110,8 @@ public class NacosUserController {
     public PageResult<SubscriberDTO> subscribers(@PathVariable Long projectId, SubscribesPageVO record) {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<SubscribesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setServiceName(result.get().getCode());
             return nacosSubscribesClient.fetchPage(clientEntity);
         });
     }
