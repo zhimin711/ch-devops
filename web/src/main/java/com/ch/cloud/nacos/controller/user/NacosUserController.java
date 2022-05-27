@@ -48,9 +48,9 @@ import java.util.stream.Collectors;
 public class NacosUserController {
 
     @Autowired
-    private INamespaceService            namespaceService;
+    private INamespaceService             namespaceService;
     @Autowired
-    private NacosNamespaceValidator      nacosNamespaceValidator;
+    private NacosNamespaceValidator       nacosNamespaceValidator;
     @Autowired
     private IUserNamespaceService        userNamespaceService;
     @Autowired

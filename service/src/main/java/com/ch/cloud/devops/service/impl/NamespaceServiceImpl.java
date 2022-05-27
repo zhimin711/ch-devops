@@ -28,7 +28,6 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
     @Autowired
     private INacosClusterService nacosClusterService;
 
-
     @Override
     public Namespace findByUid(String uid) {
         if (CommonUtils.isEmpty(uid))

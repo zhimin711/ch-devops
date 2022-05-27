@@ -1,5 +1,6 @@
 package com.ch.cloud.nacos.service.impl;
 
+import com.ch.cloud.devops.dto.NamespaceDto;
 import com.ch.cloud.devops.mapper2.NamespaceProjectsMapper;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.types.NamespaceType;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Service
 public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectService {
+
     @Autowired
     private NamespaceProjectsMapper namespaceProjectsMapper;
 
@@ -63,4 +65,8 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
         return namespaceProjectsMapper.findClusterIdsByProjectIdAndNamespaceType(projectId, namespaceType.name());
     }
 
+    @Override
+    public List<NamespaceDto> findNamespacesByProjectIdAndClusterId(Long projectId, Long clusterId) {
+        return namespaceProjectsMapper.findNamespacesByProjectIdAndClusterIdAndNamespaceType(projectId, clusterId, NamespaceType.NACOS.name());
+    }
 }
