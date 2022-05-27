@@ -11,7 +11,12 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 描述：配置
@@ -36,6 +41,7 @@ public class NacosUserConfigsController {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<ConfigsPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            record.setTenant(record.getNamespaceId());
             record.setGroup(result.get().getCode());
             return nacosConfigsClient.fetchPage(clientEntity);
         });
@@ -97,6 +103,29 @@ public class NacosUserConfigsController {
             record.setGroup(result.get().getCode());
             return nacosConfigsClient.delete(clientEntity);
         });
+    }
+
+
+    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @GetMapping("export")
+    public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportVO record) {
+        AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
+        Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
+        if (result.isSuccess()) {
+            return nacosConfigsClient.export(clientEntity.get());
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+
+    @ApiOperation(value = "导入项目配置", notes = "导入项目配置")
+    @PostMapping("import")
+    public Result<?> importZip(@PathVariable Long projectId, ConfigImportVO record, @RequestPart("file") MultipartFile file) {
+        return ResultUtils.wrap(() -> {
+            ClientEntity<ConfigImportVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            return nacosConfigsClient.importZip(clientEntity, file);
+        });
+
     }
 
 }

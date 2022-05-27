@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -27,9 +28,11 @@ public class NacosProjectAPIController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询nacos项目")
     @GetMapping(value = {"list"})
-    public Result<VueRecord> list(String name, String tenant) {
-        return ResultUtils.wrapList(()->{
-            Result<ProjectDto> result = upmsProjectClientService.list(name, tenant);
+    public Result<VueRecord> list(@RequestParam(value = "name", required = false) String name,
+                                  @RequestParam(value = "code", required = false) String code,
+                                  @RequestParam(value = "tenant", required = false) String tenant) {
+        return ResultUtils.wrapList(() -> {
+            Result<ProjectDto> result = upmsProjectClientService.list(name, code, tenant);
             return VueRecordUtils.covertIdList(result.getRows());
         });
     }

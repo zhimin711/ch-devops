@@ -12,7 +12,12 @@ import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 描述：配置
@@ -25,9 +30,9 @@ import org.springframework.web.bind.annotation.*;
 public class NacosConfigsController {
 
     @Autowired
-    private NacosConfigsClient nacosConfigsClient;
+    private NacosConfigsClient       nacosConfigsClient;
     @Autowired
-    private NacosNamespaceValidator nacosNamespaceValidator;
+    private NacosNamespaceValidator  nacosNamespaceValidator;
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
 
@@ -94,4 +99,25 @@ public class NacosConfigsController {
         });
     }
 
+    @ApiOperation(value = "导出配置", notes = "导出配置")
+    @GetMapping("export")
+    public ResponseEntity<Resource> export(ConfigExportVO record) {
+        AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
+        Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.valid(record)));
+        if (result.isSuccess()) {
+            return nacosConfigsClient.export(clientEntity.get());
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+
+    @ApiOperation(value = "导入配置", notes = "导入配置")
+    @PostMapping("import")
+    public Result<?> importZip(ConfigImportVO record, @RequestPart("file") MultipartFile file) {
+        return ResultUtils.wrap(() -> {
+            ClientEntity<ConfigImportVO> clientEntity = nacosNamespaceValidator.valid(record);
+            return nacosConfigsClient.importZip(clientEntity, file);
+        });
+
+    }
 }

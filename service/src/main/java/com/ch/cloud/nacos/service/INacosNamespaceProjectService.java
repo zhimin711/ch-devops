@@ -1,5 +1,7 @@
 package com.ch.cloud.nacos.service;
 
+import com.ch.cloud.types.NamespaceType;
+
 import java.util.List;
 
 /**
@@ -17,4 +19,6 @@ public interface INacosNamespaceProjectService {
     List<Long> findNamespaceIdsByProjectId(Long projectId);
 
     Integer assignProjectNamespaces(Long projectId, List<Long> namespaceIds);
+
+    List<Long> findClusterIdsByProjectIdAndNamespaceType(Long projectId, NamespaceType namespaceType);
 }

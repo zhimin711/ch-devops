@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.service.impl;
 
 import com.ch.cloud.devops.mapper2.NamespaceProjectsMapper;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
+import com.ch.cloud.types.NamespaceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,4 +57,10 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
         }
         return c.get();
     }
+
+    @Override
+    public List<Long> findClusterIdsByProjectIdAndNamespaceType(Long projectId, NamespaceType namespaceType) {
+        return namespaceProjectsMapper.findClusterIdsByProjectIdAndNamespaceType(projectId, namespaceType.name());
+    }
+
 }

@@ -2,7 +2,7 @@ package com.ch.cloud.nacos.controller;
 
 import com.ch.cloud.nacos.client.NacosClusterClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.e.PubError;

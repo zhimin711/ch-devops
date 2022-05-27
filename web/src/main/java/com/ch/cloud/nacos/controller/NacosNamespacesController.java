@@ -1,6 +1,6 @@
 package com.ch.cloud.nacos.controller;
 
-import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.dto.NamespaceDto;
 import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
@@ -14,7 +14,6 @@ import com.ch.cloud.upms.client.UpmsTenantClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
-import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
 import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
@@ -219,7 +218,7 @@ public class NacosNamespacesController {
     public Result<VueRecord2> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
             List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
-            Result<ProjectDto> projects = projectClientService.findByIds(projectIds);
+            Result<ProjectDto> projects = projectClientService.infoByIds(projectIds);
             return VueRecordUtils.covert(projects.getRows());
         });
     }

@@ -1,8 +1,11 @@
 package com.ch.cloud.nacos.controller;
 
-import com.ch.cloud.devops.dto.Namespace;
+import com.ch.cloud.devops.domain.Namespace;
+import com.ch.cloud.nacos.domain.NacosCluster;
+import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.devops.service.INamespaceService;
+import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.pojo.VueRecord;
@@ -34,7 +37,9 @@ public class NacosProjectsController {
     @Autowired
     private INacosNamespaceProjectService namespaceProjectService;
     @Autowired
-    private INamespaceService namespaceService;
+    private INamespaceService    namespaceService;
+    @Autowired
+    private INacosClusterService nacosClusterService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询项目")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
@@ -60,5 +65,14 @@ public class NacosProjectsController {
     @PostMapping({"{id:[0-9]+}/namespaces"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> namespaceIds) {
         return ResultUtils.wrap(() -> namespaceProjectService.assignProjectNamespaces(id, namespaceIds));
+    }
+
+    @GetMapping({"{id:[0-9]+}/clusters"})
+    public Result<VueRecord> listCluster(@PathVariable Long id) {
+        return ResultUtils.wrap(() -> {
+            List<Long> clusterIds = namespaceProjectService.findClusterIdsByProjectIdAndNamespaceType(id, NamespaceType.NACOS);
+            List<NacosCluster> clusters = nacosClusterService.findByPrimaryKeys(clusterIds);
+            return VueRecordUtils.covertIdList(clusters);
+        });
     }
 }
