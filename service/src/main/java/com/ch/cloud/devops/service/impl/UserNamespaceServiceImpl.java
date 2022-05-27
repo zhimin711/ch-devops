@@ -33,6 +33,6 @@ public class UserNamespaceServiceImpl implements IUserNamespaceService {
 
     @Override
     public List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, NamespaceType namespaceType) {
-        return userProjectNamespaceMapper.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(username, projectId,clusterId, namespaceType.name());
+        return userProjectNamespaceMapper.findNamespacesByUserIdAndProjectIdAndClusterIdAndNamespaceType(username, projectId,clusterId, namespaceType.name());
     }
 }

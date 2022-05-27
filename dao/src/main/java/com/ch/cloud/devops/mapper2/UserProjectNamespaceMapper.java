@@ -46,5 +46,5 @@ public interface UserProjectNamespaceMapper {
             " INNER JOIN rt_user_namespace t2 ON t1.id  = t2.NAMESPACE_ID" +
             " WHERE EXISTS(SELECT * FROM rt_project_namespace WHERE PROJECT_ID = t2.PROJECT_ID and NAMESPACE_ID = t2.NAMESPACE_ID)" +
             " and t2.project_id =#{projectId} and t2.USER_ID=#{userId} and t1.cluster_id = #{clusterId} and t1.type = #{namespaceType}")
-    List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, String namespaceType);
+    List<NamespaceDto> findNamespacesByUserIdAndProjectIdAndClusterIdAndNamespaceType(String userId, Long projectId, Long clusterId, String namespaceType);
 }
