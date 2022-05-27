@@ -22,12 +22,17 @@ public class UserNamespaceServiceImpl implements IUserNamespaceService {
     private UserProjectNamespaceMapper userProjectNamespaceMapper;
 
     @Override
-    public List<NamespaceDto> findNamespacesByUsernameAndProjectId(String username, Long projectId, NamespaceType type) {
-        return userProjectNamespaceMapper.findNamespacesByUserIdAndProjectId(username, projectId, type.name());
+    public List<NamespaceDto> findNamespacesByUsernameAndProjectId(String username, Long projectId, NamespaceType namespaceType) {
+        return userProjectNamespaceMapper.findNamespacesByUserIdAndProjectId(username, projectId, namespaceType.name());
     }
 
     @Override
     public boolean exists(String userId, String namespaceId, Long projectId) {
         return userProjectNamespaceMapper.countByUserIdAndNamespaceIdAndProjectId(userId, namespaceId, projectId) > 0;
+    }
+
+    @Override
+    public List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, NamespaceType namespaceType) {
+        return userProjectNamespaceMapper.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(username, projectId,clusterId, namespaceType.name());
     }
 }

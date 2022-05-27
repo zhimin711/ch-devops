@@ -99,6 +99,11 @@ public class NacosConfigsController {
         });
     }
 
+    /**
+     * export=true&tenant=&group=&appName=&ids=61&namespaceId=2
+     * @param record
+     * @return
+     */
     @ApiOperation(value = "导出配置", notes = "导出配置")
     @GetMapping("export")
     public ResponseEntity<Resource> export(ConfigExportVO record) {

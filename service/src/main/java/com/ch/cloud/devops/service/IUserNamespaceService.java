@@ -13,7 +13,9 @@ import java.util.List;
  */
 public interface IUserNamespaceService {
 
-    List<NamespaceDto> findNamespacesByUsernameAndProjectId(String username, Long projectId, NamespaceType type);
+    List<NamespaceDto> findNamespacesByUsernameAndProjectId(String username, Long projectId, NamespaceType namespaceType);
 
     boolean exists(String userId, String namespaceId, Long projectId);
+
+    List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, NamespaceType namespaceType);
 }

@@ -68,10 +68,10 @@ public class NacosUserController {
 
 
     @ApiOperation(value = "查询空间列表", notes = "查询用户命名空间")
-    @GetMapping(value = {"{projectId:[0-9]+}/namespaces"})
-    public Result<VueRecord2> namespaces(@PathVariable Long projectId) {
+    @GetMapping(value = {"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
+    public Result<VueRecord2> namespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
         return ResultUtils.wrap(() -> {
-            List<NamespaceDto> records = userNamespaceService.findNamespacesByUsernameAndProjectId(ContextUtil.getUser(), projectId, NamespaceType.NACOS);
+            List<NamespaceDto> records = userNamespaceService.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(ContextUtil.getUser(), projectId, clusterId, NamespaceType.NACOS);
             return records.stream().map(e -> {
                 VueRecord2 record = new VueRecord2();
                 record.setValue(e.getId().toString());
