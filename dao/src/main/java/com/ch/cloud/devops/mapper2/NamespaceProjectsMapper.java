@@ -38,20 +38,21 @@ public interface NamespaceProjectsMapper {
             "WHERE pn.project_id = #{projectId} AND n.TYPE = #{namespaceType}")
     List<Long> findClusterIdsByProjectIdAndNamespaceType(@Param("projectId") Long projectId, @Param("namespaceType") String namespaceType);
 
+    @Results({
+            @Result(property = "projectId", column = "project_id"),
+            @Result(property = "namespaceId", column = "NAMESPACE_ID"),
+            @Result(property = "namespaceName", column = "NAME"),
+            @Result(property = "groupId", column = "GROUP_ID"),
+    })
+    @Select("SELECT pn.*, n.name FROM rt_project_namespace pn " +
+            "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
+            "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")
+    List<ProjectNamespaceDTO> findByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
+
     @Select("SELECT n.* FROM rt_project_namespace pn " +
             "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
             "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")
     List<NamespaceDto> findNamespacesByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
-
-    @Results({
-            @Result(property = "projectId", column = "project_id"),
-            @Result(property = "namespaceId", column = "NAMESPACE_ID"),
-            @Result(property = "groupId", column = "GROUP_ID"),
-    })
-    @Select("SELECT pn.* FROM rt_project_namespace pn " +
-            "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
-            "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")
-    List<ProjectNamespaceDTO> findByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
 
     @Insert("insert into rt_project_namespace(namespace_id,project_id,group_id) values(#{namespaceId},#{projectId},#{groupId})")
     int insert2(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId, @Param("groupId") String groupId);
