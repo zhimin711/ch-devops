@@ -1,6 +1,7 @@
 package com.ch.cloud.devops.mapper2;
 
 import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -41,5 +42,13 @@ public interface NamespaceProjectsMapper {
             "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
             "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")
     List<NamespaceDto> findNamespacesByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
+
+    @Select("SELECT pn.* FROM rt_project_namespace pn " +
+            "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
+            "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")
+    List<ProjectNamespaceDTO> findByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
+
+    @Insert("insert into rt_project_namespace(namespace_id,project_id,group_id) values(#{namespaceId},#{projectId},#{groupId})")
+    int insert(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId, @Param("groupId") String groupId);
 
 }

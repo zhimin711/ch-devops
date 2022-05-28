@@ -2,6 +2,8 @@ package com.ch.cloud.nacos.controller;
 
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
+import com.ch.cloud.devops.vo.ProjectNamespaceVO;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
@@ -49,24 +51,20 @@ public class NacosProjectsController {
     public PageResult<ProjectDto> page(ProjectDto record,
                                        @PathVariable(value = "num") int pageNum,
                                        @PathVariable(value = "size") int pageSize) {
-        return upmsProjectClientService.page(pageNum, pageSize, record.getCode(), record.getName(), record.getTenantName());
 //        PageInfo<ProjectDto> page = nacosClusterService.findPage(record, pageNum, pageSize);
-
+        return upmsProjectClientService.page(pageNum, pageSize, record.getCode(), record.getName(), record.getTenantName());
     }
 
     @ApiOperation(value = "查询项目nacos集群空间列表", notes = "查询项目nacos集群空间列表")
     @GetMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
-    public Result<VueRecord> findNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
-        return ResultUtils.wrapList(() -> {
-            List<NamespaceDto> records = nacosNamespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId, clusterId);
-            return VueRecordUtils.covertIdList(records);
-        });
+    public Result<ProjectNamespaceDTO> findNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
+        return ResultUtils.wrapList(() -> nacosNamespaceProjectService.findByProjectIdAndClusterId(projectId, clusterId));
     }
 
 
     @PostMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
-    public Result<Integer> saveProjectNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<Long> namespaceIds) {
-        return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignProjectNamespaces(projectId, clusterId, namespaceIds));
+    public Result<Integer> saveProjectNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<ProjectNamespaceVO> namespaceVOS) {
+        return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignProjectNamespaces(projectId, clusterId, namespaceVOS));
     }
 
     @GetMapping({"{id:[0-9]+}/clusters"})

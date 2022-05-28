@@ -1,14 +1,19 @@
 package com.ch.cloud.nacos.service.impl;
 
 import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
 import com.ch.cloud.devops.mapper2.NamespaceProjectsMapper;
+import com.ch.cloud.devops.vo.ProjectNamespaceVO;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.types.NamespaceType;
+import com.ch.utils.CommonUtils;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * desc:
@@ -47,12 +52,13 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
     }
 
     @Override
-    public Integer assignProjectNamespaces(Long projectId, Long clusterId, List<Long> namespaceIds) {
+    public Integer assignProjectNamespaces(Long projectId, Long clusterId, List<ProjectNamespaceVO> namespaceVOS) {
+        List<Long> namespaceIds = CommonUtils.isNotEmpty(namespaceVOS) ? namespaceVOS.stream().map(ProjectNamespaceVO::getNamespaceId).collect(Collectors.toList()) : Lists.newArrayList();
         List<Long> uList = namespaceProjectsMapper.findNamespaceIdsByProjectIdAndClusterIdAndNamespaceType(clusterId, projectId, NamespaceType.NACOS.name());
 
         AtomicInteger c = new AtomicInteger();
         if (!namespaceIds.isEmpty()) {//1，2，3 | 3、4、5
-            namespaceIds.stream().filter(r -> !uList.contains(r)).forEach(r -> c.getAndAdd(namespaceProjectsMapper.insert(r, projectId)));
+            namespaceVOS.stream().filter(r -> !uList.contains(r)).forEach(r -> c.getAndAdd(namespaceProjectsMapper.insert(r.getNamespaceId(), projectId, r.getGroupId())));
             uList.stream().filter(r -> !namespaceIds.contains(r)).forEach(r -> c.getAndAdd(namespaceProjectsMapper.delete(r, projectId)));
         } else if (!uList.isEmpty()) {
             uList.forEach(r -> c.getAndAdd(namespaceProjectsMapper.delete(r, projectId)));
@@ -68,5 +74,10 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
     @Override
     public List<NamespaceDto> findNamespacesByProjectIdAndClusterId(Long projectId, Long clusterId) {
         return namespaceProjectsMapper.findNamespacesByProjectIdAndClusterIdAndNamespaceType(projectId, clusterId, NamespaceType.NACOS.name());
+    }
+
+    @Override
+    public List<ProjectNamespaceDTO> findByProjectIdAndClusterId(Long projectId, Long clusterId) {
+        return namespaceProjectsMapper.findByProjectIdAndClusterIdAndNamespaceType(projectId, clusterId, NamespaceType.NACOS.name());
     }
 }

@@ -13,6 +13,7 @@ import com.ch.cloud.nacos.client.NacosSubscribesClient;
 import com.ch.cloud.nacos.dto.HistoryDTO;
 import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.HistoryPageVO;
@@ -24,11 +25,13 @@ import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
+import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
+import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,9 @@ public class NacosUserController {
     private INamespaceApplyRecordService namespaceApplyRecordService;
 
     @Autowired
+    private INacosNamespaceProjectService nacosNamespaceProjectService;
+
+    @Autowired
     private NacosHistoryClient    nacosHistoryClient;
     @Autowired
     private NacosInstancesClient  nacosInstancesClient;
@@ -82,7 +88,7 @@ public class NacosUserController {
         });
     }
 
-    @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
+    @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置历史")
     @GetMapping(value = {"{projectId:[0-9]+}/history"})
     public PageResult<HistoryDTO> history(@PathVariable Long projectId, HistoryPageVO record) {
         return ResultUtils.wrapPage(() -> {
@@ -94,7 +100,7 @@ public class NacosUserController {
         });
     }
 
-    @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
+    @ApiOperation(value = "分页查询", notes = "分页查询用户项目服务实例")
     @GetMapping(value = {"{projectId:[0-9]+}/instances"})
     public PageResult<InstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
         return ResultUtils.wrapPage(() -> {
@@ -115,6 +121,17 @@ public class NacosUserController {
             return nacosSubscribesClient.fetchPage(clientEntity);
         });
     }
+
+
+    @ApiOperation(value = "查询项目可申请空间列表", notes = "查询项目可申请空间列表")
+    @GetMapping({"apply/{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
+    public Result<VueRecord> findApplyNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
+        return ResultUtils.wrapList(() -> {
+            List<NamespaceDto> records = nacosNamespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId, clusterId);
+            return VueRecordUtils.covertIdList(records);
+        });
+    }
+
 
 
     @PostMapping({"apply/{projectId:[0-9]+}/namespaces"})
