@@ -110,6 +110,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>joor</artifactId>
             <version>0.9.6</version>
@@ -118,11 +123,6 @@
             <groupId>io.dubbo.springboot</groupId>
             <artifactId>spring-boot-starter-dubbo</artifactId>
             <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>

@@ -45,6 +45,7 @@ public class MybatisConfig {
         Properties properties = new Properties();
         properties.setProperty("reasonable", "true");
         properties.setProperty("supportMethodsArguments", "true");
+        properties.setProperty("mapUnderscoreToCamelCase", "true");
         properties.setProperty("returnPageInfo", "check");
         properties.setProperty("params", "count=countSql");
         pageInterceptor.setProperties(properties);

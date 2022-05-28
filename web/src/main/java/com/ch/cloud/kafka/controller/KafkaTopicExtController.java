@@ -46,7 +46,7 @@ public class KafkaTopicExtController {
     @Autowired
     private ITopicService topicService;
 
-    @Value("${share.path.libs}")
+    @Value("${fs.path.libs}")
     private String libsDir;
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")

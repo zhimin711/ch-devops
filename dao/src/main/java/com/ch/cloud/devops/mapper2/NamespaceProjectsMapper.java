@@ -43,6 +43,11 @@ public interface NamespaceProjectsMapper {
             "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")
     List<NamespaceDto> findNamespacesByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
 
+    @Results({
+            @Result(property = "projectId", column = "project_id"),
+            @Result(property = "namespaceId", column = "NAMESPACE_ID"),
+            @Result(property = "groupId", column = "GROUP_ID"),
+    })
     @Select("SELECT pn.* FROM rt_project_namespace pn " +
             "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
             "WHERE pn.project_id = #{projectId} AND n.cluster_id = #{clusterId} AND n.TYPE = #{namespaceType}")

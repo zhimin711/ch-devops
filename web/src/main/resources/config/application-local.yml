@@ -6,7 +6,7 @@ spring:
     name: ch-kafka
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.0.200:3306/ch_mq?characterEncoding=UTF-8&serverTimezone=GMT
+    url: jdbc:mysql://192.168.0.200:3306/ch_devops?characterEncoding=UTF-8&serverTimezone=GMT
     username: admin
     password: 123456
     type: com.zaxxer.hikari.HikariDataSource
@@ -22,25 +22,31 @@ spring:
   thymeleaf:
     mode: HTML5
     cache: false
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 logging:
   config: classpath:config/logback.xml
   level:
     com:
       ch: debug
 #      alibaba: warn
-share:
+fs:
+  root: data
   path:
-    upload: share/${spring.application.name}/upload
-    libs: D:\\mnt\\share\\common\\libs
+    tmp: ${fs.root}/${spring.application.name}/tmp
+    libs: ${fs.root}/${spring.application.name}/libs
 rocketmq:
   namesrv:
 #    addr: 10.206.46.77:9876
     isVIPChannel: true
-    consoleCollectData: D:\\tmp\\rocket\\console\\data
+#    consoleCollectData: D:\\tmp\\rocket\\console\\data
+    consoleCollectData: data/rocket/console/data
   console:
-    data: D:\\tmp\\rocketmq-console\\data
-  name-server: 192.168.0.209:9876 # 自己的RocketMQ服务地址
+    data: data/rocket/console/data
+#  name-server: 192.168.0.205:9876 # 自己的RocketMQ服务地址
 #  name-server: false
   producer:
     send-message-timeout: 300000
-    group: ch-kafka
+    group: ch-devops

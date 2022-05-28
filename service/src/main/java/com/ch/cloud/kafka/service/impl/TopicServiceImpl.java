@@ -39,7 +39,7 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
     @Autowired
     private ClusterConfigService clusterConfigService;
 
-    @Value("${share.path.libs}")
+    @Value("${fs.path.libs}")
     private String libsDir;
 
     @Override
