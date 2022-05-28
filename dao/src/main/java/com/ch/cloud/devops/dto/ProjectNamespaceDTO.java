@@ -13,6 +13,6 @@ public class ProjectNamespaceDTO {
 
     private Long   projectId;
     private Long   namespaceId;
-    private Long   namespaceName;
+    private String namespaceName;
     private String groupId;
 }
