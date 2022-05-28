@@ -4,7 +4,6 @@ import com.ch.cloud.nacos.client.NacosConfigsClient;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
-import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -29,20 +28,22 @@ import java.util.concurrent.atomic.AtomicReference;
 public class NacosUserConfigsController {
 
     @Autowired
-    private NacosConfigsClient       nacosConfigsClient;
+    private NacosConfigsClient      nacosConfigsClient;
     @Autowired
-    private NacosNamespaceValidator  nacosNamespaceValidator;
-    @Autowired
-    private UpmsProjectClientService upmsProjectClientService;
+    private NacosNamespaceValidator nacosNamespaceValidator;
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ConfigDTO> configs(@PathVariable Long projectId, ConfigsPageVO record) {
         return ResultUtils.wrapPage(() -> {
+            String nid = record.getNamespaceId();
+
             ClientEntity<ConfigsPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
             record.setTenant(record.getNamespaceId());
-            record.setGroup(result.get().getCode());
+
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+            record.setGroup(groupId);
+
             return nacosConfigsClient.fetchPage(clientEntity);
         });
     }
@@ -51,9 +52,13 @@ public class NacosUserConfigsController {
     @GetMapping
     public Result<ConfigDTO> get(@PathVariable Long projectId, ConfigQueryVO record) {
         return ResultUtils.wrapFail(() -> {
+            String nid = record.getNamespaceId();
+
             ClientEntity<ConfigQueryVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
-//            record.setAppName();
+
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+            record.setGroup(groupId);
             return nacosConfigsClient.fetch(clientEntity);
         });
     }
@@ -62,9 +67,10 @@ public class NacosUserConfigsController {
     @PostMapping
     public Result<Boolean> add(@PathVariable Long projectId, @RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
+            String nid = record.getNamespaceId();
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
-            record.setGroup(result.get().getCode());
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+            record.setGroup(groupId);
             return nacosConfigsClient.add(clientEntity);
         });
     }
@@ -73,9 +79,10 @@ public class NacosUserConfigsController {
     @PutMapping
     public Result<Boolean> edit(@PathVariable Long projectId, @RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
+            String nid = record.getNamespaceId();
             ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
-            record.setGroup(result.get().getCode());
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+            record.setGroup(groupId);
             return nacosConfigsClient.edit(clientEntity);
         });
     }
@@ -85,10 +92,11 @@ public class NacosUserConfigsController {
     public Result<?> clone(@PathVariable Long projectId, ConfigPolicyVO record,
                            @RequestBody ConfigCloneVO[] records) {
         return ResultUtils.wrapFail(() -> {
+            String nid = record.getNamespaceId();
             ClientEntity<ConfigPolicyVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             for (ConfigCloneVO cloneVO : records) {
-                cloneVO.setGroup(result.get().getCode());
+                cloneVO.setGroup(groupId);
             }
             return nacosConfigsClient.clone(clientEntity, records);
         });
@@ -98,9 +106,10 @@ public class NacosUserConfigsController {
     @DeleteMapping
     public Result<Boolean> delete(@PathVariable Long projectId, ConfigDeleteVO record) {
         return ResultUtils.wrapFail(() -> {
+            String nid = record.getNamespaceId();
             ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
-            record.setGroup(result.get().getCode());
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+            record.setGroup(groupId);
             return nacosConfigsClient.delete(clientEntity);
         });
     }

@@ -80,4 +80,9 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
     public List<ProjectNamespaceDTO> findByProjectIdAndClusterId(Long projectId, Long clusterId) {
         return namespaceProjectsMapper.findByProjectIdAndClusterIdAndNamespaceType(projectId, clusterId, NamespaceType.NACOS.name());
     }
+
+    @Override
+    public ProjectNamespaceDTO findByProjectIdAndNamespaceId(Long projectId, Long namespaceId) {
+        return namespaceProjectsMapper.findByProjectIdAndNamespaceId(projectId, namespaceId);
+    }
 }

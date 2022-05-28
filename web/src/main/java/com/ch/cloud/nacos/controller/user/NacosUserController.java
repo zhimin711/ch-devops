@@ -51,9 +51,9 @@ import java.util.stream.Collectors;
 public class NacosUserController {
 
     @Autowired
-    private INamespaceService             namespaceService;
+    private INamespaceService            namespaceService;
     @Autowired
-    private NacosNamespaceValidator       nacosNamespaceValidator;
+    private NacosNamespaceValidator      nacosNamespaceValidator;
     @Autowired
     private IUserNamespaceService        userNamespaceService;
     @Autowired
@@ -92,10 +92,10 @@ public class NacosUserController {
     @GetMapping(value = {"{projectId:[0-9]+}/history"})
     public PageResult<HistoryDTO> history(@PathVariable Long projectId, HistoryPageVO record) {
         return ResultUtils.wrapPage(() -> {
+            String nid = record.getNamespaceId();
             ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
-            record.setGroup(result.get().getCode());
+            record.setGroup(nacosNamespaceValidator.fetchGroupId(projectId, nid));
             return nacosHistoryClient.fetchPage(entity);
         });
     }
@@ -131,7 +131,6 @@ public class NacosUserController {
             return VueRecordUtils.covertIdList(records);
         });
     }
-
 
 
     @PostMapping({"apply/{projectId:[0-9]+}/namespaces"})

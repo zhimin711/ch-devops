@@ -28,4 +28,6 @@ public interface INacosNamespaceProjectService {
     List<NamespaceDto> findNamespacesByProjectIdAndClusterId(Long projectId, Long clusterId);
 
     List<ProjectNamespaceDTO> findByProjectIdAndClusterId(Long projectId, Long clusterId);
+
+    ProjectNamespaceDTO findByProjectIdAndNamespaceId(Long projectId, Long namespaceId);
 }
