@@ -58,7 +58,7 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
 
         AtomicInteger c = new AtomicInteger();
         if (!namespaceIds.isEmpty()) {//1，2，3 | 3、4、5
-            namespaceVOS.stream().filter(r -> !uList.contains(r)).forEach(r -> c.getAndAdd(namespaceProjectsMapper.insert(r.getNamespaceId(), projectId, r.getGroupId())));
+            namespaceVOS.stream().filter(r -> !uList.contains(r.getNamespaceId())).forEach(r -> c.getAndAdd(namespaceProjectsMapper.insert2(r.getNamespaceId(), projectId, r.getGroupId())));
             uList.stream().filter(r -> !namespaceIds.contains(r)).forEach(r -> c.getAndAdd(namespaceProjectsMapper.delete(r, projectId)));
         } else if (!uList.isEmpty()) {
             uList.forEach(r -> c.getAndAdd(namespaceProjectsMapper.delete(r, projectId)));

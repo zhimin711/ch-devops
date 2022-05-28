@@ -11,11 +11,14 @@ import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
+import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.utils.AssertUtils;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -64,7 +67,18 @@ public class NacosProjectsController {
 
     @PostMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<ProjectNamespaceVO> namespaceVOS) {
-        return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignProjectNamespaces(projectId, clusterId, namespaceVOS));
+        return ResultUtils.wrap(() -> {
+            if (CommonUtils.isNotEmpty(namespaceVOS)) {
+                Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+                AssertUtils.isTrue(result.isEmpty(), PubError.NOT_EXISTS, "projectId: " + projectId);
+                namespaceVOS.forEach(e -> {
+                    if (CommonUtils.isEmpty(e.getGroupId())) {
+                        e.setGroupId(result.get().getCode());
+                    }
+                });
+            }
+            return nacosNamespaceProjectService.assignProjectNamespaces(projectId, clusterId, namespaceVOS);
+        });
     }
 
     @GetMapping({"{id:[0-9]+}/clusters"})

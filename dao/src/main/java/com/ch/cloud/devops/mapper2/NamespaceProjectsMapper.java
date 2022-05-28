@@ -49,7 +49,7 @@ public interface NamespaceProjectsMapper {
     List<ProjectNamespaceDTO> findByProjectIdAndClusterIdAndNamespaceType(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("namespaceType") String namespaceType);
 
     @Insert("insert into rt_project_namespace(namespace_id,project_id,group_id) values(#{namespaceId},#{projectId},#{groupId})")
-    int insert(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId, @Param("groupId") String groupId);
+    int insert2(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId, @Param("groupId") String groupId);
 
     @Select("select * from rt_project_namespace where namespace_id = #{namespaceId} and project_id = #{projectId}")
     ProjectNamespaceDTO findByProjectIdAndNamespaceId(Long projectId, Long namespaceId);
