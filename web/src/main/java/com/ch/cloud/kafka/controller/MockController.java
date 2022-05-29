@@ -3,8 +3,8 @@ package com.ch.cloud.kafka.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.model.BtTopicExtProp;
+import com.ch.cloud.kafka.model.KafkaTopicExt;
+import com.ch.cloud.kafka.model.KafkaTopicExtProp;
 import com.ch.cloud.kafka.dto.TopicDTO;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
@@ -46,7 +46,7 @@ public class MockController {
 
     @ApiOperation(value = "生成数据", notes = "生成主题数据")
     @PostMapping
-    public Result<?> mock(@RequestBody BtTopicExt record) {
+    public Result<?> mock(@RequestBody KafkaTopicExt record) {
 
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
@@ -144,7 +144,7 @@ public class MockController {
 
     @ApiOperation(value = "生成GPS数据", notes = "生成GPS数据并发送Kafka")
     @PostMapping("gps")
-    public Result<?> gps(@RequestBody BtTopicExt record) {
+    public Result<?> gps(@RequestBody KafkaTopicExt record) {
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
                 ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
@@ -191,7 +191,7 @@ public class MockController {
         });
     }
 
-    private List<Object> mockGPSDataProps(BtTopicExt record, List<MockProp> props, int threadIndex) throws Exception {
+    private List<Object> mockGPSDataProps(KafkaTopicExt record, List<MockProp> props, int threadIndex) throws Exception {
 
         long total = DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());//60
 
@@ -257,10 +257,10 @@ public class MockController {
     }
 
 
-    private JSONObject mockGPSDataProps(List<BtTopicExtProp> props, Date timestamp, double lng, double lat) throws Exception {
+    private JSONObject mockGPSDataProps(List<KafkaTopicExtProp> props, Date timestamp, double lng, double lat) throws Exception {
         JSONObject obj = new JSONObject();
         for (int i = 0; i < 4; i++) {
-            BtTopicExtProp prop = props.get(i);
+            KafkaTopicExtProp prop = props.get(i);
             String name = prop.getName().trim();
             if (CommonUtils.isEquals(name, MockUtil.GPS_NAME)) {
                 obj.put(prop.getCode(), lng + "," + lat);

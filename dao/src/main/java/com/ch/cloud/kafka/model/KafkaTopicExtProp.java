@@ -6,8 +6,8 @@ import javax.persistence.*;
 import java.util.List;
 
 @Data
-@Table(name = "bt_topic_ext_prop")
-public class BtTopicExtProp {
+@Table(name = "bt_kafka_topic_ext_prop")
+public class KafkaTopicExtProp {
     /**
      * 主键
      */
@@ -87,5 +87,5 @@ public class BtTopicExtProp {
     private String status;
 
     @Transient
-    private List<BtTopicExtProp> children;
+    private List<KafkaTopicExtProp> children;
 }

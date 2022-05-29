@@ -6,8 +6,8 @@ import javax.persistence.*;
 import lombok.Data;
 
 @Data
-@Table(name = "bt_topic_ext")
-public class BtTopicExt {
+@Table(name = "bt_kafka_topic_ext")
+public class KafkaTopicExt {
     /**
      * 主键
      */
@@ -83,7 +83,7 @@ public class BtTopicExt {
     private String updateBy;
 
     @Transient
-    private List<BtTopicExtProp> props;
+    private List<KafkaTopicExtProp> props;
     @Transient
-    private List<String> points;
+    private List<String>            points;
 }

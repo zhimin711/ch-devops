@@ -2,11 +2,11 @@ package com.ch.cloud.kafka.service.impl;
 
 import com.ch.Constants;
 import com.ch.StatusS;
-import com.ch.cloud.kafka.mapper.BtTopicExtMapper;
-import com.ch.cloud.kafka.mapper.BtTopicExtPropMapper;
-import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.model.BtTopicExtProp;
-import com.ch.cloud.kafka.service.ITopicExtService;
+import com.ch.cloud.kafka.mapper.KafkaTopicExtMapper;
+import com.ch.cloud.kafka.mapper.KafkaTopicExtPropMapper;
+import com.ch.cloud.kafka.model.KafkaTopicExt;
+import com.ch.cloud.kafka.model.KafkaTopicExtProp;
+import com.ch.cloud.kafka.service.KafkaTopicExtService;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.toolkit.UUIDGenerator;
 import com.ch.utils.CommonUtils;
@@ -26,21 +26,21 @@ import java.util.stream.Collectors;
  * @since 2018/9/25 19:14
  */
 @Service
-public class TopicExtServiceImpl extends ServiceImpl<BtTopicExtMapper, BtTopicExt> implements ITopicExtService {
+public class KafkaTopicExtServiceImpl extends ServiceImpl<KafkaTopicExtMapper, KafkaTopicExt> implements KafkaTopicExtService {
 
     @Resource
-    private BtTopicExtPropMapper propMapper;
+    private KafkaTopicExtPropMapper propMapper;
 
     @Override
-    public List<BtTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username) {
+    public List<KafkaTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username) {
         if (CommonUtils.isEmptyOr(clusterName, topicName, username)) {
             return null;
         }
-        BtTopicExt q = new BtTopicExt();
+        KafkaTopicExt q = new KafkaTopicExt();
         q.setClusterName(clusterName);
         q.setTopicName(topicName);
         q.setCreateBy(username);
-        Example example = Example.builder(BtTopicExt.class).select("id", "description")
+        Example example = Example.builder(KafkaTopicExt.class).select("id", "description")
                 .where(Sqls.custom()
                         .andEqualTo("clusterName", clusterName)
 //                        .andEqualTo("createBy", username)
@@ -51,38 +51,38 @@ public class TopicExtServiceImpl extends ServiceImpl<BtTopicExtMapper, BtTopicEx
     }
 
     @Override
-    public List<BtTopicExtProp> findProps(Long id) {
+    public List<KafkaTopicExtProp> findProps(Long id) {
         if (CommonUtils.isEmpty(id)) {
             return null;
         }
-        BtTopicExtProp record2 = new BtTopicExtProp();
+        KafkaTopicExtProp record2 = new KafkaTopicExtProp();
         record2.setMid(id);
-        List<BtTopicExtProp> list = propMapper.select(record2);
+        List<KafkaTopicExtProp> list = propMapper.select(record2);
         return convertPropTree(list);
     }
 
-    private List<BtTopicExtProp> convertPropTree(List<BtTopicExtProp> list) {
+    private List<KafkaTopicExtProp> convertPropTree(List<KafkaTopicExtProp> list) {
         if (CommonUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        Map<Long, List<BtTopicExtProp>> propMap = list.stream().collect(Collectors.groupingBy(BtTopicExtProp::getPid));
+        Map<Long, List<KafkaTopicExtProp>> propMap = list.stream().collect(Collectors.groupingBy(KafkaTopicExtProp::getPid));
         propMap.forEach((k, v) -> v.forEach(e -> e.setChildren(propMap.get(e.getId()))));
 
-        List<BtTopicExtProp> topList = propMap.get(0L);
+        List<KafkaTopicExtProp> topList = propMap.get(0L);
         topList.sort((r1, r2) -> CommonUtils.compareTo(r1.getSort(), r2.getSort()));
         return topList;
     }
 
     @Transactional(rollbackFor = {Exception.class})
     @Override
-    public int save(BtTopicExt record) {
+    public int save(KafkaTopicExt record) {
         int c;
         if (CommonUtils.isEmpty(record.getId())) {
             c = super.save(record);
         } else {
             c = super.update(record);
         }
-        BtTopicExtProp record2 = new BtTopicExtProp();
+        KafkaTopicExtProp record2 = new KafkaTopicExtProp();
         record2.setMid(record.getId());
         propMapper.delete(record2);
         if (c > 0 && CommonUtils.isNotEmpty(record.getProps())) {
@@ -91,7 +91,7 @@ public class TopicExtServiceImpl extends ServiceImpl<BtTopicExtMapper, BtTopicEx
         return c;
     }
 
-    private void saveProps(BtTopicExt record, List<BtTopicExtProp> props) {
+    private void saveProps(KafkaTopicExt record, List<KafkaTopicExtProp> props) {
         props.forEach(r -> {
             r.setMid(record.getId());
             if (CommonUtils.isEmpty(r.getPid())) {

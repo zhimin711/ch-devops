@@ -2,10 +2,10 @@ package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.model.BtTopicExtProp;
+import com.ch.cloud.kafka.model.KafkaTopicExt;
+import com.ch.cloud.kafka.model.KafkaTopicExtProp;
 import com.ch.cloud.kafka.service.KafkaClusterService;
-import com.ch.cloud.kafka.service.ITopicExtService;
+import com.ch.cloud.kafka.service.KafkaTopicExtService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
@@ -40,29 +40,29 @@ import java.util.Map;
 public class KafkaTopicExtController {
 
     @Autowired
-    private ITopicExtService    topicExtService;
+    private KafkaTopicExtService kafkaTopicExtService;
     @Autowired
-    private KafkaClusterService kafkaClusterService;
+    private KafkaClusterService  kafkaClusterService;
     @Autowired
-    private KafkaTopicService   topicService;
+    private KafkaTopicService   kafkaTopicService;
 
     @Value("${fs.path.libs}")
     private String libsDir;
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping
-    public Result<BtTopicExt> configs(BtTopicExt record) {
-        return ResultUtils.wrapList(() -> topicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), ContextUtil.getUser()));
+    public Result<KafkaTopicExt> configs(KafkaTopicExt record) {
+        return ResultUtils.wrapList(() -> kafkaTopicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), ContextUtil.getUser()));
     }
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping("{id}")
-    public Result<BtTopicExt> load(@PathVariable Long id,
-                                   BtTopicExt record) {
+    public Result<KafkaTopicExt> load(@PathVariable Long id,
+                                      KafkaTopicExt record) {
         return ResultUtils.wrap(() -> {
-            BtTopicExt record2 = topicExtService.find(id);
+            KafkaTopicExt record2 = kafkaTopicExtService.find(id);
             if (record2 == null) {
-                record2 = new BtTopicExt();
+                record2 = new KafkaTopicExt();
                 record2.setClusterName(record.getClusterName());
                 record2.setTopicName(record.getTopicName());
                 record2.setThreadSize(4);
@@ -73,12 +73,12 @@ public class KafkaTopicExtController {
         });
     }
 
-    private void loadTopicProps(BtTopicExt record) {
+    private void loadTopicProps(KafkaTopicExt record) {
 
-        List<BtTopicExtProp> props = topicExtService.findProps(record.getId());
+        List<KafkaTopicExtProp> props = kafkaTopicExtService.findProps(record.getId());
 
         if (CommonUtils.isEmpty(props)) {
-            KafkaTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaTopic topicDto = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
             if (CommonUtils.isEmpty(topicDto.getClassName())) {
                 return;
             }
@@ -94,10 +94,10 @@ public class KafkaTopicExtController {
         record.setProps(props);
     }
 
-    private List<BtTopicExtProp> convert(Map<?, ?> map) {
-        List<BtTopicExtProp> props = Lists.newArrayList();
+    private List<KafkaTopicExtProp> convert(Map<?, ?> map) {
+        List<KafkaTopicExtProp> props = Lists.newArrayList();
         map.forEach((k, v) -> {
-            BtTopicExtProp prop = new BtTopicExtProp();
+            KafkaTopicExtProp prop = new KafkaTopicExtProp();
             prop.setUid(UUIDGenerator.generate());
             prop.setCode(k.toString());
             if (v != null) {
@@ -115,18 +115,18 @@ public class KafkaTopicExtController {
 
     @ApiOperation(value = "新增主题扩展信息", notes = "新增主题扩展信息")
     @PostMapping
-    public Result<Long> save(@RequestBody BtTopicExt record) {
+    public Result<Long> save(@RequestBody KafkaTopicExt record) {
 
         return ResultUtils.wrapFail(() -> {
             if (CommonUtils.isEmptyOr(record.getClusterName(), record.getTopicName())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "集群或主题不能为空！");
             }
-            KafkaTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaTopic topicDto = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
             if (topicDto == null) {
                 ExceptionUtils._throw(PubError.NOT_EXISTS, "集群+主题不存在！");
             }
 
-            BtTopicExt r = topicExtService.find(record.getId());
+            KafkaTopicExt r = kafkaTopicExtService.find(record.getId());
 
             if (r != null) {
                 record.setId(r.getId());
@@ -137,7 +137,7 @@ public class KafkaTopicExtController {
                 record.setCreateBy(ContextUtil.getUser());
                 record.setStatus(StatusS.ENABLED);
             }
-            topicExtService.save(record);
+            kafkaTopicExtService.save(record);
             return record.getId();
         });
     }
@@ -146,12 +146,12 @@ public class KafkaTopicExtController {
     @DeleteMapping({"{id}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
-            BtTopicExt record = new BtTopicExt();
+            KafkaTopicExt record = new KafkaTopicExt();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
             record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
-            return topicExtService.update(record);
+            return kafkaTopicExtService.update(record);
         });
     }
 

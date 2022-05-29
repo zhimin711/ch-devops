@@ -2,8 +2,8 @@ package com.ch.cloud.kafka.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ch.Constants;
-import com.ch.cloud.kafka.model.BtTopicExt;
-import com.ch.cloud.kafka.model.BtTopicExtProp;
+import com.ch.cloud.kafka.model.KafkaTopicExt;
+import com.ch.cloud.kafka.model.KafkaTopicExtProp;
 import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
 import com.ch.cloud.mock.MockRule;
@@ -34,10 +34,10 @@ public class MockUtil {
     public static final String range_regex = "[~]";
     public static final String OBJ         = "{}";
 
-    public static boolean checkProps(List<BtTopicExtProp> props) {
+    public static boolean checkProps(List<KafkaTopicExtProp> props) {
         boolean isSingle = false;
         boolean ok = true;
-        for (BtTopicExtProp prop : props) {
+        for (KafkaTopicExtProp prop : props) {
             if (CommonUtils.isEmpty(prop.getCode())) {
                 isSingle = true;
                 break;
@@ -54,20 +54,20 @@ public class MockUtil {
     public static final String GPS_LAT_NAME = "纬度";
     public static final String GPS_TIME     = "轨迹时间";
 
-    public static boolean checkGPSProps(BtTopicExt record) {
+    public static boolean checkGPSProps(KafkaTopicExt record) {
         if (record.getPoints().size() < 2) {
             return false;
         }
-        List<BtTopicExtProp> props = record.getProps();
+        List<KafkaTopicExtProp> props = record.getProps();
         if (props.size() < 4) {
             return false;
         }
 
-        BtTopicExtProp posProp = props.get(0);
+        KafkaTopicExtProp posProp = props.get(0);
         if (CommonUtils.isEmptyOr(posProp.getCode(), posProp.getChildren())) {
 //            return false;
         }
-        for (BtTopicExtProp prop : props) {
+        for (KafkaTopicExtProp prop : props) {
             if (CommonUtils.isEmpty(prop.getCode())) {
                 return false;
             }
@@ -76,16 +76,16 @@ public class MockUtil {
     }
 
 
-    public static Object mockDataProps(List<BtTopicExtProp> props) throws Exception {
+    public static Object mockDataProps(List<KafkaTopicExtProp> props) throws Exception {
         JSONObject obj = new JSONObject();
-        for (BtTopicExtProp prop : props) {
+        for (KafkaTopicExtProp prop : props) {
             obj.put(prop.getCode(), mockDataProp(prop));
         }
         return obj;
     }
 
 
-    public static Object mockDataProp(BtTopicExtProp prop) throws Exception {
+    public static Object mockDataProp(KafkaTopicExtProp prop) throws Exception {
         BeanUtilsV2.BasicType type = BeanUtilsV2.BasicType.fromObject(prop.getType());
         if (type != null) {
             if (CommonUtils.isEmpty(prop.getValRegex())) {
@@ -170,7 +170,7 @@ public class MockUtil {
         return null;
     }
 
-    public static List<MockProp> convertRules(BtTopicExt record, List<BtTopicExtProp> props, boolean isChild) throws Exception {
+    public static List<MockProp> convertRules(KafkaTopicExt record, List<KafkaTopicExtProp> props, boolean isChild) throws Exception {
 
         long total = CommonUtils.isEquals("GPS", record.getDescription()) ?
                 (int) DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt()) : 0;
@@ -178,7 +178,7 @@ public class MockUtil {
                 (int) total / record.getBatchSize() / record.getThreadSize() : record.getThreadSize();
 
         List<MockProp> props2 = Lists.newArrayList();
-        for (BtTopicExtProp prop : props) {
+        for (KafkaTopicExtProp prop : props) {
 
             if (CommonUtils.isEmpty(prop.getCode()) && (isChild || props.size() > 1)) {
                 ExceptionUtils._throw(PubError.ARGS, "mock字段代码不能为空！");
@@ -354,7 +354,7 @@ public class MockUtil {
         return DateUtils.current();
     }
 
-    public static List<MockProp> convertGPSRules(BtTopicExt record) throws Exception {
+    public static List<MockProp> convertGPSRules(KafkaTopicExt record) throws Exception {
         if (CommonUtils.isEmptyOr(record.getCreateAt(), record.getUpdateAt())) {
             ExceptionUtils._throw(PubError.ARGS, "GPS轨迹开始或结束时间为空！");
         }
@@ -378,7 +378,7 @@ public class MockUtil {
             return Lists.newArrayList();
         }
 
-        List<BtTopicExtProp> props = record.getProps().subList(4, record.getProps().size());
+        List<KafkaTopicExtProp> props = record.getProps().subList(4, record.getProps().size());
         return convertRules(record, props, false);
     }
 

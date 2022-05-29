@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ch.cloud.kafka.mapper.BtTopicExtMapper">
+<mapper namespace="com.ch.cloud.kafka.mapper.KafkaTopicExtMapper">
   <sql id="Base_Column_List">
     ID, CLUSTER_NAME, TOPIC_NAME, CONTENT_TYPE, THREAD_SIZE, BATCH_SIZE, DESCRIPTION, 
     STATUS, CREATE_AT, CREATE_BY, UPDATE_AT, UPDATE_BY
