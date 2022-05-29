@@ -9,16 +9,15 @@ import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.devops.service.IUserNamespaceService;
 import com.ch.cloud.nacos.client.NacosHistoryClient;
 import com.ch.cloud.nacos.client.NacosInstancesClient;
+import com.ch.cloud.nacos.client.NacosServicesClient;
 import com.ch.cloud.nacos.client.NacosSubscribesClient;
 import com.ch.cloud.nacos.dto.HistoryDTO;
 import com.ch.cloud.nacos.dto.InstanceDTO;
+import com.ch.cloud.nacos.dto.ServiceDetailDTO;
 import com.ch.cloud.nacos.dto.SubscriberDTO;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
-import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.HistoryPageVO;
-import com.ch.cloud.nacos.vo.InstancesPageVO;
-import com.ch.cloud.nacos.vo.SubscribesPageVO;
+import com.ch.cloud.nacos.vo.*;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
@@ -27,10 +26,12 @@ import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
+import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
@@ -68,6 +69,8 @@ public class NacosUserController {
     private NacosInstancesClient  nacosInstancesClient;
     @Autowired
     private NacosSubscribesClient nacosSubscribesClient;
+    @Autowired
+    private NacosServicesClient   nacosServicesClient;
 
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
@@ -105,8 +108,22 @@ public class NacosUserController {
     public PageResult<InstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
             record.setServiceName(result.get().getCode());
+
+            ServicesQueryVO servicesQueryVO = new ServicesQueryVO();
+            servicesQueryVO.setNamespaceId(record.getNamespaceId());
+            servicesQueryVO.setServiceName(record.getServiceName());
+            if (CommonUtils.isNotEmpty(record.getGroupName())) {
+                servicesQueryVO.setGroupName(record.getGroupName());
+            }
+            ServiceDetailDTO detailDTO = nacosServicesClient.fetch(new ClientEntity<>(clientEntity.getUrl(), servicesQueryVO));
+            if (detailDTO == null || CommonUtils.isEmpty(detailDTO.getClusters())) {
+                return InvokerPage.build();
+            }
+            JSONObject cluster = detailDTO.getClusters().get(0);
+            record.setClusterName(cluster.getString("name"));
             return nacosInstancesClient.fetchPage(clientEntity);
         });
     }
