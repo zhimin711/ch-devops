@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `bt_topic`;
-CREATE TABLE `bt_topic`
+DROP TABLE IF EXISTS `bt_kafka_topic`;
+CREATE TABLE `bt_kafka_topic`
 (
   `ID`             BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '主键',
   `CLUSTER_NAME`   VARCHAR(50)  NULL COMMENT '集群名称',
