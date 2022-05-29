@@ -1,10 +1,13 @@
 package com.ch.cloud.nacos.controller.user;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.ch.cloud.nacos.client.NacosConfigsClient;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
 import com.ch.cloud.upms.dto.ProjectDto;
+import com.ch.e.ExceptionUtils;
+import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
@@ -137,4 +140,34 @@ public class NacosUserConfigsController {
 
     }
 
+    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @PutMapping("rollback")
+    public Result<Boolean> rollback(@PathVariable Long projectId, @RequestParam String opType, @RequestBody HistoryRollbackVO record) {
+        return ResultUtils.wrapFail(() -> {
+            switch (opType) {
+                case "I":
+                    return delete(projectId, record);
+                case "D":
+                case "U":
+                    return save(projectId, record);
+                default:
+                    ExceptionUtils._throw(PubError.NOT_ALLOWED, "非法操作");
+            }
+            return false;
+        });
+    }
+
+    private Boolean save(Long projectId, HistoryRollbackVO record) {
+        ConfigVO configVO = new ConfigVO();
+        BeanUtil.copyProperties(record, configVO);
+        ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, configVO);
+        return nacosConfigsClient.add(clientEntity);
+    }
+
+    private Boolean delete(Long projectId, HistoryRollbackVO record) {
+        ConfigDeleteVO deleteVO = new ConfigDeleteVO();
+        BeanUtil.copyProperties(record, deleteVO);
+        ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, deleteVO);
+        return nacosConfigsClient.delete(clientEntity);
+    }
 }

@@ -1,5 +1,6 @@
 package com.ch.cloud.nacos.controller.user;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
@@ -102,6 +103,19 @@ public class NacosUserController {
             return nacosHistoryClient.fetchPage(entity);
         });
     }
+
+    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @GetMapping(value = {"{projectId:[0-9]+}/history/detail"})
+    public Result<HistoryDTO> getHistoryDetail(@PathVariable Long projectId,HistoryQueryVO record) {
+        return ResultUtils.wrapFail(() -> {
+            String nid = record.getNamespaceId();
+            ClientEntity<HistoryQueryVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            record.setTenant(record.getNamespaceId());
+            record.setGroup(nacosNamespaceValidator.fetchGroupId(projectId, nid));
+            return nacosHistoryClient.fetch(clientEntity);
+        });
+    }
+
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目服务实例")
     @GetMapping(value = {"{projectId:[0-9]+}/instances"})
