@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "bt_cluster")
+@Table(name = "bt_kafka_cluster")
 @Data
 @ToString
 public class KafkaCluster implements Serializable {

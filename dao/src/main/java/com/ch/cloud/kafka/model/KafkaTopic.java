@@ -3,7 +3,7 @@ package com.ch.cloud.kafka.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "bt_topic")
+@Table(name = "bt_kafka_topic")
 public class KafkaTopic {
     /**
      * 主键
