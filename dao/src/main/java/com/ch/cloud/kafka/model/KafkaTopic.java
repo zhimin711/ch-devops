@@ -4,7 +4,7 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "bt_topic")
-public class BtTopic {
+public class KafkaTopic {
     /**
      * 主键
      */

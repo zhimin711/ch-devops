@@ -1,9 +1,9 @@
 package com.ch.cloud.kafka.service.impl;
 
 import com.ch.StatusS;
-import com.ch.cloud.kafka.mapper.BtClusterConfigMapper;
-import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.mapper.KafkaClusterMapper;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.utils.CommonUtils;
@@ -17,16 +17,16 @@ import java.util.Map;
  * @since 2018/9/25 19:14
  */
 @Service
-public class ClusterConfigServiceImpl extends ServiceImpl<BtClusterConfigMapper, BtClusterConfig> implements ClusterConfigService {
+public class KafkaClusterServiceImpl extends ServiceImpl<KafkaClusterMapper, KafkaCluster> implements KafkaClusterService {
 
 
     @Override
-    public int save(BtClusterConfig record) {
+    public int save(KafkaCluster record) {
         fetchBrokers(record);
         return super.save(record);
     }
 
-    private void fetchBrokers(BtClusterConfig record) {
+    private void fetchBrokers(KafkaCluster record) {
         Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
         if (!brokers.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -39,24 +39,24 @@ public class ClusterConfigServiceImpl extends ServiceImpl<BtClusterConfigMapper,
     }
 
     @Override
-    public int update(BtClusterConfig record) {
+    public int update(KafkaCluster record) {
         fetchBrokers(record);
         return super.update(record);
     }
 
     @Override
-    public BtClusterConfig findByClusterName(String cluster) {
+    public KafkaCluster findByClusterName(String cluster) {
         if (CommonUtils.isEmpty(cluster)) {
             return null;
         }
-        BtClusterConfig q = new BtClusterConfig();
+        KafkaCluster q = new KafkaCluster();
         q.setClusterName(cluster);
         return getMapper().selectOne(q);
     }
 
     @Override
-    public List<BtClusterConfig> findEnabled() {
-        BtClusterConfig q = new BtClusterConfig();
+    public List<KafkaCluster> findEnabled() {
+        KafkaCluster q = new KafkaCluster();
         q.setStatus(StatusS.ENABLED);
         return getMapper().select(q);
     }

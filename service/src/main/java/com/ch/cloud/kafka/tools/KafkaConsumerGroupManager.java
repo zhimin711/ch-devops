@@ -1,11 +1,11 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.cloud.kafka.model.BtClusterConfig;
+import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.dto.ConsumerGroupDTO;
 import com.ch.cloud.kafka.dto.ConsumerGroupDescribeDTO;
 import com.ch.cloud.kafka.pojo.ResetOffset;
 import com.ch.cloud.kafka.pojo.TopicOffset;
-import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class KafkaConsumerGroupManager {
 
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService kafkaClusterService;
     @Autowired
     private KafkaClusterManager kafkaClusterManager;
 
@@ -49,7 +49,7 @@ public class KafkaConsumerGroupManager {
      * @throws InterruptedException
      */
     public List<ConsumerGroupDTO> consumerGroups(String topicName, Long clusterId) throws ExecutionException, InterruptedException {
-        BtClusterConfig config = clusterConfigService.find(clusterId);
+        KafkaCluster config = kafkaClusterService.find(clusterId);
         ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         Collection<ConsumerGroupListing> consumerGroupListings = adminClient.listConsumerGroups().all().get();
@@ -86,7 +86,7 @@ public class KafkaConsumerGroupManager {
     }
 
     public List<TopicOffset> offset(String topicName, String groupId, Long clusterId) throws ExecutionException, InterruptedException {
-        BtClusterConfig config = clusterConfigService.find(clusterId);
+        KafkaCluster config = kafkaClusterService.find(clusterId);
         ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
             return getTopicOffsets(topicName, groupId, KafkaClusterUtils.getAdminClient(config), kafkaConsumer);
@@ -124,7 +124,7 @@ public class KafkaConsumerGroupManager {
     }
 
     public void resetOffset(String topic, String groupId, String clusterId, ResetOffset resetOffset) {
-        BtClusterConfig config = clusterConfigService.find(clusterId);
+        KafkaCluster config = kafkaClusterService.find(clusterId);
         ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config.getBrokers(), groupId, "earliest", config.getSecurityProtocol(), config.getSaslMechanism(), config.getAuthUsername(), config.getAuthPassword())) {
             TopicPartition topicPartition = new TopicPartition(topic, resetOffset.getPartition());
@@ -199,7 +199,7 @@ public class KafkaConsumerGroupManager {
     }
 
     public List<ConsumerGroupDescribeDTO> describe(Long clusterId, String groupId) throws ExecutionException, InterruptedException {
-        BtClusterConfig config = clusterConfigService.find(clusterId);
+        KafkaCluster config = kafkaClusterService.find(clusterId);
         ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         ConsumerGroupDescription consumerGroupDescription = adminClient.describeConsumerGroups(Collections.singletonList(groupId)).all().get().get(groupId);

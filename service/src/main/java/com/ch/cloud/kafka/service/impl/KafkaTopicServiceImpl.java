@@ -2,13 +2,13 @@ package com.ch.cloud.kafka.service.impl;
 
 import com.ch.Constants;
 import com.ch.StatusS;
-import com.ch.cloud.kafka.mapper.BtTopicMapper;
-import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.mapper.KafkaTopicMapper;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.dto.TopicDTO;
 import com.ch.cloud.kafka.pojo.TopicInfo;
-import com.ch.cloud.kafka.service.ClusterConfigService;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.mybatis.service.ServiceImpl;
@@ -34,17 +34,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 2018/9/25 19:14
  */
 @Service
-public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implements ITopicService {
+public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTopic> implements KafkaTopicService {
 
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService kafkaClusterService;
 
     @Value("${fs.path.libs}")
     private String libsDir;
 
     @Override
-    public BtTopic findByClusterAndTopic(String cluster, String topic) {
-        BtTopic q = new BtTopic();
+    public KafkaTopic findByClusterAndTopic(String cluster, String topic) {
+        KafkaTopic q = new KafkaTopic();
         q.setClusterName(cluster);
         q.setTopicName(topic);
         if (CommonUtils.isEmpty(cluster) || CommonUtils.isEmpty(cluster)) {
@@ -54,12 +54,12 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
     }
 
     @Override
-    public List<BtTopic> findByClusterLikeTopic(String clusterName, String topicName) {
+    public List<KafkaTopic> findByClusterLikeTopic(String clusterName, String topicName) {
         Sqls sqls = Sqls.custom().andEqualTo("clusterName", clusterName).andEqualTo("status", Constants.ENABLED);
         if (CommonUtils.isNotEmpty(topicName)) {
             sqls.andLike("topicName", SQLUtils.likeAny(topicName));
         }
-        Example example = Example.builder(BtTopic.class).andWhere(sqls).build();
+        Example example = Example.builder(KafkaTopic.class).andWhere(sqls).build();
         return getMapper().selectByExample(example);
     }
 
@@ -68,7 +68,7 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
         if (CommonUtils.isEmpty(topicList)) return 0;
         AtomicInteger c = new AtomicInteger();
         topicList.forEach(r -> {
-            BtTopic topic = this.findByClusterAndTopic(clusterName, r.getName());
+            KafkaTopic topic = this.findByClusterAndTopic(clusterName, r.getName());
             if (topic != null) {
                 topic.setPartitionSize(r.getPartitionSize());
                 topic.setReplicaSize(r.getReplicaSize());
@@ -77,7 +77,7 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
                 topic.setUpdateAt(DateUtils.current());
                 c.addAndGet(getMapper().updateByPrimaryKey(topic));
             } else {
-                BtTopic topic1 = new BtTopic();
+                KafkaTopic topic1 = new KafkaTopic();
                 topic1.setClusterName(clusterName);
                 topic1.setTopicName(r.getName());
                 topic1.setPartitionSize(r.getPartitionSize());
@@ -93,25 +93,25 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
     }
 
     @Override
-    public PageInfo<BtTopic> findPage(BtTopic record, int pageNum, int pageSize) {
+    public PageInfo<KafkaTopic> findPage(KafkaTopic record, int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
-        Example ex = new Example(BtTopic.class);
+        Example ex = new Example(KafkaTopic.class);
         Example.Criteria criteria = ex.createCriteria();
         ExampleUtils.dynEqual(criteria, record, "clusterName");
         ExampleUtils.dynLike(criteria, record, "topicName");
         criteria.andNotEqualTo("status", StatusS.DELETE);
         ex.orderBy("clusterName").asc().orderBy("topicName").asc();
-        List<BtTopic> records = getMapper().selectByExample(ex);
+        List<KafkaTopic> records = getMapper().selectByExample(ex);
         return new PageInfo<>(records);
     }
 
     @Override
     public TopicDTO check(String cluster, String topic) {
-        BtClusterConfig config = clusterConfigService.findByClusterName(cluster);
+        KafkaCluster config = kafkaClusterService.findByClusterName(cluster);
         if (config == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
         }
-        BtTopic topicExt = this.findByClusterAndTopic(cluster, topic);
+        KafkaTopic topicExt = this.findByClusterAndTopic(cluster, topic);
         if (topicExt == null) {
             throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
         }
@@ -124,7 +124,7 @@ public class TopicServiceImpl extends ServiceImpl<BtTopicMapper, BtTopic> implem
     }
 
     @Override
-    public int update(BtTopic srcRecord, BtTopic targetRecord) {
+    public int update(KafkaTopic srcRecord, KafkaTopic targetRecord) {
         Example example = ExampleUtils.create(srcRecord);
 
         return getMapper().updateByExampleSelective(targetRecord, example);

@@ -1,12 +1,12 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
-import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
-import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.ITopicExtService;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
@@ -40,11 +40,11 @@ import java.util.Map;
 public class KafkaTopicExtController {
 
     @Autowired
-    private ITopicExtService topicExtService;
+    private ITopicExtService    topicExtService;
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService kafkaClusterService;
     @Autowired
-    private ITopicService topicService;
+    private KafkaTopicService   topicService;
 
     @Value("${fs.path.libs}")
     private String libsDir;
@@ -78,7 +78,7 @@ public class KafkaTopicExtController {
         List<BtTopicExtProp> props = topicExtService.findProps(record.getId());
 
         if (CommonUtils.isEmpty(props)) {
-            BtTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
             if (CommonUtils.isEmpty(topicDto.getClassName())) {
                 return;
             }
@@ -121,7 +121,7 @@ public class KafkaTopicExtController {
             if (CommonUtils.isEmptyOr(record.getClusterName(), record.getTopicName())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "集群或主题不能为空！");
             }
-            BtTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaTopic topicDto = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
             if (topicDto == null) {
                 ExceptionUtils._throw(PubError.NOT_EXISTS, "集群+主题不存在！");
             }

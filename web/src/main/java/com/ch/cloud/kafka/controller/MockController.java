@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.kafka.model.BtTopicExt;
 import com.ch.cloud.kafka.model.BtTopicExtProp;
 import com.ch.cloud.kafka.dto.TopicDTO;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.cloud.kafka.utils.MapUtils;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class MockController {
 
     @Autowired
-    private ITopicService topicService;
+    private KafkaTopicService topicService;
 
     @ApiOperation(value = "生成数据", notes = "生成主题数据")
     @PostMapping

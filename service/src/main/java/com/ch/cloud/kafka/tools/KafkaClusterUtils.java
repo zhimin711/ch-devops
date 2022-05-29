@@ -1,6 +1,6 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.cloud.kafka.model.BtClusterConfig;
+import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.google.common.collect.Maps;
@@ -111,7 +111,7 @@ public class KafkaClusterUtils {
         }
     }
 
-    public static AdminClient getAdminClient(BtClusterConfig cluster) {
+    public static AdminClient getAdminClient(KafkaCluster cluster) {
         ExceptionUtils.assertEmpty(cluster, PubError.NOT_EXISTS, "cluster config");
         synchronized (cluster.getClusterName().intern()) {
             AdminClient adminClient = clients.get(cluster.getClusterName());
@@ -123,7 +123,7 @@ public class KafkaClusterUtils {
         }
     }
 
-    public static KafkaConsumer<String, String> createConsumer(BtClusterConfig config) {
+    public static KafkaConsumer<String, String> createConsumer(KafkaCluster config) {
         return createConsumer(config.getBrokers(), CONSUMER_GROUP_ID, "earliest",
                 config.getSecurityProtocol(), config.getSaslMechanism(), config.getAuthUsername(), config.getAuthPassword());
     }
@@ -165,13 +165,13 @@ public class KafkaClusterUtils {
         return new KafkaProducer<>(properties, new StringSerializer(), new StringSerializer());
     }
 
-    public static int countBroker(BtClusterConfig cluster) throws ExecutionException, InterruptedException {
+    public static int countBroker(KafkaCluster cluster) throws ExecutionException, InterruptedException {
         AdminClient adminClient = getAdminClient(cluster);
         DescribeClusterResult describeClusterResult = adminClient.describeCluster();
         return describeClusterResult.nodes().get().size();
     }
 
-    public static Set<String> fetchTopicNames(BtClusterConfig cluster) throws ExecutionException, InterruptedException {
+    public static Set<String> fetchTopicNames(KafkaCluster cluster) throws ExecutionException, InterruptedException {
         AdminClient adminClient = getAdminClient(cluster);
         ListTopicsOptions listTopicsOptions = new ListTopicsOptions();
         listTopicsOptions.timeoutMs(5000);
@@ -180,7 +180,7 @@ public class KafkaClusterUtils {
         return topics.names().get();
     }
 
-    public static int countConsumerGroup(BtClusterConfig cluster) throws ExecutionException, InterruptedException {
+    public static int countConsumerGroup(KafkaCluster cluster) throws ExecutionException, InterruptedException {
         AdminClient adminClient = getAdminClient(cluster);
         return adminClient.listConsumerGroups().all().get().size();
     }

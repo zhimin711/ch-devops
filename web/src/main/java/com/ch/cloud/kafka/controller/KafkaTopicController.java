@@ -1,12 +1,12 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
-import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
-import com.ch.cloud.kafka.service.ClusterConfigService;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
@@ -32,13 +32,13 @@ import java.util.List;
  */
 @Api(tags = "KAFKA主题配置模块")
 @RestController
-@RequestMapping("topic")
+@RequestMapping("/kafka/topic")
 public class KafkaTopicController {
 
     @Autowired
-    private ITopicService        topicService;
+    private KafkaTopicService   kafkaTopicService;
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService kafkaClusterService;
 
     @ApiOperation(value = "分页查询", notes = "需要在请求头中附带token")
     @ApiImplicitParams({
@@ -47,24 +47,24 @@ public class KafkaTopicController {
             @ApiImplicitParam(name = "record", value = "查询条件", paramType = "query")
     })
     @GetMapping(value = {"{num}/{size}"})
-    public PageResult<BtTopic> page(BtTopic record,
-                                    @PathVariable(value = "num") int pageNum,
-                                    @PathVariable(value = "size") int pageSize) {
+    public PageResult<KafkaTopic> page(KafkaTopic record,
+                                       @PathVariable(value = "num") int pageNum,
+                                       @PathVariable(value = "size") int pageSize) {
         ExceptionUtils.assertEmpty(record.getClusterName(), PubError.NON_NULL, "集群名称");
-        PageInfo<BtTopic> pageInfo = topicService.findPage(record, pageNum, pageSize);
+        PageInfo<KafkaTopic> pageInfo = kafkaTopicService.findPage(record, pageNum, pageSize);
         return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
 
     }
 
     @ApiOperation(value = "新增主题信息", notes = "")
     @PostMapping
-    public Result<Integer> add(@RequestBody BtTopic record) {
-        BtTopic r = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+    public Result<Integer> add(@RequestBody KafkaTopic record) {
+        KafkaTopic r = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
         if (r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE)) {
             return Result.error(PubError.EXISTS, "主题已存在！");
         }
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
+            KafkaCluster cluster = kafkaClusterService.findByClusterName(record.getClusterName());
             TopicInfo info = ZkTopicUtils.getInfo(cluster.getZookeeper(), record.getTopicName());
             if (info == null) {
                 createTopic(cluster, record);
@@ -83,15 +83,15 @@ public class KafkaTopicController {
                 r.setStatus(StatusS.ENABLED);
                 r.setUpdateBy(ContextUtil.getUser());
                 r.setUpdateAt(DateUtils.current());
-                return topicService.update(r);
+                return kafkaTopicService.update(r);
             }
             record.setCreateBy(ContextUtil.getUser());
             record.setStatus(StatusS.ENABLED);
-            return topicService.save(record);
+            return kafkaTopicService.save(record);
         });
     }
 
-    private void createTopic(BtClusterConfig cluster, BtTopic record) {
+    private void createTopic(KafkaCluster cluster, KafkaTopic record) {
         TopicConfig config = new TopicConfig();
         config.setZookeeper(cluster.getZookeeper());
         config.setTopicName(record.getTopicName());
@@ -103,11 +103,11 @@ public class KafkaTopicController {
 
     @ApiOperation(value = "修改主题信息", notes = "")
     @PutMapping({"{id}"})
-    public Result<Integer> update(@PathVariable Long id, @RequestBody BtTopic record) {
+    public Result<Integer> update(@PathVariable Long id, @RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
             record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
-            return topicService.update(record);
+            return kafkaTopicService.update(record);
         });
     }
 
@@ -115,15 +115,15 @@ public class KafkaTopicController {
     @DeleteMapping({"{id}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
-            BtTopic record = new BtTopic();
+            KafkaTopic record = new KafkaTopic();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
             record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
-            int c = topicService.update(record);
+            int c = kafkaTopicService.update(record);
             if (c > 0) {
-                BtTopic topic = topicService.find(id);
-                BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
+                KafkaTopic topic = kafkaTopicService.find(id);
+                KafkaCluster cluster = kafkaClusterService.findByClusterName(topic.getClusterName());
                 if (cluster != null)
                     ZkTopicUtils.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
             }
@@ -132,15 +132,15 @@ public class KafkaTopicController {
     }
 
     @GetMapping("clusters")
-    public Result<BtClusterConfig> getClusters() {
-        return ResultUtils.wrapList(() -> clusterConfigService.findEnabled());
+    public Result<KafkaCluster> getClusters() {
+        return ResultUtils.wrapList(() -> kafkaClusterService.findEnabled());
     }
 
     @GetMapping("topics")
     public Result<String> getTopicsByClusterName(@RequestParam("clusterName") String clusterName,
                                                  @RequestParam("topicName") String topicName) {
         return ResultUtils.wrapList(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(clusterName);
+            KafkaCluster cluster = kafkaClusterService.findByClusterName(clusterName);
             if (cluster == null) {
                 ExceptionUtils._throw(PubError.NOT_EXISTS);
             }
@@ -151,10 +151,10 @@ public class KafkaTopicController {
 
     @ApiOperation(value = "主题刷新", notes = "注：删除原主题数据, 主题重建信息")
     @PostMapping("refresh")
-    public Result<Integer> refreshTopic(@RequestBody BtTopic record) {
+    public Result<Integer> refreshTopic(@RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(record.getClusterName());
-            BtTopic topic = topicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaCluster cluster = kafkaClusterService.findByClusterName(record.getClusterName());
+            KafkaTopic topic = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
             if (cluster == null || topic == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
@@ -167,30 +167,30 @@ public class KafkaTopicController {
 
     @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题")
     @PostMapping("sync")
-    public Result<Integer> syncTopics(@RequestBody BtTopic topic) {
+    public Result<Integer> syncTopics(@RequestBody KafkaTopic topic) {
         return ResultUtils.wrap(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
+            KafkaCluster cluster = kafkaClusterService.findByClusterName(topic.getClusterName());
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
             List<TopicInfo> topicList = ZkTopicUtils.getTopics(cluster.getZookeeper());
-            return topicService.saveOrUpdate(topicList, topic.getClusterName(), ContextUtil.getUser());
+            return kafkaTopicService.saveOrUpdate(topicList, topic.getClusterName(), ContextUtil.getUser());
         });
     }
 
 
     @ApiOperation(value = "清空所有主题", notes = "注：（删除并重建）")
     @PostMapping("clean")
-    public Result<Integer> cleanTopics(@RequestBody BtTopic topic) {
+    public Result<Integer> cleanTopics(@RequestBody KafkaTopic topic) {
         return ResultUtils.wrap(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(topic.getClusterName());
+            KafkaCluster cluster = kafkaClusterService.findByClusterName(topic.getClusterName());
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
-            BtTopic p1 = new BtTopic();
+            KafkaTopic p1 = new KafkaTopic();
             p1.setClusterName(topic.getClusterName());
             p1.setStatus("1");
-            List<BtTopic> topics = topicService.find(p1);
+            List<KafkaTopic> topics = kafkaTopicService.find(p1);
             if (topics.isEmpty()) return 0;
             topics.parallelStream().forEach(r -> ZkTopicUtils.deleteTopic(cluster.getZookeeper(), r.getTopicName()));
             Thread.sleep(10000);

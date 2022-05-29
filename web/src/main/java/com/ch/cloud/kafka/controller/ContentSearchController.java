@@ -4,14 +4,14 @@ import com.ch.cloud.kafka.dto.ContentSearchDTO;
 import com.ch.cloud.kafka.dto.TopicDTO;
 import com.ch.cloud.kafka.enums.ContentType;
 import com.ch.cloud.kafka.enums.SearchType;
-import com.ch.cloud.kafka.model.BtClusterConfig;
+import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.BtContentRecord;
 import com.ch.cloud.kafka.model.BtContentSearch;
-import com.ch.cloud.kafka.model.BtTopic;
-import com.ch.cloud.kafka.service.ClusterConfigService;
+import com.ch.cloud.kafka.model.KafkaTopic;
+import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.cloud.kafka.service.IContentSearchService;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
@@ -42,9 +42,9 @@ import java.util.Map;
 public class ContentSearchController {
 
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService   kafkaClusterService;
     @Autowired
-    private ITopicService topicService;
+    private KafkaTopicService     topicService;
     @Autowired
     private IContentSearchService contentSearchService;
     @Autowired
@@ -93,16 +93,16 @@ public class ContentSearchController {
 
     @ApiOperation(value = "KAFKA消息集群")
     @GetMapping("clusters")
-    public Result<BtClusterConfig> getClusters() {
-        return ResultUtils.wrapList(() -> clusterConfigService.findEnabled());
+    public Result<KafkaCluster> getClusters() {
+        return ResultUtils.wrapList(() -> kafkaClusterService.findEnabled());
     }
 
     @ApiOperation(value = "KAFKA消息主题")
     @GetMapping("topics")
-    public Result<BtTopic> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
-                                                   @RequestParam("topicName") String topicName) {
+    public Result<KafkaTopic> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
+                                                      @RequestParam("topicName") String topicName) {
         return ResultUtils.wrapList(() -> {
-            BtClusterConfig cluster = clusterConfigService.findByClusterName(clusterName);
+            KafkaCluster cluster = kafkaClusterService.findByClusterName(clusterName);
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }

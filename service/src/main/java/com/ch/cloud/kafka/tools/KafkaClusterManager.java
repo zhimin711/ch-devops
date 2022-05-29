@@ -1,12 +1,12 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.dto.BrokerDTO;
 import com.ch.cloud.kafka.pojo.Partition;
 import com.ch.cloud.kafka.pojo.TopicInfo;
-import com.ch.cloud.kafka.service.ClusterConfigService;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
@@ -44,23 +44,23 @@ public class KafkaClusterManager {
     }
 
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService kafkaClusterService;
     @Autowired
-    private ITopicService        topicService;
+    private KafkaTopicService   topicService;
 
 
     public AdminClient getAdminClient(Long id) {
-        BtClusterConfig config = clusterConfigService.find(id);
+        KafkaCluster config = kafkaClusterService.find(id);
         ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + id);
         return KafkaClusterUtils.getAdminClient(config);
     }
 
     public List<BrokerDTO> brokers(String topic, String clusterId) throws ExecutionException, InterruptedException {
-        BtClusterConfig config = clusterConfigService.findByClusterName(clusterId);
+        KafkaCluster config = kafkaClusterService.findByClusterName(clusterId);
         return brokers(topic, config);
     }
 
-    public List<BrokerDTO> brokers(String topic, BtClusterConfig config) throws ExecutionException, InterruptedException {
+    public List<BrokerDTO> brokers(String topic, KafkaCluster config) throws ExecutionException, InterruptedException {
         ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster config");
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         DescribeClusterResult describeClusterResult = adminClient.describeCluster();
@@ -78,9 +78,9 @@ public class KafkaClusterManager {
         if (StringUtils.hasText(topic)) {
             topicNames = new HashSet<>(Collections.singletonList(topic));
         } else {
-            List<BtTopic> topics = topicService.findByClusterLikeTopic(config.getClusterName(), null);
+            List<KafkaTopic> topics = topicService.findByClusterLikeTopic(config.getClusterName(), null);
             if (CommonUtils.isNotEmpty(topics)) {
-                topicNames = topics.stream().map(BtTopic::getTopicName).collect(Collectors.toSet());
+                topicNames = topics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toSet());
             } else {
                 return brokers;
             }
@@ -127,7 +127,7 @@ public class KafkaClusterManager {
      */
 
     public List<Partition> partitions(String topicName, String clusterName) throws ExecutionException, InterruptedException {
-        BtClusterConfig config = clusterConfigService.findByClusterName(clusterName);
+        KafkaCluster config = kafkaClusterService.findByClusterName(clusterName);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
             Map<String, TopicDescription> stringTopicDescriptionMap = adminClient.describeTopics(Collections.singletonList(topicName)).all().get();
@@ -309,7 +309,7 @@ public class KafkaClusterManager {
 
 
     public TopicInfo info(String clusterId, String topicName) throws ExecutionException, InterruptedException {
-        BtClusterConfig config = clusterConfigService.findByClusterName(clusterId);
+        KafkaCluster config = kafkaClusterService.findByClusterName(clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
             TopicDescription topicDescription = adminClient.describeTopics(Collections.singletonList(topicName)).all().get().get(topicName);

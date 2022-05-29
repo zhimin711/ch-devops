@@ -1,11 +1,11 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
-import com.ch.cloud.kafka.model.BtClusterConfig;
-import com.ch.cloud.kafka.model.BtTopic;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.dto.BrokerDTO;
-import com.ch.cloud.kafka.service.ClusterConfigService;
-import com.ch.cloud.kafka.service.ITopicService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import com.ch.cloud.utils.ContextUtil;
@@ -28,68 +28,68 @@ import java.util.Set;
  */
 @Api(tags = "KAFKA集群配置模块")
 @RestController
-@RequestMapping("cluster")
+@RequestMapping("/kafka/cluster")
 public class KafkaClusterController {
 
     @Autowired
-    private ClusterConfigService clusterConfigService;
+    private KafkaClusterService kafkaClusterService;
     @Autowired
-    private ITopicService        topicService;
+    private KafkaTopicService   topicService;
 
     @Autowired
     private KafkaClusterManager kafkaTool;
 
     @GetMapping(value = {"{num}/{size}"})
-    public PageResult<BtClusterConfig> page(BtClusterConfig record,
-                                            @PathVariable(value = "num") int pageNum,
-                                            @PathVariable(value = "size") int pageSize) {
-        PageInfo<BtClusterConfig> pageInfo = clusterConfigService.findPage(record, pageNum, pageSize);
+    public PageResult<KafkaCluster> page(KafkaCluster record,
+                                         @PathVariable(value = "num") int pageNum,
+                                         @PathVariable(value = "size") int pageSize) {
+        PageInfo<KafkaCluster> pageInfo = kafkaClusterService.findPage(record, pageNum, pageSize);
         return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
     }
 
     @ApiOperation(value = "新增Kafka集群", notes = "")
     @PostMapping
-    public Result<Integer> add(@RequestBody BtClusterConfig record) {
-        BtClusterConfig r = clusterConfigService.findByClusterName(record.getClusterName());
+    public Result<Integer> add(@RequestBody KafkaCluster record) {
+        KafkaCluster r = kafkaClusterService.findByClusterName(record.getClusterName());
         if (r != null) {
             return Result.error(PubError.EXISTS);
         }
         record.setStatus(StatusS.BEGIN);
         record.setCreateBy(ContextUtil.getUser());
-        return ResultUtils.wrapFail(() -> clusterConfigService.save(record));
+        return ResultUtils.wrapFail(() -> kafkaClusterService.save(record));
     }
 
     @PutMapping({"{id}"})
-    public Result<Integer> edit(@PathVariable Long id, @RequestBody BtClusterConfig record) {
+    public Result<Integer> edit(@PathVariable Long id, @RequestBody KafkaCluster record) {
         return ResultUtils.wrapFail(() -> {
             record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
-            return clusterConfigService.update(record);
+            return kafkaClusterService.update(record);
         });
     }
 
     @DeleteMapping({"{id}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig c = clusterConfigService.find(id);
+            KafkaCluster c = kafkaClusterService.find(id);
 
-            BtTopic srcRecord = new BtTopic();
+            KafkaTopic srcRecord = new KafkaTopic();
             srcRecord.setClusterName(c.getClusterName());
             srcRecord.setStatus(StatusS.ENABLED);
-            BtTopic targetRecord = new BtTopic();
+            KafkaTopic targetRecord = new KafkaTopic();
             targetRecord.setStatus(StatusS.DELETE);
             targetRecord.setUpdateBy(ContextUtil.getUser());
             targetRecord.setUpdateAt(DateUtils.current());
             int c2 = topicService.update(srcRecord, targetRecord);
-            return clusterConfigService.delete(id);
+            return kafkaClusterService.delete(id);
         });
     }
 
 
     @GetMapping("{id}")
-    public Result<BtClusterConfig> detail(@PathVariable Long id) {
+    public Result<KafkaCluster> detail(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
-            BtClusterConfig config = clusterConfigService.find(id);
+            KafkaCluster config = kafkaClusterService.find(id);
             Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(config);
             config.setTopicCount(topicNames.size());
             config.setBrokerCount(KafkaClusterUtils.countBroker(config));
@@ -101,7 +101,7 @@ public class KafkaClusterController {
     @GetMapping("{id}/brokers")
     public Result<BrokerDTO> brokers(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
-            BtClusterConfig config = clusterConfigService.find(id);
+            KafkaCluster config = kafkaClusterService.find(id);
             return kafkaTool.brokers("", config);
         });
     }

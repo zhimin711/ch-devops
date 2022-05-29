@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Table(name = "bt_cluster")
 @Data
 @ToString
-public class BtClusterConfig implements Serializable {
+public class KafkaCluster implements Serializable {
     /**
      * 主键
      */
