@@ -12,10 +12,12 @@ import com.ch.cloud.nacos.client.NacosHistoryClient;
 import com.ch.cloud.nacos.client.NacosInstancesClient;
 import com.ch.cloud.nacos.client.NacosServicesClient;
 import com.ch.cloud.nacos.client.NacosSubscribesClient;
+import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.dto.HistoryDTO;
 import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.dto.ServiceDetailDTO;
 import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
@@ -53,25 +55,27 @@ import java.util.stream.Collectors;
 public class NacosUserController {
 
     @Autowired
-    private INamespaceService            namespaceService;
+    private INamespaceService namespaceService;
     @Autowired
-    private NacosNamespaceValidator      nacosNamespaceValidator;
+    private NacosNamespaceValidator nacosNamespaceValidator;
     @Autowired
-    private IUserNamespaceService        userNamespaceService;
+    private IUserNamespaceService userNamespaceService;
     @Autowired
     private INamespaceApplyRecordService namespaceApplyRecordService;
 
     @Autowired
     private INacosNamespaceProjectService nacosNamespaceProjectService;
+    @Autowired
+    private INacosClusterService nacosClusterService;
 
     @Autowired
-    private NacosHistoryClient    nacosHistoryClient;
+    private NacosHistoryClient nacosHistoryClient;
     @Autowired
-    private NacosInstancesClient  nacosInstancesClient;
+    private NacosInstancesClient nacosInstancesClient;
     @Autowired
     private NacosSubscribesClient nacosSubscribesClient;
     @Autowired
-    private NacosServicesClient   nacosServicesClient;
+    private NacosServicesClient nacosServicesClient;
 
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
@@ -106,7 +110,7 @@ public class NacosUserController {
 
     @ApiOperation(value = "查询", notes = "查询配置详情")
     @GetMapping(value = {"{projectId:[0-9]+}/history/detail"})
-    public Result<HistoryDTO> getHistoryDetail(@PathVariable Long projectId,HistoryQueryVO record) {
+    public Result<HistoryDTO> getHistoryDetail(@PathVariable Long projectId, HistoryQueryVO record) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
             ClientEntity<HistoryQueryVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
@@ -164,25 +168,28 @@ public class NacosUserController {
     }
 
 
-    @PostMapping({"apply/{projectId:[0-9]+}/namespaces"})
-    public Result<Boolean> apply(@PathVariable Long projectId, @RequestBody List<Long> namespaceIds) {
+    @PostMapping({"apply/{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
+    public Result<Boolean> apply(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<Long> namespaceIds) {
         return ResultUtils.wrap(() -> {
             nacosNamespaceValidator.validProjectNamespace(projectId, namespaceIds);
             NamespaceApplyRecord record = new NamespaceApplyRecord();
             record.setCreateBy(ContextUtil.getUser());
             record.setType(NamespaceType.NACOS.getCode());
-            record.setDataKey(projectId + "");
+            record.setDataKey(projectId + "-" + clusterId);
             record.setStatus(ApproveStatus.STAY.getCode() + "");
             List<NamespaceApplyRecord> list = namespaceApplyRecordService.find(record);
             if (!list.isEmpty()) {
                 ExceptionUtils._throw(PubError.EXISTS, "已提交申请,请联系管理员审核！");
             }
+            NacosCluster cluster = nacosClusterService.find(clusterId);
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
 
             JSONObject object = new JSONObject();
             object.put("userId", ContextUtil.getUser());
             object.put("projectId", projectId);
             object.put("projectName", result.get().getName());
+            object.put("clusterId", clusterId);
+            object.put("clusterName", cluster.getName());
             object.put("namespaceIds", namespaceIds);
 
             List<String> names = Lists.newArrayList();
