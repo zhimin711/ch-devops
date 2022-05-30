@@ -57,6 +57,11 @@ public interface NamespaceProjectsMapper {
     @Insert("insert into rt_project_namespace(namespace_id,project_id,group_id) values(#{namespaceId},#{projectId},#{groupId})")
     int insert2(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId, @Param("groupId") String groupId);
 
+    @Results({
+            @Result(property = "projectId", column = "project_id"),
+            @Result(property = "namespaceId", column = "NAMESPACE_ID"),
+            @Result(property = "groupId", column = "GROUP_ID"),
+    })
     @Select("select * from rt_project_namespace where namespace_id = #{namespaceId} and project_id = #{projectId}")
     ProjectNamespaceDTO findByProjectIdAndNamespaceId(Long projectId, Long namespaceId);
 }

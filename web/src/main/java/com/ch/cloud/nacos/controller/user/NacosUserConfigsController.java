@@ -11,6 +11,7 @@ import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.utils.CommonUtils;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class NacosUserConfigsController {
 
     @Autowired
-    private NacosConfigsClient      nacosConfigsClient;
+    private NacosConfigsClient nacosConfigsClient;
     @Autowired
     private NacosNamespaceValidator nacosNamespaceValidator;
 
@@ -46,7 +47,9 @@ public class NacosUserConfigsController {
 
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             record.setGroup(groupId);
-
+            if (CommonUtils.isNotEmpty(groupId)) {
+                record.setAppName(null);
+            }
             return nacosConfigsClient.fetchPage(clientEntity);
         });
     }
