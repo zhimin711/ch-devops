@@ -33,10 +33,11 @@ public interface NamespaceProjectsMapper {
     @Delete("delete from rt_project_namespace where namespace_id = #{namespaceId} and project_id = #{projectId}")
     int delete(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId);
 
-    @Select("SELECT distinct n.cluster_id FROM rt_project_namespace pn " +
+    @Select("SELECT cluster_id from(" +
+            "SELECT distinct n.cluster_id, nc.SORT FROM rt_project_namespace pn " +
             "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
             "INNER JOIN bt_nacos_cluster nc ON n.cluster_id = nc.id " +
-            "WHERE pn.project_id = #{projectId} AND n.TYPE = #{namespaceType} order by nc.sort asc, nc.id asc")
+            "WHERE pn.project_id = #{projectId} AND n.TYPE = #{namespaceType} order by sort asc, cluster_id asc) tmp")
     List<Long> findClusterIdsByProjectIdAndNamespaceType(@Param("projectId") Long projectId, @Param("namespaceType") String namespaceType);
 
     @Results({
