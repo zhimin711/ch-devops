@@ -12,6 +12,7 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -41,6 +42,9 @@ public class NacosApplyRecordController {
                                                       @PathVariable(value = "size") int pageSize) {
         return ResultUtils.wrapPage(() -> {
             record.setType(NamespaceType.NACOS.getCode());
+            if(CommonUtils.isEmpty(record.getStatus())){
+                record.setStatus(null);
+            }
             PageHelper.orderBy("CREATE_AT desc, ID ASC");
             PageInfo<NamespaceApplyRecord> page = namespaceApplyRecordService.findPage(record, pageNum, pageSize);
             return InvokerPage.build(page.getTotal(), page.getList());
