@@ -13,6 +13,7 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
 import com.ch.utils.DateUtils;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class NacosApplyRecordController {
                                                       @PathVariable(value = "size") int pageSize) {
         return ResultUtils.wrapPage(() -> {
             record.setType(NamespaceType.NACOS.getCode());
+            PageHelper.orderBy("CREATE_AT desc, ID ASC");
             PageInfo<NamespaceApplyRecord> page = namespaceApplyRecordService.findPage(record, pageNum, pageSize);
             return InvokerPage.build(page.getTotal(), page.getList());
         });

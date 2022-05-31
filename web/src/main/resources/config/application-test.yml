@@ -3,10 +3,10 @@ server:
 
 spring:
   application:
-    name: ch-kafka
+    name: ch-devops
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://mysql.nacos.svc.cluster.local:3306/ch_mq
+    url: jdbc:mysql://mysql.nacos.svc.cluster.local:3306/ch_devops
     username: admin
     password: 123456
 
@@ -25,11 +25,12 @@ spring:
     cache: false
 logging:
   config: classpath:config/logback.xml
-  path: logs/${spring.application.name}
   level:
     com:
       ch: debug
       alibaba: warn
+  file:
+    path: logs/${spring.application.name}
 share:
   path:
     upload: share/${spring.application.name}/upload
@@ -45,4 +46,4 @@ rocketmq:
   #  name-server: false
   producer:
     send-message-timeout: 300000
-    group: ch-kafka
+    group: ch-devops

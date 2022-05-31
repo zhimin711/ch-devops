@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: ch-kafka
+    name: ch-devops
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://192.168.0.200:3306/ch_devops?characterEncoding=UTF-8&serverTimezone=GMT
