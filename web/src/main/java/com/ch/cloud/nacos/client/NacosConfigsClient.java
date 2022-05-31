@@ -67,7 +67,9 @@ public class NacosConfigsClient extends BaseClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters(entity), headers);
-        return restTemplate.postForObject(entity.getUrl() + NacosAPI.CONFIGS + "?" + "username=" + ContextUtil.getUser(), httpEntity, Boolean.class);
+        String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + "username=" + ContextUtil.getUser();
+        log.info("nacos config save or update url: {}", url);
+        return restTemplate.postForObject(url, httpEntity, Boolean.class);
     }
 
     public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsPageVO> entity) {
