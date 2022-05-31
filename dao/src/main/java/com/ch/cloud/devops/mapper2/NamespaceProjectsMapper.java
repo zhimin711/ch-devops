@@ -35,7 +35,8 @@ public interface NamespaceProjectsMapper {
 
     @Select("SELECT distinct n.cluster_id FROM rt_project_namespace pn " +
             "INNER JOIN bt_namespace n ON n.ID = pn.NAMESPACE_ID " +
-            "WHERE pn.project_id = #{projectId} AND n.TYPE = #{namespaceType}")
+            "INNER JOIN bt_nacos_cluster nc ON n.cluster_id = nc.id " +
+            "WHERE pn.project_id = #{projectId} AND n.TYPE = #{namespaceType} order by nc.sort asc, nc.id asc")
     List<Long> findClusterIdsByProjectIdAndNamespaceType(@Param("projectId") Long projectId, @Param("namespaceType") String namespaceType);
 
     @Results({
