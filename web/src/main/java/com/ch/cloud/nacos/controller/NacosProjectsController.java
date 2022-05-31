@@ -20,6 +20,7 @@ import com.ch.result.ResultUtils;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
+import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +86,7 @@ public class NacosProjectsController {
     public Result<VueRecord> listCluster(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
             List<Long> clusterIds = nacosNamespaceProjectService.findClusterIdsByProjectIdAndNamespaceType(id, NamespaceType.NACOS);
+            PageHelper.orderBy("sort, id asc");
             List<NacosCluster> clusters = nacosClusterService.findByPrimaryKeys(clusterIds);
             return VueRecordUtils.covertIdList(clusters);
         });
