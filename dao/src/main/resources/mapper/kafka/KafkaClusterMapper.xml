@@ -10,6 +10,7 @@
     <result column="ZOOKEEPER" property="zookeeper" jdbcType="VARCHAR" />
     <result column="BROKERS" property="brokers" jdbcType="VARCHAR" />
     <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+    <result column="SORT" property="sort" jdbcType="INTEGER" />
     <result column="STATUS" property="status" jdbcType="CHAR" />
     <result column="CREATE_AT" property="createAt" jdbcType="TIMESTAMP" />
     <result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
@@ -17,7 +18,7 @@
     <result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
-    ID, CLUSTER_NAME, ZOOKEEPER, BROKERS, DESCRIPTION, STATUS, CREATE_AT, CREATE_BY, 
+    ID, CLUSTER_NAME, ZOOKEEPER, BROKERS, DESCRIPTION, SORT, STATUS, CREATE_AT, CREATE_BY,
     UPDATE_AT, UPDATE_BY
   </sql>
 </mapper>

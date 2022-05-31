@@ -12,6 +12,7 @@ import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.VueRecordUtils;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,7 @@ public class NacosClustersController {
     @GetMapping
     public Result<VueRecord> list() {
         return ResultUtils.wrapList(() -> {
+            PageHelper.orderBy("sort asc,id asc");
             List<NacosCluster> list = nacosClusterService.findPageList(new NacosCluster(), 1, 100);
             return VueRecordUtils.covertIdTree(list);
         });
