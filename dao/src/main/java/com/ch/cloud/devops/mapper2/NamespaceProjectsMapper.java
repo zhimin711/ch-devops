@@ -66,4 +66,8 @@ public interface NamespaceProjectsMapper {
     })
     @Select("select * from rt_project_namespace where namespace_id = #{namespaceId} and project_id = #{projectId}")
     ProjectNamespaceDTO findByProjectIdAndNamespaceId(Long projectId, Long namespaceId);
+
+    @Update("update rt_project_namespace set group_id = #{groupId} where namespace_id = #{namespaceId} and project_id = #{projectId}")
+    int update(@Param("namespaceId") Long namespaceId, @Param("projectId") Long projectId, @Param("groupId") String groupId);
+
 }

@@ -72,11 +72,6 @@ public class NacosProjectsController {
             if (CommonUtils.isNotEmpty(namespaceVOS)) {
                 Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
                 AssertUtils.isTrue(result.isEmpty(), PubError.NOT_EXISTS, "projectId: " + projectId);
-                namespaceVOS.forEach(e -> {
-                    if (CommonUtils.isEmpty(e.getGroupId())) {
-                        e.setGroupId(result.get().getCode());
-                    }
-                });
             }
             return nacosNamespaceProjectService.assignProjectNamespaces(projectId, clusterId, namespaceVOS);
         });
