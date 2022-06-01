@@ -19,9 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -66,8 +64,13 @@ public class NacosServicesClient extends BaseClient {
         Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
         String urlParams = HttpUtil.toParams(param);
         String url = clientEntity.getUrl() + NacosAPI.SERVICE + "?" + urlParams;
-        log.info("nacos service detail url: {}", url);
-        return restTemplate.getForObject(url, ServiceDetailDTO.class);
+        log.info("Nacos service detail url: {}", url);
+        try {
+            return restTemplate.getForObject(url, ServiceDetailDTO.class);
+        } catch (Exception e) {
+            log.error("fetch Nacos service detail error!", e);
+        }
+        return null;
     }
 
     public Boolean save(ClientEntity<ServiceVO> clientEntity, boolean isNew) {
