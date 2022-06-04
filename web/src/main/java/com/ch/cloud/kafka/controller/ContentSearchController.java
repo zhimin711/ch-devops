@@ -1,26 +1,26 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.cloud.kafka.dto.ContentSearchDTO;
-import com.ch.cloud.kafka.dto.TopicDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.enums.ContentType;
 import com.ch.cloud.kafka.enums.SearchType;
-import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.BtContentRecord;
-import com.ch.cloud.kafka.model.BtContentSearch;
+import com.ch.cloud.kafka.model.ContentSearch;
+import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.IContentRecordService;
 import com.ch.cloud.kafka.service.IContentSearchService;
+import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.cloud.kafka.vo.ContentQuery;
+import com.ch.cloud.utils.ContextUtil;
+import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
-import com.ch.e.ExceptionUtils;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,7 +37,7 @@ import java.util.Map;
 
 @Api(tags = "KAFKA消息搜索模块")
 @RestController
-@RequestMapping("content")
+@RequestMapping("/kafka/content")
 @Slf4j
 public class ContentSearchController {
 
@@ -53,12 +53,12 @@ public class ContentSearchController {
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
     public Result<?> search(ContentQuery record) {
-        Result<TopicDTO> res1 = ResultUtils.wrapFail(() -> topicService.check(record.getCluster(), record.getTopic()));
+        Result<KafkaTopicDTO> res1 = ResultUtils.wrapFail(() -> topicService.check(record.getClusterId(), record.getTopic()));
         if (res1.isEmpty()) {
             return res1;
         }
-        TopicDTO topicDto = res1.get();
-        KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+        KafkaTopicDTO kafkaTopicDto = res1.get();
+        KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
         contentTool.setContentSearchService(contentSearchService);
         contentTool.setContentRecordService(contentRecordService);
         contentTool.setUsername(ContextUtil.getUser());
@@ -76,15 +76,15 @@ public class ContentSearchController {
                     && CommonUtils.isEmpty(record.getContent()) && record.getLimit() > 1000) {
                 throw ExceptionUtils.create(PubError.NOT_ALLOWED, "无内容搜索量不能超过1000！");
             }
-            ContentType contentType = ContentType.from(topicDto.getType());
+            ContentType contentType = ContentType.from(kafkaTopicDto.getType());
             Class<?> clazz = null;
-            if (CommonUtils.isNotEmpty(topicDto.getClassName())) {
-                clazz = KafkaSerializeUtils.loadClazz(topicDto.getClassFile(), topicDto.getClassName());
+            if (CommonUtils.isNotEmpty(kafkaTopicDto.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(kafkaTopicDto.getClassFile(), kafkaTopicDto.getClassName());
             }
             return contentTool.searchTopicContent(contentType, searchType, record.getLimit(), record.getContent(), clazz);
         });
         Map<String, Object> extra = Maps.newHashMap();
-        extra.put("contentType", topicDto.getType());
+        extra.put("contentType", kafkaTopicDto.getType());
         extra.put("searchId", contentTool.getSearchId());
         extra.put("searchAsync", contentTool.isAsync());
         res.setExtra(extra);
@@ -99,14 +99,14 @@ public class ContentSearchController {
 
     @ApiOperation(value = "KAFKA消息主题")
     @GetMapping("topics")
-    public Result<KafkaTopic> findTopicsByClusterName(@RequestParam("clusterName") String clusterName,
+    public Result<KafkaTopic> findTopicsByClusterName(@RequestParam("clusterId") Long clusterId,
                                                       @RequestParam("topicName") String topicName) {
         return ResultUtils.wrapList(() -> {
-            KafkaCluster cluster = kafkaClusterService.findByClusterName(clusterName);
+            KafkaCluster cluster = kafkaClusterService.find(clusterId);
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
-            return topicService.findByClusterLikeTopic(cluster.getClusterName(), topicName);
+            return topicService.findByClusterIdLikeTopicName(clusterId, topicName);
         });
 
     }
@@ -127,11 +127,11 @@ public class ContentSearchController {
             if (CommonUtils.isEmpty(searchDto.getContent())) {
                 throw ExceptionUtils.create(PubError.NON_NULL, "发送消息不能为空!");
             }
-            TopicDTO topicDto = topicService.check(searchDto.getCluster(), searchDto.getTopic());
+            KafkaTopicDTO kafkaTopicDto = topicService.check(searchDto.getClusterId(), searchDto.getTopic());
 
-            KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+            KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
 
-            contentTool.send(KafkaSerializeUtils.convertContent(topicDto, searchDto.getContent()));
+            contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, searchDto.getContent()));
         });
     }
 
@@ -139,12 +139,12 @@ public class ContentSearchController {
     @PutMapping("resend/{sid}")
     public Result<Integer> resendMessage(@PathVariable Long sid, @RequestBody String content) {
         return ResultUtils.wrap(() -> {
-            BtContentSearch searchRecord = contentSearchService.find(sid);
-            TopicDTO topicDto = topicService.check(searchRecord.getCluster(), searchRecord.getTopic());
+            ContentSearch searchRecord = contentSearchService.find(sid);
+            KafkaTopicDTO kafkaTopicDto = topicService.check(searchRecord.getClusterId(), searchRecord.getTopic());
 
-            KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+            KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
 
-            contentTool.send(KafkaSerializeUtils.convertContent(topicDto, content));
+            contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, content));
 //            BtClusterConfig config = clusterConfigService.findByClusterName(searchRecord.getCluster());
 //            KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), searchRecord.getCluster(), searchRecord.getTopic());
 //            contentTool.send(content.getBytes());

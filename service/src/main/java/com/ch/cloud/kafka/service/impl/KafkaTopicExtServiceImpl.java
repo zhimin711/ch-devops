@@ -32,17 +32,17 @@ public class KafkaTopicExtServiceImpl extends ServiceImpl<KafkaTopicExtMapper, K
     private KafkaTopicExtPropMapper propMapper;
 
     @Override
-    public List<KafkaTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username) {
-        if (CommonUtils.isEmptyOr(clusterName, topicName, username)) {
+    public List<KafkaTopicExt> findByClusterIdAndTopicNameAndCreateBy(Long clusterId, String topicName, String username) {
+        if (CommonUtils.isEmptyOr(clusterId, topicName, username)) {
             return null;
         }
         KafkaTopicExt q = new KafkaTopicExt();
-        q.setClusterName(clusterName);
+        q.setClusterId(clusterId);
         q.setTopicName(topicName);
         q.setCreateBy(username);
         Example example = Example.builder(KafkaTopicExt.class).select("id", "description")
                 .where(Sqls.custom()
-                        .andEqualTo("clusterName", clusterName)
+                        .andEqualTo("clusterId", clusterId)
 //                        .andEqualTo("createBy", username)
                         .andEqualTo("status", StatusS.ENABLED)
                         .andEqualTo("topicName", topicName))

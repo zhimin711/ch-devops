@@ -2,7 +2,7 @@ package com.ch.cloud.kafka.tools;
 
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.BtContentRecord;
-import com.ch.cloud.kafka.model.BtContentSearch;
+import com.ch.cloud.kafka.model.ContentSearch;
 import com.ch.cloud.kafka.enums.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.enums.SearchType;
@@ -41,7 +41,8 @@ public class KafkaContentTool {
     private int timeout = 100000;
     private int bufferSize = 64 * 1024;
 
-    private String cluster;
+    private Long clusterId;
+
     private String topic;
 
     private String username;
@@ -50,7 +51,7 @@ public class KafkaContentTool {
 
     private Map<String, Integer> brokers;
 
-    private static final Map<String, Producer<String, byte[]>> producerMap = Maps.newConcurrentMap();
+    private static final Map<Long, Producer<String, byte[]>> producerMap = Maps.newConcurrentMap();
 
     private List<PartitionInfo> partitions;
 
@@ -58,11 +59,11 @@ public class KafkaContentTool {
 
     private boolean async = false;
 
-    public KafkaContentTool(String zookeeper, String cluster, String topic) {
+    public KafkaContentTool(String zookeeper, Long clusterId, String topic) {
         if (CommonUtils.isEmpty(zookeeper)) {
             throw ExceptionUtils.create(PubError.ARGS);
         }
-        this.cluster = cluster;
+        this.clusterId = clusterId;
         this.topic = topic;
 
         brokers = KafkaClusterUtils.getAllBrokersInCluster(zookeeper);
@@ -209,8 +210,8 @@ public class KafkaContentTool {
     }
 
     private void saveSearch(SearchType searchType, int searchSize, String content) {
-        BtContentSearch record = new BtContentSearch();
-        record.setCluster(cluster);
+        ContentSearch record = new ContentSearch();
+        record.setClusterId(clusterId);
         record.setTopic(topic);
         record.setType(searchType.name());
         record.setSize(searchSize);
@@ -335,11 +336,11 @@ public class KafkaContentTool {
 
     public void send(byte[] data) {
 
-        Producer<String, byte[]> producer = producerMap.get(cluster);
+        Producer<String, byte[]> producer = producerMap.get(clusterId);
         if (producer == null) {
             synchronized (producerMap) {
-                if (producerMap.get(cluster) != null) {
-                    producer = producerMap.get(cluster);
+                if (producerMap.get(clusterId) != null) {
+                    producer = producerMap.get(clusterId);
                 } else {
                     Properties props = new Properties();
                     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getServers());
@@ -349,7 +350,7 @@ public class KafkaContentTool {
 //        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 //        props.put("schema.registry.url", schemaUrl);//schema.registry.url指向射麻的存储位置
                     producer = new KafkaProducer<>(props);
-                    producerMap.put(cluster, producer);
+                    producerMap.put(clusterId, producer);
                 }
             }
         }

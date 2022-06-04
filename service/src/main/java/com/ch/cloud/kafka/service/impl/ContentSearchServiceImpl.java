@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.service.impl;
 
-import com.ch.cloud.kafka.mapper.BtContentSearchMapper;
-import com.ch.cloud.kafka.model.BtContentSearch;
+import com.ch.cloud.kafka.mapper.ContentSearchMapper;
+import com.ch.cloud.kafka.model.ContentSearch;
 import com.ch.cloud.kafka.service.IContentSearchService;
 import com.ch.mybatis.service.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * @since 2019/10/30
  */
 @Service
-public class ContentSearchServiceImpl extends ServiceImpl<BtContentSearchMapper, BtContentSearch> implements IContentSearchService {
+public class ContentSearchServiceImpl extends ServiceImpl<ContentSearchMapper, ContentSearch> implements IContentSearchService {
 
     @Override
     public int start(Long id) {

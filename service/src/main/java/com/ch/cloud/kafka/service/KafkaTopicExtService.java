@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface KafkaTopicExtService extends IService<KafkaTopicExt> {
 
-    List<KafkaTopicExt> findByClusterAndTopicAndCreateBy(String clusterName, String topicName, String username);
+    List<KafkaTopicExt> findByClusterIdAndTopicNameAndCreateBy(Long clusterId, String topicName, String username);
 
     List<KafkaTopicExtProp> findProps(Long id);
 }

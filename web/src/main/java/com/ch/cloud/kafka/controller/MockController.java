@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.kafka.model.KafkaTopicExt;
 import com.ch.cloud.kafka.model.KafkaTopicExtProp;
-import com.ch.cloud.kafka.dto.TopicDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaContentTool;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class MockController {
 
     @Autowired
-    private KafkaTopicService topicService;
+    private KafkaTopicService kafkaTopicService;
 
     @ApiOperation(value = "生成数据", notes = "生成主题数据")
     @PostMapping
@@ -62,8 +62,8 @@ public class MockController {
                 int ts = CommonUtils.isNotEmpty(record.getThreadSize()) ? record.getThreadSize() : 1;
                 int bs = CommonUtils.isNotEmpty(record.getBatchSize()) ? record.getBatchSize() : 1;
 
-                TopicDTO topicDto = topicService.check(record.getClusterName(), record.getTopicName());
-                KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+                KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(record.getClusterId(), record.getTopicName());
+                KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
 
                 List<Future<List<Object>>> futures = Lists.newArrayList();
 
@@ -116,7 +116,7 @@ public class MockController {
                             log.info("mock: {}", o);
 //                            if (list.size() < ss)
                             list.add(o);
-                            contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
+                            contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, JSON.toJSONString(o)));
                         }
 
 //                        log.info("mock size: {}", list.size());
@@ -156,14 +156,14 @@ public class MockController {
             List<Object> objects = Lists.newArrayList();
             if (checkOK) {
 
-                TopicDTO topicDto = topicService.check(record.getClusterName(), record.getTopicName());
-                KafkaContentTool contentTool = new KafkaContentTool(topicDto.getZookeeper(), topicDto.getClusterName(), topicDto.getTopicName());
+                KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(record.getClusterId(), record.getTopicName());
+                KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
                 List<Future<List<Object>>> futures = Lists.newArrayList();
                 for (int i = 0; i < record.getThreadSize(); i++) {
                     int threadIndex = i;
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
                         List<Object> o = mockGPSDataProps(record, props, threadIndex);
-                        o.forEach(e -> contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(e))));
+                        o.forEach(e -> contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, JSON.toJSONString(e))));
 //                        contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
                         return o;
                     });

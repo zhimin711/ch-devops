@@ -6,8 +6,8 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Data
-@Table(name = "bt_kafka_topic")
-public class KafkaTopic {
+@Table(name = "bt_content_search")
+public class ContentSearch {
     /**
      * 主键
      */
@@ -17,55 +17,37 @@ public class KafkaTopic {
     private Long id;
 
     /**
-     * 集群名称
+     * 集群
      */
     @Column(name = "CLUSTER_ID")
     private Long clusterId;
 
     /**
-     * 主题名称
+     * 主题
      */
-    @Column(name = "TOPIC_NAME")
-    private String topicName;
+    @Column(name = "TOPIC")
+    private String topic;
 
     /**
-     * 存储类型：STRING, JSON, PROTO_STUFF
+     * 状态：0.全量 1.最新 2.最早
      */
     @Column(name = "TYPE")
     private String type;
 
     /**
-     * 类文件
+     * 搜索量
      */
-    @Column(name = "CLASS_FILE")
-    private String classFile;
-
-    /**
-     * 类名称
-     */
-    @Column(name = "CLASS_NAME")
-    private String className;
-
-    /**
-     * 分区数
-     */
-    @Column(name = "PARTITION_SIZE")
-    private Integer partitionSize;
-
-    /**
-     * 复制数（备份）
-     */
-    @Column(name = "REPLICA_SIZE")
-    private Integer replicaSize;
+    @Column(name = "SIZE")
+    private Integer size;
 
     /**
      * 描述
      */
-    @Column(name = "DESCRIPTION")
-    private String description;
+    @Column(name = "CONTENT")
+    private String content;
 
     /**
-     * 状态：0.禁用 1.启用 2. 3.删除
+     * 状态：0.待搜索 1.开始 2.完成 3. 4.超时 5.中断（结果太多）
      */
     @Column(name = "STATUS")
     private String status;
@@ -87,11 +69,5 @@ public class KafkaTopic {
      */
     @Column(name = "UPDATE_AT")
     private Date updateAt;
-
-    /**
-     * 更新人
-     */
-    @Column(name = "UPDATE_BY")
-    private String updateBy;
 
 }

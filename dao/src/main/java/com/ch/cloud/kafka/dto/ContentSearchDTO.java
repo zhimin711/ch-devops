@@ -14,7 +14,7 @@ public class ContentSearchDTO {
     /**
      * 集群
      */
-    private String cluster;
+    private Long clusterId;
 
     /**
      * 主题

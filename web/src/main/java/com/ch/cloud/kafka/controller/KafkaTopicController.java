@@ -10,9 +10,11 @@ import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
+import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.e.ExceptionUtils;
@@ -50,21 +52,23 @@ public class KafkaTopicController {
     public PageResult<KafkaTopic> page(KafkaTopic record,
                                        @PathVariable(value = "num") int pageNum,
                                        @PathVariable(value = "size") int pageSize) {
-        ExceptionUtils.assertEmpty(record.getClusterName(), PubError.NON_NULL, "集群名称");
-        PageInfo<KafkaTopic> pageInfo = kafkaTopicService.findPage(record, pageNum, pageSize);
-        return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
+        return ResultUtils.wrapPage(()->{
+            AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
+            PageInfo<KafkaTopic> pageInfo = kafkaTopicService.findPage(record, pageNum, pageSize);
+            return InvokerPage.build(pageInfo.getTotal(), pageInfo.getList());
+        });
 
     }
 
     @ApiOperation(value = "新增主题信息", notes = "")
     @PostMapping
     public Result<Integer> add(@RequestBody KafkaTopic record) {
-        KafkaTopic r = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
-        if (r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE)) {
-            return Result.error(PubError.EXISTS, "主题已存在！");
-        }
         return ResultUtils.wrapFail(() -> {
-            KafkaCluster cluster = kafkaClusterService.findByClusterName(record.getClusterName());
+            AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
+            KafkaTopic r = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
+
+            AssertUtils.isTrue(r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE), PubError.EXISTS, "主题已存在！");
+            KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
             TopicInfo info = ZkTopicUtils.getInfo(cluster.getZookeeper(), record.getTopicName());
             if (info == null) {
                 createTopic(cluster, record);
@@ -78,7 +82,7 @@ public class KafkaTopicController {
                 r.setReplicaSize(record.getReplicaSize());
                 r.setType(record.getType());
                 r.setClassFile(record.getClassFile());
-                r.setClusterName(record.getClassName());
+                r.setClusterId(record.getClusterId());
                 r.setDescription(record.getDescription());
                 r.setStatus(StatusS.ENABLED);
                 r.setUpdateBy(ContextUtil.getUser());
@@ -105,6 +109,7 @@ public class KafkaTopicController {
     @PutMapping({"{id}"})
     public Result<Integer> update(@PathVariable Long id, @RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
+            AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
             record.setUpdateBy(ContextUtil.getUser());
             record.setUpdateAt(DateUtils.current());
             return kafkaTopicService.update(record);
@@ -123,7 +128,7 @@ public class KafkaTopicController {
             int c = kafkaTopicService.update(record);
             if (c > 0) {
                 KafkaTopic topic = kafkaTopicService.find(id);
-                KafkaCluster cluster = kafkaClusterService.findByClusterName(topic.getClusterName());
+                KafkaCluster cluster = kafkaClusterService.find(topic.getClusterId());
                 if (cluster != null)
                     ZkTopicUtils.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
             }
@@ -137,10 +142,11 @@ public class KafkaTopicController {
     }
 
     @GetMapping("topics")
-    public Result<String> getTopicsByClusterName(@RequestParam("clusterName") String clusterName,
+    public Result<String> getTopicsByClusterName(@RequestParam("clusterId") Long clusterId,
                                                  @RequestParam("topicName") String topicName) {
         return ResultUtils.wrapList(() -> {
-            KafkaCluster cluster = kafkaClusterService.findByClusterName(clusterName);
+            AssertUtils.isEmpty(clusterId, PubError.NON_NULL, "集群ID");
+            KafkaCluster cluster = kafkaClusterService.find(clusterId);
             if (cluster == null) {
                 ExceptionUtils._throw(PubError.NOT_EXISTS);
             }
@@ -153,8 +159,8 @@ public class KafkaTopicController {
     @PostMapping("refresh")
     public Result<Integer> refreshTopic(@RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
-            KafkaCluster cluster = kafkaClusterService.findByClusterName(record.getClusterName());
-            KafkaTopic topic = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
+            KafkaTopic topic = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
             if (cluster == null || topic == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
@@ -167,14 +173,15 @@ public class KafkaTopicController {
 
     @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题")
     @PostMapping("sync")
-    public Result<Integer> syncTopics(@RequestBody KafkaTopic topic) {
+    public Result<Integer> syncTopics(@RequestBody KafkaTopic record) {
         return ResultUtils.wrap(() -> {
-            KafkaCluster cluster = kafkaClusterService.findByClusterName(topic.getClusterName());
+            AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
+            KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
             List<TopicInfo> topicList = ZkTopicUtils.getTopics(cluster.getZookeeper());
-            return kafkaTopicService.saveOrUpdate(topicList, topic.getClusterName(), ContextUtil.getUser());
+            return kafkaTopicService.saveOrUpdate(topicList, record.getClusterId(), ContextUtil.getUser());
         });
     }
 
@@ -183,12 +190,12 @@ public class KafkaTopicController {
     @PostMapping("clean")
     public Result<Integer> cleanTopics(@RequestBody KafkaTopic topic) {
         return ResultUtils.wrap(() -> {
-            KafkaCluster cluster = kafkaClusterService.findByClusterName(topic.getClusterName());
+            KafkaCluster cluster = kafkaClusterService.find(topic.getClusterId());
             if (cluster == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
             KafkaTopic p1 = new KafkaTopic();
-            p1.setClusterName(topic.getClusterName());
+            p1.setClusterId(topic.getClusterId());
             p1.setStatus("1");
             List<KafkaTopic> topics = kafkaTopicService.find(p1);
             if (topics.isEmpty()) return 0;

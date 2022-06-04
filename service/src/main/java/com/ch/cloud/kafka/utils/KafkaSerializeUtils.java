@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.utils;
 
 import com.ch.cloud.kafka.enums.ContentType;
-import com.ch.cloud.kafka.dto.TopicDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.JSONUtils;
@@ -108,13 +108,13 @@ public class KafkaSerializeUtils {
     }
 
 
-    public static byte[] convertContent(TopicDTO topicDto, String contentMsg) {
+    public static byte[] convertContent(KafkaTopicDTO kafkaTopicDto, String contentMsg) {
 
-        ContentType contentType = ContentType.from(topicDto.getType());
+        ContentType contentType = ContentType.from(kafkaTopicDto.getType());
         if (contentType == ContentType.PROTO_STUFF) {
             Class<?> clazz = null;
-            if (CommonUtils.isNotEmpty(topicDto.getClassName())) {
-                clazz = KafkaSerializeUtils.loadClazz(topicDto.getClassFile(), topicDto.getClassName());
+            if (CommonUtils.isNotEmpty(kafkaTopicDto.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(kafkaTopicDto.getClassFile(), kafkaTopicDto.getClassName());
             }
             if (clazz != null) {
                 Object obj = JSONUtils.fromJson(contentMsg, clazz, DateUtils.Pattern.DATETIME_CN);

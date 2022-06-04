@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.service;
 
 import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.dto.TopicDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.mybatis.service.IService;
 
@@ -13,13 +13,13 @@ import java.util.List;
  */
 public interface KafkaTopicService extends IService<KafkaTopic> {
 
-    KafkaTopic findByClusterAndTopic(String cluster, String topic);
+    KafkaTopic findByClusterIdAndTopicName(Long clusterId, String topicName);
 
-    List<KafkaTopic> findByClusterLikeTopic(String clusterName, String topicName);
+    List<KafkaTopic> findByClusterIdLikeTopicName(Long clusterId, String topicName);
 
-    int saveOrUpdate(List<TopicInfo> topicList, String clusterName, String username);
+    int saveOrUpdate(List<TopicInfo> topicList, Long clusterId, String username);
 
-    TopicDTO check(String cluster, String topic);
+    KafkaTopicDTO check(Long clusterId, String topic);
 
     int update(KafkaTopic srcRecord, KafkaTopic targetRecord);
 }

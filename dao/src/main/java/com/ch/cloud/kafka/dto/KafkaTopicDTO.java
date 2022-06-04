@@ -6,14 +6,14 @@ import lombok.Data;
 
 @Data
 @ApiModel("Kafka 主题配置信息")
-public class TopicDTO {
+public class KafkaTopicDTO {
 
 
     /**
      * 集群名称
      */
-    @ApiModelProperty("集群名称")
-    private String clusterName;
+    @ApiModelProperty("集群ID")
+    private Long clusterId;
 
     /**
      * 主题名称

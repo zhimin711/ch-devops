@@ -17,8 +17,8 @@ public class ContentQuery {
     /**
      * 集群名称
      */
-    @ApiModelProperty(name = "集群名称", required = true, position = 1)
-    private String cluster;
+    @ApiModelProperty(name = "集群ID", required = true, position = 1)
+    private Long clusterId;
     /**
      * 集群主题
      */

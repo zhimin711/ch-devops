@@ -78,7 +78,7 @@ public class KafkaClusterManager {
         if (StringUtils.hasText(topic)) {
             topicNames = new HashSet<>(Collections.singletonList(topic));
         } else {
-            List<KafkaTopic> topics = topicService.findByClusterLikeTopic(config.getClusterName(), null);
+            List<KafkaTopic> topics = topicService.findByClusterIdLikeTopicName(config.getId(), null);
             if (CommonUtils.isNotEmpty(topics)) {
                 topicNames = topics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toSet());
             } else {

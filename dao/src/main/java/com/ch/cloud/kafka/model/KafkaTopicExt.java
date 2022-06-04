@@ -19,8 +19,8 @@ public class KafkaTopicExt {
     /**
      * 集群名称
      */
-    @Column(name = "CLUSTER_NAME")
-    private String clusterName;
+    @Column(name = "CLUSTER_ID")
+    private Long clusterId;
 
     /**
      * 主题名称

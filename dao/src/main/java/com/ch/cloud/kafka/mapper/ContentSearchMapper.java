@@ -1,11 +1,11 @@
 package com.ch.cloud.kafka.mapper;
 
-import com.ch.cloud.kafka.model.BtContentSearch;
+import com.ch.cloud.kafka.model.ContentSearch;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import tk.mybatis.mapper.common.Mapper;
 
-public interface BtContentSearchMapper extends Mapper<BtContentSearch> {
+public interface ContentSearchMapper extends Mapper<ContentSearch> {
 
     @Update({"update bt_content_search set status = '1', update_at = now() where id = #{id} and status = '0'"})
     int start(@Param("id") Long id);

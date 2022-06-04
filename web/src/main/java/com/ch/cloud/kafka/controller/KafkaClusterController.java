@@ -74,7 +74,7 @@ public class KafkaClusterController {
             KafkaCluster c = kafkaClusterService.find(id);
 
             KafkaTopic srcRecord = new KafkaTopic();
-            srcRecord.setClusterName(c.getClusterName());
+            srcRecord.setClusterId(id);
             srcRecord.setStatus(StatusS.ENABLED);
             KafkaTopic targetRecord = new KafkaTopic();
             targetRecord.setStatus(StatusS.DELETE);

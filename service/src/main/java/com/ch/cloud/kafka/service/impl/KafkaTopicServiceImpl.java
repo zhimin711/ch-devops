@@ -5,7 +5,7 @@ import com.ch.StatusS;
 import com.ch.cloud.kafka.mapper.KafkaTopicMapper;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.dto.TopicDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
@@ -43,19 +43,19 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     private String libsDir;
 
     @Override
-    public KafkaTopic findByClusterAndTopic(String cluster, String topic) {
+    public KafkaTopic findByClusterIdAndTopicName(Long clusterId, String topicName) {
         KafkaTopic q = new KafkaTopic();
-        q.setClusterName(cluster);
-        q.setTopicName(topic);
-        if (CommonUtils.isEmpty(cluster) || CommonUtils.isEmpty(cluster)) {
+        q.setClusterId(clusterId);
+        q.setTopicName(topicName);
+        if (CommonUtils.isEmpty(clusterId)) {
 //            return null;
         }
         return getMapper().selectOne(q);
     }
 
     @Override
-    public List<KafkaTopic> findByClusterLikeTopic(String clusterName, String topicName) {
-        Sqls sqls = Sqls.custom().andEqualTo("clusterName", clusterName).andEqualTo("status", Constants.ENABLED);
+    public List<KafkaTopic> findByClusterIdLikeTopicName(Long clusterId, String topicName) {
+        Sqls sqls = Sqls.custom().andEqualTo("clusterId", clusterId).andEqualTo("status", Constants.ENABLED);
         if (CommonUtils.isNotEmpty(topicName)) {
             sqls.andLike("topicName", SQLUtils.likeAny(topicName));
         }
@@ -64,11 +64,11 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     }
 
     @Override
-    public int saveOrUpdate(List<TopicInfo> topicList, String clusterName, String username) {
+    public int saveOrUpdate(List<TopicInfo> topicList, Long clusterId, String username) {
         if (CommonUtils.isEmpty(topicList)) return 0;
         AtomicInteger c = new AtomicInteger();
         topicList.forEach(r -> {
-            KafkaTopic topic = this.findByClusterAndTopic(clusterName, r.getName());
+            KafkaTopic topic = this.findByClusterIdAndTopicName(clusterId, r.getName());
             if (topic != null) {
                 topic.setPartitionSize(r.getPartitionSize());
                 topic.setReplicaSize(r.getReplicaSize());
@@ -78,7 +78,7 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
                 c.addAndGet(getMapper().updateByPrimaryKey(topic));
             } else {
                 KafkaTopic topic1 = new KafkaTopic();
-                topic1.setClusterName(clusterName);
+                topic1.setClusterId(clusterId);
                 topic1.setTopicName(r.getName());
                 topic1.setPartitionSize(r.getPartitionSize());
                 topic1.setReplicaSize(r.getReplicaSize());
@@ -106,16 +106,16 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     }
 
     @Override
-    public TopicDTO check(String cluster, String topic) {
-        KafkaCluster config = kafkaClusterService.findByClusterName(cluster);
+    public KafkaTopicDTO check(Long clusterId, String topic) {
+        KafkaCluster config = kafkaClusterService.find(clusterId);
         if (config == null) {
-            throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + "集群配置不存在!");
+            throw ExceptionUtils.create(PubError.NOT_EXISTS, clusterId + "集群配置不存在!");
         }
-        KafkaTopic topicExt = this.findByClusterAndTopic(cluster, topic);
+        KafkaTopic topicExt = this.findByClusterIdAndTopicName(clusterId, topic);
         if (topicExt == null) {
-            throw ExceptionUtils.create(PubError.NOT_EXISTS, cluster + ":" + topic + "主题配置不存在！");
+            throw ExceptionUtils.create(PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置不存在！");
         }
-        TopicDTO dto = new TopicDTO();
+        KafkaTopicDTO dto = new KafkaTopicDTO();
         BeanUtils.copyProperties(topicExt, dto);
         dto.setZookeeper(config.getZookeeper());
         String path = libsDir + File.separator + topicExt.getClassFile();

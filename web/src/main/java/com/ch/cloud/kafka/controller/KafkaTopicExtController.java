@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @Api(tags = "KAFKA主题扩展信息配置模块")
 @RestController
-@RequestMapping("topic/ext")
+@RequestMapping("kafka/topic/ext")
 @Slf4j
 public class KafkaTopicExtController {
 
@@ -49,10 +49,10 @@ public class KafkaTopicExtController {
     @Value("${fs.path.libs}")
     private String libsDir;
 
-    @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
+    @ApiOperation(value = "加载主题扩展信息加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping
     public Result<KafkaTopicExt> configs(KafkaTopicExt record) {
-        return ResultUtils.wrapList(() -> kafkaTopicExtService.findByClusterAndTopicAndCreateBy(record.getClusterName(), record.getTopicName(), ContextUtil.getUser()));
+        return ResultUtils.wrapList(() -> kafkaTopicExtService.findByClusterIdAndTopicNameAndCreateBy(record.getClusterId(), record.getTopicName(), ContextUtil.getUser()));
     }
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
@@ -63,7 +63,7 @@ public class KafkaTopicExtController {
             KafkaTopicExt record2 = kafkaTopicExtService.find(id);
             if (record2 == null) {
                 record2 = new KafkaTopicExt();
-                record2.setClusterName(record.getClusterName());
+                record2.setClusterId(record.getClusterId());
                 record2.setTopicName(record.getTopicName());
                 record2.setThreadSize(4);
                 record2.setBatchSize(10);
@@ -78,7 +78,7 @@ public class KafkaTopicExtController {
         List<KafkaTopicExtProp> props = kafkaTopicExtService.findProps(record.getId());
 
         if (CommonUtils.isEmpty(props)) {
-            KafkaTopic topicDto = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaTopic topicDto = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
             if (CommonUtils.isEmpty(topicDto.getClassName())) {
                 return;
             }
@@ -118,10 +118,10 @@ public class KafkaTopicExtController {
     public Result<Long> save(@RequestBody KafkaTopicExt record) {
 
         return ResultUtils.wrapFail(() -> {
-            if (CommonUtils.isEmptyOr(record.getClusterName(), record.getTopicName())) {
+            if (CommonUtils.isEmptyOr(record.getId(), record.getTopicName())) {
                 ExceptionUtils._throw(PubError.NON_NULL, "集群或主题不能为空！");
             }
-            KafkaTopic topicDto = kafkaTopicService.findByClusterAndTopic(record.getClusterName(), record.getTopicName());
+            KafkaTopic topicDto = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
             if (topicDto == null) {
                 ExceptionUtils._throw(PubError.NOT_EXISTS, "集群+主题不存在！");
             }
