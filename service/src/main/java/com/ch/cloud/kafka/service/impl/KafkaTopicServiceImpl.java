@@ -64,11 +64,11 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     }
 
     @Override
-    public int saveOrUpdate(List<TopicInfo> topicList, Long clusterId, String username) {
+    public int saveOrUpdate(List<KafkaTopicDTO> topicList, String username) {
         if (CommonUtils.isEmpty(topicList)) return 0;
         AtomicInteger c = new AtomicInteger();
         topicList.forEach(r -> {
-            KafkaTopic topic = this.findByClusterIdAndTopicName(clusterId, r.getName());
+            KafkaTopic topic = this.findByClusterIdAndTopicName(r.getClusterId(), r.getTopicName());
             if (topic != null) {
                 topic.setPartitionSize(r.getPartitionSize());
                 topic.setReplicaSize(r.getReplicaSize());
@@ -78,11 +78,11 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
                 c.addAndGet(getMapper().updateByPrimaryKey(topic));
             } else {
                 KafkaTopic topic1 = new KafkaTopic();
-                topic1.setClusterId(clusterId);
-                topic1.setTopicName(r.getName());
+                topic1.setClusterId(r.getClusterId());
+                topic1.setTopicName(r.getTopicName());
                 topic1.setPartitionSize(r.getPartitionSize());
                 topic1.setReplicaSize(r.getReplicaSize());
-                topic1.setType("STRING");
+                topic1.setType("JSON");
                 topic1.setStatus(StatusS.ENABLED);
                 topic1.setCreateBy(username);
                 topic1.setCreateAt(DateUtils.current());
@@ -97,10 +97,10 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
         PageHelper.startPage(pageNum, pageSize);
         Example ex = new Example(KafkaTopic.class);
         Example.Criteria criteria = ex.createCriteria();
-        ExampleUtils.dynEqual(criteria, record, "clusterName");
+        ExampleUtils.dynEqual(criteria, record, "clusterId");
         ExampleUtils.dynLike(criteria, record, "topicName");
         criteria.andNotEqualTo("status", StatusS.DELETE);
-        ex.orderBy("clusterName").asc().orderBy("topicName").asc();
+        ex.orderBy("clusterId").asc().orderBy("topicName").asc();
         List<KafkaTopic> records = getMapper().selectByExample(ex);
         return new PageInfo<>(records);
     }

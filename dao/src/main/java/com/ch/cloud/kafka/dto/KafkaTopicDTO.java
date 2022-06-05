@@ -63,4 +63,5 @@ public class KafkaTopicDTO {
 
     private String zookeeper;
 
+    private Long totalLogSize;
 }

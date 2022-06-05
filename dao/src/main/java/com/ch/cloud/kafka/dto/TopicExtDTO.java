@@ -1,5 +1,7 @@
 package com.ch.cloud.kafka.dto;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -9,6 +11,7 @@ import java.util.Date;
  * @author 01370603
  * @since Tue Oct 13 13:43:34 CST 2020
  */
+@Data
 public class TopicExtDTO implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -73,99 +76,4 @@ public class TopicExtDTO implements Serializable {
      */
     private String updateBy;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
-
-    public String getClusterName() {
-        return this.clusterName;
-    }
-
-    public void setTopicName(String topicName) {
-        this.topicName = topicName;
-    }
-
-    public String getTopicName() {
-        return this.topicName;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public String getContentType() {
-        return this.contentType;
-    }
-
-    public void setThreadSize(Integer threadSize) {
-        this.threadSize = threadSize;
-    }
-
-    public Integer getThreadSize() {
-        return this.threadSize;
-    }
-
-    public void setBatchSize(Integer batchSize) {
-        this.batchSize = batchSize;
-    }
-
-    public Integer getBatchSize() {
-        return this.batchSize;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getStatus() {
-        return this.status;
-    }
-
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
-    }
-
-    public Date getCreateAt() {
-        return this.createAt;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-
-    public String getCreateBy() {
-        return this.createBy;
-    }
-
-    public void setUpdateAt(Date updateAt) {
-        this.updateAt = updateAt;
-    }
-
-    public Date getUpdateAt() {
-        return this.updateAt;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public String getUpdateBy() {
-        return this.updateBy;
-    }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class TopicInfo {
 
-    private String clusterId;
+    private Long clusterId;
 
     private String zookeeper;
     private String name;

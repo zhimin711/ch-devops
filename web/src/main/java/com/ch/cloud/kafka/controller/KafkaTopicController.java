@@ -1,12 +1,14 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
+import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
@@ -41,6 +43,8 @@ public class KafkaTopicController {
     private KafkaTopicService   kafkaTopicService;
     @Autowired
     private KafkaClusterService kafkaClusterService;
+    @Autowired
+    private KafkaClusterManager kafkaClusterManager;
 
     @ApiOperation(value = "分页查询", notes = "需要在请求头中附带token")
     @ApiImplicitParams({
@@ -176,12 +180,8 @@ public class KafkaTopicController {
     public Result<Integer> syncTopics(@RequestBody KafkaTopic record) {
         return ResultUtils.wrap(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
-            KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
-            if (cluster == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS);
-            }
-            List<TopicInfo> topicList = ZkTopicUtils.getTopics(cluster.getZookeeper());
-            return kafkaTopicService.saveOrUpdate(topicList, record.getClusterId(), ContextUtil.getUser());
+            List<KafkaTopicDTO> topicList = kafkaClusterManager.topics(record.getClusterId(), null);
+            return kafkaTopicService.saveOrUpdate(topicList, ContextUtil.getUser());
         });
     }
 

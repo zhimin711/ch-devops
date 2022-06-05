@@ -17,7 +17,7 @@ public interface KafkaTopicService extends IService<KafkaTopic> {
 
     List<KafkaTopic> findByClusterIdLikeTopicName(Long clusterId, String topicName);
 
-    int saveOrUpdate(List<TopicInfo> topicList, Long clusterId, String username);
+    int saveOrUpdate(List<KafkaTopicDTO> topicList, String username);
 
     KafkaTopicDTO check(Long clusterId, String topic);
 
