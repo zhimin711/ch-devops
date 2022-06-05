@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.ch.cloud.rocketmq.support;
+package com.ch.cloud.support;
 
 import com.ch.e.PubError;
 import com.ch.e.PubException;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 
-@ControllerAdvice(basePackages = "com.ch.cloud.rocketmq")
+@ControllerAdvice(basePackages = {"com.ch.cloud.rocketmq", "com.ch.cloud.kafka"})
 @Slf4j
 public class GlobalExceptionHandler {
 

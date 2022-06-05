@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.ch.cloud.rocketmq.support;
+package com.ch.cloud.support;
 
 import com.ch.cloud.rocketmq.admin.annotation.OriginalControllerReturnValue;
 import com.ch.result.Result;
@@ -32,7 +32,10 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Map;
 
-@ControllerAdvice(basePackages = "com.ch.cloud.rocketmq")
+/**
+ * @author zhimin
+ */
+@ControllerAdvice(basePackages = {"com.ch.cloud.rocketmq", "com.ch.cloud.kafka"})
 public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
@@ -45,14 +48,14 @@ public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Objec
         if (originalControllerReturnValue != null) {
             return obj;
         }
-        Result value;
+        Result<?> value;
         if (obj instanceof Result) {
-            value = (Result) obj;
+            value = (Result<?>) obj;
         } else if (obj instanceof Collection) {
             if ((CommonUtils.isEmpty(obj))) {
                 value = Result.success();
             } else {
-                value = Result.success((Collection) obj);
+                value = Result.success((Collection<?>) obj);
             }
         } else {
             if ((CommonUtils.isEmpty(obj))) {

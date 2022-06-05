@@ -3,6 +3,8 @@ package com.ch.cloud.kafka.controller;
 import com.ch.cloud.kafka.dto.ConsumerGroupDTO;
 import com.ch.cloud.kafka.dto.ConsumerGroupDescribeDTO;
 import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
+import com.ch.result.Result;
+import com.ch.result.ResultUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +23,8 @@ public class KafkaConsumerGroupController {
     private KafkaConsumerGroupManager kafkaConsumerGroupManager;
 
     @GetMapping("{clusterId}")
-    public List<ConsumerGroupDTO> list(@PathVariable Long clusterId, String groupId) throws ExecutionException, InterruptedException {
-        return kafkaConsumerGroupManager.consumerGroup(clusterId, groupId);
+    public Result<ConsumerGroupDTO> list(@PathVariable Long clusterId, String groupId) throws ExecutionException, InterruptedException {
+        return ResultUtils.wrap(() -> kafkaConsumerGroupManager.consumerGroup(clusterId, groupId));
     }
 
     @GetMapping("/{clusterId}/{groupId}")

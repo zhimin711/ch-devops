@@ -8,6 +8,7 @@ import com.ch.cloud.kafka.pojo.TopicOffset;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
+import com.ch.utils.AssertUtils;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
@@ -200,7 +201,7 @@ public class KafkaConsumerGroupManager {
 
     public List<ConsumerGroupDescribeDTO> describe(Long clusterId, String groupId) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
+        AssertUtils.isEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         ConsumerGroupDescription consumerGroupDescription = adminClient.describeConsumerGroups(Collections.singletonList(groupId)).all().get().get(groupId);
 
