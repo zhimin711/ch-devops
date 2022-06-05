@@ -1,14 +1,20 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
+import com.ch.cloud.kafka.dto.BrokerDTO;
+import com.ch.cloud.kafka.dto.ConsumerGroupDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicConfigDTO;
 import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
+import com.ch.cloud.kafka.pojo.Partition;
 import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaClusterManager;
+import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
+import com.ch.cloud.kafka.tools.KafkaTopicManager;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
@@ -21,6 +27,7 @@ import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.e.ExceptionUtils;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -40,11 +47,15 @@ import java.util.List;
 public class KafkaTopicController {
 
     @Autowired
-    private KafkaTopicService   kafkaTopicService;
+    private KafkaTopicService         kafkaTopicService;
     @Autowired
-    private KafkaClusterService kafkaClusterService;
+    private KafkaClusterService       kafkaClusterService;
     @Autowired
-    private KafkaClusterManager kafkaClusterManager;
+    private KafkaClusterManager       kafkaClusterManager;
+    @Autowired
+    private KafkaConsumerGroupManager kafkaConsumerGroupManager;
+    @Autowired
+    private KafkaTopicManager         kafkaTopicManager;
 
     @ApiOperation(value = "分页查询", notes = "需要在请求头中附带token")
     @ApiImplicitParams({
@@ -56,7 +67,7 @@ public class KafkaTopicController {
     public PageResult<KafkaTopic> page(KafkaTopic record,
                                        @PathVariable(value = "num") int pageNum,
                                        @PathVariable(value = "size") int pageSize) {
-        return ResultUtils.wrapPage(()->{
+        return ResultUtils.wrapPage(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
             PageInfo<KafkaTopic> pageInfo = kafkaTopicService.findPage(record, pageNum, pageSize);
             return InvokerPage.build(pageInfo.getTotal(), pageInfo.getList());
@@ -73,9 +84,9 @@ public class KafkaTopicController {
 
             AssertUtils.isTrue(r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE), PubError.EXISTS, "主题已存在！");
             KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
-            TopicInfo info = ZkTopicUtils.getInfo(cluster.getZookeeper(), record.getTopicName());
+            TopicInfo info = kafkaClusterManager.info(cluster.getId(), record.getTopicName());
             if (info == null) {
-                createTopic(cluster, record);
+                kafkaTopicManager.createTopic(record);
             } else {
                 record.setPartitionSize(info.getPartitionSize());
                 record.setReplicaSize(info.getReplicaSize());
@@ -120,6 +131,56 @@ public class KafkaTopicController {
         });
     }
 
+    @ApiOperation(value = "获取主题信息", notes = "")
+    @GetMapping({"{id}"})
+    public Result<TopicInfo> detail(@PathVariable Long id) {
+        return ResultUtils.wrapFail(() -> {
+            KafkaTopic record = kafkaTopicService.find(id);
+            AssertUtils.isEmpty(record, PubError.NOT_EXISTS, "主题ID");
+            return kafkaClusterManager.info(record.getClusterId(), record.getTopicName());
+        });
+    }
+
+    @ApiOperation(value = "获取主题信息", notes = "")
+    @GetMapping({"{id}/partitions"})
+    public Result<Partition> detailPartitions(@PathVariable Long id) {
+        return ResultUtils.wrap(() -> {
+            KafkaTopic record = kafkaTopicService.find(id);
+            AssertUtils.isEmpty(record, PubError.NOT_EXISTS, "主题ID");
+            return kafkaClusterManager.partitions(record.getClusterId(), record.getTopicName());
+        });
+    }
+
+    @ApiOperation(value = "获取主题信息", notes = "")
+    @GetMapping({"{id}/brokers"})
+    public Result<BrokerDTO> detailBrokers(@PathVariable Long id) {
+        return ResultUtils.wrap(() -> {
+            KafkaTopic record = kafkaTopicService.find(id);
+            AssertUtils.isEmpty(record, PubError.NOT_EXISTS, "主题ID");
+            return kafkaClusterManager.brokers(record.getClusterId(), record.getTopicName());
+        });
+    }
+
+    @ApiOperation(value = "获取主题信息", notes = "")
+    @GetMapping({"{id}/consumerGroups"})
+    public Result<ConsumerGroupDTO> detailConsumerGroups(@PathVariable Long id) {
+        return ResultUtils.wrap(() -> {
+            KafkaTopic record = kafkaTopicService.find(id);
+            AssertUtils.isEmpty(record, PubError.NOT_EXISTS, "主题ID");
+            return kafkaConsumerGroupManager.consumerGroups(record.getClusterId(), record.getTopicName());
+        });
+    }
+
+    @ApiOperation(value = "获取主题信息", notes = "")
+    @GetMapping({"{id}/configs"})
+    public Result<KafkaTopicConfigDTO> detailConfigs(@PathVariable Long id) {
+        return ResultUtils.wrap(() -> {
+            KafkaTopic record = kafkaTopicService.find(id);
+            AssertUtils.isEmpty(record, PubError.NOT_EXISTS, "主题ID");
+            return kafkaTopicManager.getConfigs(record.getClusterId(), record.getTopicName());
+        });
+    }
+
     @ApiOperation(value = "删除主题信息", notes = "")
     @DeleteMapping({"{id}"})
     public Result<Integer> delete(@PathVariable Long id) {
@@ -133,8 +194,9 @@ public class KafkaTopicController {
             if (c > 0) {
                 KafkaTopic topic = kafkaTopicService.find(id);
                 KafkaCluster cluster = kafkaClusterService.find(topic.getClusterId());
-                if (cluster != null)
-                    ZkTopicUtils.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
+                if (cluster != null) {
+                    kafkaTopicManager.deleteTopic(cluster.getId(), Lists.newArrayList(topic.getTopicName()));
+                }
             }
             return c;
         });

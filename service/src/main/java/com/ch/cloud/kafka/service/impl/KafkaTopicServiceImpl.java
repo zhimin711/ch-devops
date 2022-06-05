@@ -13,6 +13,7 @@ import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.mybatis.utils.ExampleUtils;
+import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.SQLUtils;
@@ -108,17 +109,13 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     @Override
     public KafkaTopicDTO check(Long clusterId, String topic) {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        if (config == null) {
-            throw ExceptionUtils.create(PubError.NOT_EXISTS, clusterId + "集群配置不存在!");
-        }
-        KafkaTopic topicExt = this.findByClusterIdAndTopicName(clusterId, topic);
-        if (topicExt == null) {
-            throw ExceptionUtils.create(PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置不存在！");
-        }
+        AssertUtils.isNull(config,PubError.NOT_EXISTS, clusterId + "集群配置不存在!");
+        KafkaTopic kafkaTopic = this.findByClusterIdAndTopicName(clusterId, topic);
+        AssertUtils.isNull(kafkaTopic,PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置不存在！");
         KafkaTopicDTO dto = new KafkaTopicDTO();
-        BeanUtils.copyProperties(topicExt, dto);
+        BeanUtils.copyProperties(kafkaTopic, dto);
         dto.setZookeeper(config.getZookeeper());
-        String path = libsDir + File.separator + topicExt.getClassFile();
+        String path = libsDir + File.separator + kafkaTopic.getClassFile();
         dto.setClassFile(path);
         return dto;
     }

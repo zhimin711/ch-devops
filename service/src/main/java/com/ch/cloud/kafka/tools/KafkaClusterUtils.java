@@ -14,6 +14,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.security.JaasUtils;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
@@ -163,6 +164,22 @@ public class KafkaClusterUtils {
             properties.put("sasl.jaas.config", MessageFormat.format("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"{0}\" password=\"{1}\";", authUsername, authPassword));
         }
         return new KafkaProducer<>(properties, new StringSerializer(), new StringSerializer());
+    }
+
+    public static KafkaProducer<String, byte[]> createProducerByte(String servers, String securityProtocol, String saslMechanism, String authUsername, String authPassword) {
+        Properties properties = new Properties();
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
+        if (StringUtils.hasText(securityProtocol)) {
+            properties.put("security.protocol", securityProtocol);
+        }
+        if (StringUtils.hasText(saslMechanism)) {
+            properties.put("sasl.mechanism", saslMechanism);
+        }
+
+        if (StringUtils.hasText(authUsername) && StringUtils.hasText(authPassword)) {
+            properties.put("sasl.jaas.config", MessageFormat.format("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"{0}\" password=\"{1}\";", authUsername, authPassword));
+        }
+        return new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
     }
 
     public static int countBroker(KafkaCluster cluster) throws ExecutionException, InterruptedException {

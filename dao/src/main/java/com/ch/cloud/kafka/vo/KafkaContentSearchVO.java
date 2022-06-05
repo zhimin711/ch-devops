@@ -12,7 +12,7 @@ import lombok.Data;
  */
 @ApiModel("Kafka消息搜索参数")
 @Data
-public class ContentQuery {
+public class KafkaContentSearchVO {
 
     /**
      * 集群名称

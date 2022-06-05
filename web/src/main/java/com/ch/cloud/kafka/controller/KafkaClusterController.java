@@ -34,10 +34,10 @@ public class KafkaClusterController {
     @Autowired
     private KafkaClusterService kafkaClusterService;
     @Autowired
-    private KafkaTopicService   topicService;
+    private KafkaTopicService   kafkaTopicService;
 
     @Autowired
-    private KafkaClusterManager kafkaTool;
+    private KafkaClusterManager kafkaClusterManager;
 
     @GetMapping(value = {"{num}/{size}"})
     public PageResult<KafkaCluster> page(KafkaCluster record,
@@ -80,7 +80,7 @@ public class KafkaClusterController {
             targetRecord.setStatus(StatusS.DELETE);
             targetRecord.setUpdateBy(ContextUtil.getUser());
             targetRecord.setUpdateAt(DateUtils.current());
-            int c2 = topicService.update(srcRecord, targetRecord);
+            int c2 = kafkaTopicService.update(srcRecord, targetRecord);
             return kafkaClusterService.delete(id);
         });
     }
@@ -102,7 +102,7 @@ public class KafkaClusterController {
     public Result<BrokerDTO> brokers(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
             KafkaCluster config = kafkaClusterService.find(id);
-            return kafkaTool.brokers("", config);
+            return kafkaClusterManager.brokers("", config);
         });
     }
 }

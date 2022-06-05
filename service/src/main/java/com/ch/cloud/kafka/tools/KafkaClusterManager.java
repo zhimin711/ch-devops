@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * @since 2018/9/21 15:48
  */
 @Component
-public class KafkaClusterManager {
+public class KafkaClusterManager extends AbsKafkaManager {
 
     private Logger logger = LoggerFactory.getLogger(KafkaClusterManager.class);
 
@@ -50,14 +50,7 @@ public class KafkaClusterManager {
     @Autowired
     private KafkaTopicService   topicService;
 
-
-    public AdminClient getAdminClient(Long id) {
-        KafkaCluster config = kafkaClusterService.find(id);
-        AssertUtils.isEmpty(config, PubError.NOT_EXISTS, "cluster id" + id);
-        return KafkaClusterUtils.getAdminClient(config);
-    }
-
-    public List<BrokerDTO> brokers(String topic, Long clusterId) throws ExecutionException, InterruptedException {
+    public List<BrokerDTO> brokers(Long clusterId, String topic) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
         return brokers(topic, config);
     }
@@ -123,12 +116,12 @@ public class KafkaClusterManager {
     /**
      * 获取指定 topic 的所有分区 offset
      *
-     * @param topicName 主题
      * @param clusterId 集群ID
+     * @param topicName 主题
      * @return
      */
 
-    public List<Partition> partitions(String topicName, Long clusterId) throws ExecutionException, InterruptedException {
+    public List<Partition> partitions(Long clusterId, String topicName) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
@@ -169,7 +162,7 @@ public class KafkaClusterManager {
                 }
             }
 
-            List<Integer> brokerIds = brokers(topicName, clusterId).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+            List<Integer> brokerIds = brokers(clusterId, topicName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
             Map<Integer, Map<String, LogDirDescription>> integerMapMap = null;
             try {
                 integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
@@ -234,7 +227,7 @@ public class KafkaClusterManager {
             topicInfo.setPartitions(partitions);
 
 
-            List<Integer> brokerIds = brokers(topicName, clusterId).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+            List<Integer> brokerIds = brokers(clusterId, topicName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
             Map<Integer, Map<String, LogDirDescription>> integerMapMap;
             try {
                 integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
@@ -290,7 +283,7 @@ public class KafkaClusterManager {
                 })
                 .collect(Collectors.toList());
 
-        List<Integer> brokerIds = brokers(null, cluster.getId()).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+        List<Integer> brokerIds = brokers(cluster.getId(), null).stream().map(BrokerDTO::getId).collect(Collectors.toList());
         Map<Integer, Map<String, LogDirDescription>> integerMapMap = null;
         try {
             integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();

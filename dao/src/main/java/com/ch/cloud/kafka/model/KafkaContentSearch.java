@@ -6,8 +6,8 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Data
-@Table(name = "bt_content_search")
-public class ContentSearch {
+@Table(name = "bt_kafka_content_search")
+public class KafkaContentSearch {
     /**
      * 主键
      */

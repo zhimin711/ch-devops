@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.util.Date;
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @Data
 @Table(name = "bt_kafka_topic")
@@ -50,12 +51,14 @@ public class KafkaTopic {
      * 分区数
      */
     @Column(name = "PARTITION_SIZE")
+    @Size(min = 1)
     private Integer partitionSize;
 
     /**
      * 复制数（备份）
      */
     @Column(name = "REPLICA_SIZE")
+    @Size(min = 1)
     private Integer replicaSize;
 
     /**

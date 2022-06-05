@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ch.cloud.kafka.mapper.BtContentRecordMapper">
-  <resultMap id="BaseResultMap" type="com.ch.cloud.kafka.model.BtContentRecord">
+<mapper namespace="com.ch.cloud.kafka.mapper.KafkaContentRecordMapper">
+  <resultMap id="BaseResultMap" type="com.ch.cloud.kafka.model.KafkaContentRecord">
     <!--
       WARNING - @mbggenerated
     -->

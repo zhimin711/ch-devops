@@ -43,15 +43,15 @@ public class KafkaConsumerGroupManager {
     /**
      * 根据topic获取消费组
      *
-     * @param topicName topic名称
      * @param clusterId 集群ID
+     * @param topicName topic名称
      * @return 消费组列表
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    public List<ConsumerGroupDTO> consumerGroups(String topicName, Long clusterId) throws ExecutionException, InterruptedException {
+    public List<ConsumerGroupDTO> consumerGroups(Long clusterId,String topicName) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
+        AssertUtils.isEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         Collection<ConsumerGroupListing> consumerGroupListings = adminClient.listConsumerGroups().all().get();
         List<String> groupIds = consumerGroupListings.stream().map(ConsumerGroupListing::groupId).collect(Collectors.toList());
@@ -88,7 +88,7 @@ public class KafkaConsumerGroupManager {
 
     public List<TopicOffset> offset(String topicName, String groupId, Long clusterId) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
+        AssertUtils.isEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
             return getTopicOffsets(topicName, groupId, KafkaClusterUtils.getAdminClient(config), kafkaConsumer);
         }
@@ -126,7 +126,7 @@ public class KafkaConsumerGroupManager {
 
     public void resetOffset(String topic, String groupId, String clusterId, ResetOffset resetOffset) {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        ExceptionUtils.assertEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
+        AssertUtils.isEmpty(config, PubError.NOT_EXISTS, "cluster id" + clusterId);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config.getBrokers(), groupId, "earliest", config.getSecurityProtocol(), config.getSaslMechanism(), config.getAuthUsername(), config.getAuthPassword())) {
             TopicPartition topicPartition = new TopicPartition(topic, resetOffset.getPartition());
             List<TopicPartition> topicPartitions = Collections.singletonList(topicPartition);

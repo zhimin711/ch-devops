@@ -1,13 +1,13 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.StatusS;
-import com.ch.cloud.kafka.model.BtContentRecord;
-import com.ch.cloud.kafka.model.ContentSearch;
+import com.ch.cloud.kafka.model.KafkaContentRecord;
+import com.ch.cloud.kafka.model.KafkaContentSearch;
 import com.ch.cloud.kafka.enums.ContentType;
 import com.ch.cloud.kafka.pojo.PartitionInfo;
 import com.ch.cloud.kafka.enums.SearchType;
-import com.ch.cloud.kafka.service.IContentRecordService;
-import com.ch.cloud.kafka.service.IContentSearchService;
+import com.ch.cloud.kafka.service.KafkaContentRecordService;
+import com.ch.cloud.kafka.service.KafkaContentSearchService;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
@@ -187,14 +187,14 @@ public class KafkaContentTool {
      * @param clazz       类对象
      * @return
      */
-    public synchronized List<BtContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+    public synchronized List<KafkaContentRecord> searchTopicContent(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         saveSearch(searchType, searchSize, content);
-        List<BtContentRecord> list = Lists.newArrayList();
+        List<KafkaContentRecord> list = Lists.newArrayList();
         if (total > 200000 && searchType == SearchType.ALL) {
             async = true;
             DefaultThreadPool.exe(() -> {
                 contentSearchService.start(searchId);
-                List<BtContentRecord> list1 = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
+                List<KafkaContentRecord> list1 = searchTopicContent2(contentType, searchType, searchSize, content, clazz);
                 contentRecordService.batchSave(list1);
                 contentSearchService.end(searchId, "2");
             });
@@ -204,13 +204,13 @@ public class KafkaContentTool {
             contentSearchService.end(searchId, "2");
         }
         if (!async) {
-            list.sort(Comparator.comparing(BtContentRecord::getMessageOffset).reversed());
+            list.sort(Comparator.comparing(KafkaContentRecord::getMessageOffset).reversed());
         }
         return list;
     }
 
     private void saveSearch(SearchType searchType, int searchSize, String content) {
-        ContentSearch record = new ContentSearch();
+        KafkaContentSearch record = new KafkaContentSearch();
         record.setClusterId(clusterId);
         record.setTopic(topic);
         record.setType(searchType.name());
@@ -222,9 +222,9 @@ public class KafkaContentTool {
         searchId = record.getId();
     }
 
-    public List<BtContentRecord> searchTopicContent2(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
+    public List<KafkaContentRecord> searchTopicContent2(ContentType contentType, SearchType searchType, int searchSize, String content, Class<?> clazz) {
         log.info("{} message total: {}", topic, total);
-        List<BtContentRecord> resultList = Lists.newArrayList();
+        List<KafkaContentRecord> resultList = Lists.newArrayList();
         int partitionSearchSize = 10;
         if ((searchType == SearchType.LATEST || searchType == SearchType.EARLIEST)) {
             if (searchSize > 0)
@@ -297,7 +297,7 @@ public class KafkaContentTool {
                                 && (searchType == SearchType.LATEST || searchType == SearchType.EARLIEST))
                                 || (searchType == SearchType.ALL && msg.contains(content))) {
                             log.info("message\t=====>{} : {}", messageAndOffset.offset(), msg);
-                            BtContentRecord record = new BtContentRecord();
+                            KafkaContentRecord record = new KafkaContentRecord();
                             record.setSid(searchId);
                             record.setPartitionId(partition.getId());
                             record.setMessageOffset(currentOffset);
@@ -319,14 +319,14 @@ public class KafkaContentTool {
         return resultList;
     }
 
-    private IContentSearchService contentSearchService;
-    private IContentRecordService contentRecordService;
+    private KafkaContentSearchService contentSearchService;
+    private KafkaContentRecordService contentRecordService;
 
-    public void setContentSearchService(IContentSearchService contentSearchService) {
+    public void setContentSearchService(KafkaContentSearchService contentSearchService) {
         this.contentSearchService = contentSearchService;
     }
 
-    public void setContentRecordService(IContentRecordService contentRecordService) {
+    public void setContentRecordService(KafkaContentRecordService contentRecordService) {
         this.contentRecordService = contentRecordService;
     }
 
