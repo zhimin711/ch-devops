@@ -63,7 +63,7 @@ public class KafkaTopicController {
             @ApiImplicitParam(name = "size", value = "分页大小", required = true),
             @ApiImplicitParam(name = "record", value = "查询条件", paramType = "query")
     })
-    @GetMapping(value = {"{num}/{size}"})
+    @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
     public PageResult<KafkaTopic> page(KafkaTopic record,
                                        @PathVariable(value = "num") int pageNum,
                                        @PathVariable(value = "size") int pageSize) {
@@ -121,7 +121,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "修改主题信息", notes = "")
-    @PutMapping({"{id}"})
+    @PutMapping({"{id:[0-9]+}"})
     public Result<Integer> update(@PathVariable Long id, @RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
@@ -132,7 +132,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "获取主题信息", notes = "")
-    @GetMapping({"{id}"})
+    @GetMapping({"{id:[0-9]+}"})
     public Result<TopicInfo> detail(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaTopic record = kafkaTopicService.find(id);
@@ -142,7 +142,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "获取主题信息", notes = "")
-    @GetMapping({"{id}/partitions"})
+    @GetMapping({"{id:[0-9]+}/partitions"})
     public Result<Partition> detailPartitions(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
             KafkaTopic record = kafkaTopicService.find(id);
@@ -152,7 +152,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "获取主题信息", notes = "")
-    @GetMapping({"{id}/brokers"})
+    @GetMapping({"{id:[0-9]+}/brokers"})
     public Result<BrokerDTO> detailBrokers(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
             KafkaTopic record = kafkaTopicService.find(id);
@@ -162,7 +162,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "获取主题信息", notes = "")
-    @GetMapping({"{id}/consumerGroups"})
+    @GetMapping({"{id:[0-9]+}/consumerGroups"})
     public Result<ConsumerGroupDTO> detailConsumerGroups(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
             KafkaTopic record = kafkaTopicService.find(id);
@@ -172,7 +172,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "获取主题信息", notes = "")
-    @GetMapping({"{id}/configs"})
+    @GetMapping({"{id:[0-9]+}/configs"})
     public Result<KafkaTopicConfigDTO> detailConfigs(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
             KafkaTopic record = kafkaTopicService.find(id);
@@ -182,7 +182,7 @@ public class KafkaTopicController {
     }
 
     @ApiOperation(value = "删除主题信息", notes = "")
-    @DeleteMapping({"{id}"})
+    @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaTopic record = new KafkaTopic();

@@ -59,7 +59,7 @@ public class KafkaClusterController {
         return ResultUtils.wrapFail(() -> kafkaClusterService.save(record));
     }
 
-    @PutMapping({"{id}"})
+    @PutMapping({"{id:[0-9]+}"})
     public Result<Integer> edit(@PathVariable Long id, @RequestBody KafkaCluster record) {
         return ResultUtils.wrapFail(() -> {
             record.setUpdateBy(ContextUtil.getUser());
@@ -68,7 +68,7 @@ public class KafkaClusterController {
         });
     }
 
-    @DeleteMapping({"{id}"})
+    @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaCluster c = kafkaClusterService.find(id);
@@ -86,7 +86,7 @@ public class KafkaClusterController {
     }
 
 
-    @GetMapping("{id}")
+    @GetMapping("{id:[0-9]+}")
     public Result<KafkaCluster> detail(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaCluster config = kafkaClusterService.find(id);
@@ -98,7 +98,7 @@ public class KafkaClusterController {
         });
     }
 
-    @GetMapping("{id}/brokers")
+    @GetMapping("{id:[0-9]+}/brokers")
     public Result<BrokerDTO> brokers(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
             KafkaCluster config = kafkaClusterService.find(id);

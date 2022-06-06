@@ -56,7 +56,7 @@ public class KafkaTopicExtController {
     }
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
-    @GetMapping("{id}")
+    @GetMapping("{id:[0-9]+}")
     public Result<KafkaTopicExt> load(@PathVariable Long id,
                                       KafkaTopicExt record) {
         return ResultUtils.wrap(() -> {
@@ -143,7 +143,7 @@ public class KafkaTopicExtController {
     }
 
     @ApiOperation(value = "删除主题扩展信息", notes = "")
-    @DeleteMapping({"{id}"})
+    @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaTopicExt record = new KafkaTopicExt();
