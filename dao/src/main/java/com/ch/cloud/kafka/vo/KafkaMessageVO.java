@@ -20,7 +20,7 @@ public class KafkaMessageVO {
      * 主题
      */
     private String topic;
-    private int    partition;
+    private int partition;
     private String key;
     private String value;
 

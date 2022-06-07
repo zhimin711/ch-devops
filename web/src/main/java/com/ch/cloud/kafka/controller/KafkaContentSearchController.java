@@ -1,17 +1,18 @@
 package com.ch.cloud.kafka.controller;
 
+import java.util.List;
 import java.util.Map;
 
-import com.ch.cloud.kafka.pojo.TopicInfo;
-import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.ch.cloud.kafka.dto.KafkaContentSearchDTO;
+import com.ch.cloud.kafka.dto.KafkaMessageDTO;
 import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.enums.SearchType;
-import com.ch.cloud.kafka.dto.KafkaContentSearchDTO;
-import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaTopicService;
+import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import com.ch.cloud.kafka.tools.KafkaMessageManager;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.cloud.kafka.vo.KafkaContentSearchVO;
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2018/9/25 10:02
  */
 
-@Api(tags = "KAFKA消息搜索模块")
+@Api(tags = "KAFKA消息搜索服务")
 @RestController
 @RequestMapping("/kafka/content")
 @Slf4j
@@ -55,13 +56,19 @@ public class KafkaContentSearchController {
             TopicInfo info = kafkaClusterManager.info(record.getClusterId(), record.getTopic());
             AssertUtils.isEmpty(info.getPartitions(), PubError.NOT_EXISTS, "主题分区");
             Class<?> clazz = KafkaSerializeUtils.loadClazz(kafkaTopicDto.getClassFile(), kafkaTopicDto.getClassName());
+            KafkaContentSearchDTO searchDTO = new KafkaContentSearchDTO();
+            searchDTO.setClusterId(record.getClusterId());
+            searchDTO.setTopic(record.getTopic());
             info.getPartitions().forEach(partition -> {
                 if (CommonUtils.isNotEmpty(record.getPartition()) && record.getPartition() >= 0
                     && !CommonUtils.isEquals(partition.getPartition(), record.getPartition())) {
                     return;
                 }
-                kafkaMessageManager.search(record, partition, clazz);
+                List<KafkaMessageDTO> list = kafkaMessageManager.search(record, partition, clazz);
+                searchDTO.putOffset(partition.getPartition(), record.getOffset());
+                searchDTO.putMessages(partition.getPartition(), list);
             });
+            return searchDTO;
         });
         Map<String, Object> extra = Maps.newHashMap();
         extra.put("contentType", kafkaTopicDto.getType());
@@ -74,22 +81,12 @@ public class KafkaContentSearchController {
         return ResultUtils.wrap(() -> {
             AssertUtils.isEmpty(messageVO.getValue(), PubError.NON_NULL, "发送消息不能为空!");
             KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(messageVO.getClusterId(), messageVO.getTopic());
-            kafkaMessageManager.send(messageVO,
-                KafkaSerializeUtils.convertContent(kafkaTopicDto, messageVO.getValue()));
-        });
-    }
-
-    @PutMapping("resend/{sid}")
-    public Result<Integer> resendMessage(@PathVariable Long sid, @RequestBody String content) {
-        return ResultUtils.wrap(() -> {
-            // KafkaContentSearch searchRecord = contentSearchService.find(sid);
-            // KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(searchRecord.getClusterId(),
-            // searchRecord.getTopic());
-
-            // BtClusterConfig config = clusterConfigService.findByClusterName(searchRecord.getCluster());
-            // KafkaContentTool contentTool = new KafkaContentTool(config.getZookeeper(), searchRecord.getCluster(),
-            // searchRecord.getTopic());
-            // contentTool.send(content.getBytes());
+            if (CommonUtils.isEmpty(kafkaTopicDto.getClassName())) {
+                kafkaMessageManager.send(messageVO);
+            } else {
+                kafkaMessageManager.send(messageVO,
+                    KafkaSerializeUtils.convertContent(kafkaTopicDto, messageVO.getValue()));
+            }
         });
     }
 

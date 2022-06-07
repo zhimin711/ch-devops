@@ -1,6 +1,7 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.dto.KafkaMessageDTO;
+import com.ch.cloud.kafka.enums.SearchType;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.vo.KafkaContentSearchVO;
@@ -35,41 +36,50 @@ public class KafkaMessageManager extends AbsKafkaManager {
     @SneakyThrows
     public long send(KafkaMessageVO messageVO) {
         KafkaCluster cluster = kafkaClusterService.find(messageVO.getClusterId());
-        KafkaProducer<String, String> kafkaProducer =
+        RecordMetadata recordMetadata;
+        try (KafkaProducer<String, String> kafkaProducer =
             KafkaClusterUtils.createProducer(cluster.getBrokers(), cluster.getSecurityProtocol(),
-                cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
-        ProducerRecord<String, String> producerRecord;
-        if (CommonUtils.isEmpty(messageVO.getPartition())) {
-            producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getKey(), messageVO.getValue());
-        } else {
-            producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(),
-                messageVO.getValue());
-        }
+                cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword())) {
+            ProducerRecord<String, String> producerRecord;
+            if (CommonUtils.isEmpty(messageVO.getPartition())) {
+                producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getKey(), messageVO.getValue());
+            } else {
+                producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(),
+                    messageVO.getKey(), messageVO.getValue());
+            }
 
-        RecordMetadata recordMetadata = kafkaProducer.send(producerRecord).get();
+            recordMetadata = kafkaProducer.send(producerRecord).get();
+        }
         return recordMetadata.offset();
     }
 
     @SneakyThrows
     public long send(KafkaMessageVO messageVO, byte[] data) {
         KafkaCluster cluster = kafkaClusterService.find(messageVO.getClusterId());
-        KafkaProducer<String, byte[]> kafkaProducer =
+        RecordMetadata recordMetadata;
+        try (KafkaProducer<String, byte[]> kafkaProducer =
             KafkaClusterUtils.createProducerByte(cluster.getBrokers(), cluster.getSecurityProtocol(),
-                cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
-        ProducerRecord<String, byte[]> producerRecord;
-        if (CommonUtils.isEmpty(messageVO.getPartition())) {
-            producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getKey(), data);
-        } else {
-            producerRecord =
-                new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(), data);
-        }
+                cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword())) {
+            ProducerRecord<String, byte[]> producerRecord;
+            if (CommonUtils.isEmpty(messageVO.getPartition())) {
+                producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getKey(), data);
+            } else {
+                producerRecord =
+                    new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(), data);
+            }
 
-        RecordMetadata recordMetadata = kafkaProducer.send(producerRecord).get();
+            recordMetadata = kafkaProducer.send(producerRecord).get();
+        }
         return recordMetadata.offset();
     }
 
-    public List<KafkaMessageDTO> search(String clusterId, String topicName, Integer tPartition, Long startOffset,
-        int count, String keyFilter, String valueFilter) {
+    public List<KafkaMessageDTO> search(KafkaContentSearchVO searchVO, Integer tPartition, Long startOffset,
+        Long endOffset) {
+        Long clusterId = searchVO.getClusterId();
+        String topicName = searchVO.getTopic();
+        String keyFilter = searchVO.getKey();
+        String valueFilter = searchVO.getContent();
+        int count = searchVO.getLimit();
         KafkaCluster cluster = kafkaClusterService.find(clusterId);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(cluster)) {
 
@@ -83,7 +93,7 @@ public class KafkaMessageManager extends AbsKafkaManager {
             }
             kafkaConsumer.seek(topicPartition, startOffset);
 
-            Long endOffset = kafkaConsumer.endOffsets(topicPartitions).get(topicPartition);
+            // Long endOffset = kafkaConsumer.endOffsets(topicPartitions).get(topicPartition);
             long currentOffset = startOffset - 1;
 
             List<ConsumerRecord<String, String>> records = new ArrayList<>(count);
@@ -119,8 +129,12 @@ public class KafkaMessageManager extends AbsKafkaManager {
                     break;
                 }
             }
-
-            return records.subList(0, Math.min(count, records.size())).stream().map(record -> {
+            if (searchVO.getType() == SearchType.LATEST) {
+                searchVO.setOffset(startOffset);
+            } else {
+                searchVO.setOffset(currentOffset);
+            }
+            return records.stream().map(record -> {
                 int partition = record.partition();
                 long timestamp = record.timestamp();
                 String key = record.key();
@@ -140,19 +154,20 @@ public class KafkaMessageManager extends AbsKafkaManager {
         }
     }
 
-    public void search(KafkaContentSearchVO record, TopicInfo.Partition partition, Class<?> clazz) {
+    public List<KafkaMessageDTO> search(KafkaContentSearchVO record, TopicInfo.Partition partition, Class<?> clazz) {
         long start = 0;
         long end = 0;
         switch (record.getType()) {
             case ALL:
+            case EARLIEST:
                 start = partition.getBeginningOffset();
-                end = partition.getBeginningOffset() + record.getLimit();
+                end = Math.min(partition.getBeginningOffset() + record.getSize(), partition.getEndOffset());
                 break;
             case LATEST:
-                start = partition.getEndOffset() - record.getLimit();
+                start = Math.min(partition.getEndOffset() - record.getSize(), partition.getBeginningOffset());
                 end = partition.getEndOffset();
-            case EARLIEST:
         }
 
+        return search(record, partition.getPartition(), start, end);
     }
 }

@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+
 /**
  * 内容搜索条件
  *
@@ -31,8 +33,13 @@ public class KafkaContentSearchVO {
     @ApiModelProperty(name = "搜索类型", value = "(0.全量 1.按最新 2.最早)", required = true, position = 3)
     private SearchType type;
 
-    @ApiModelProperty(name = "搜索量", position = 6, example = "1000")
-    private int limit = 1000;
+    @ApiModelProperty(name = "搜索结果数量（限制）")
+    @Max(500)
+    private int limit = 50;
+
+    @ApiModelProperty(name = "搜索范围大小（限制")
+    @Max(4999)
+    private Integer size = 1000;
     /**
      * 内容
      */
@@ -47,8 +54,7 @@ public class KafkaContentSearchVO {
     @ApiModelProperty(name = "搜索分区")
     private Integer partition;
 
-    @ApiModelProperty(name = "搜索offset")
-    private Integer offset = 0;
-
+    @ApiModelProperty(name = "最新搜索位置")
+    private long offset;
 
 }
