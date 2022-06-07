@@ -1,13 +1,13 @@
 package com.ch.cloud.kafka.controller;
 
 import com.ch.StatusS;
+import com.ch.cloud.kafka.dto.BrokerDTO;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.dto.BrokerDTO;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.cloud.kafka.tools.KafkaClusterManager;
+import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
@@ -34,12 +34,12 @@ public class KafkaClusterController {
     @Autowired
     private KafkaClusterService kafkaClusterService;
     @Autowired
-    private KafkaTopicService   kafkaTopicService;
+    private KafkaTopicService kafkaTopicService;
 
     @Autowired
     private KafkaClusterManager kafkaClusterManager;
 
-    @GetMapping(value = {"{num}/{size}"})
+    @GetMapping(value = {"{num\\d+}/{size\\d+}"})
     public PageResult<KafkaCluster> page(KafkaCluster record,
                                          @PathVariable(value = "num") int pageNum,
                                          @PathVariable(value = "size") int pageSize) {
@@ -59,7 +59,7 @@ public class KafkaClusterController {
         return ResultUtils.wrapFail(() -> kafkaClusterService.save(record));
     }
 
-    @PutMapping({"{id:[0-9]+}"})
+    @PutMapping({"{id:\\d+}"})
     public Result<Integer> edit(@PathVariable Long id, @RequestBody KafkaCluster record) {
         return ResultUtils.wrapFail(() -> {
             record.setUpdateBy(ContextUtil.getUser());
@@ -68,7 +68,7 @@ public class KafkaClusterController {
         });
     }
 
-    @DeleteMapping({"{id:[0-9]+}"})
+    @DeleteMapping({"{id:\\d+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaCluster c = kafkaClusterService.find(id);
@@ -86,7 +86,7 @@ public class KafkaClusterController {
     }
 
 
-    @GetMapping("{id:[0-9]+}")
+    @GetMapping("{id:\\d+}")
     public Result<KafkaCluster> detail(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             KafkaCluster config = kafkaClusterService.find(id);
@@ -98,11 +98,12 @@ public class KafkaClusterController {
         });
     }
 
-    @GetMapping("{id:[0-9]+}/brokers")
+    @GetMapping("{id:\\d+}/brokers")
     public Result<BrokerDTO> brokers(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
             KafkaCluster config = kafkaClusterService.find(id);
             return kafkaClusterManager.brokers("", config);
         });
     }
+
 }

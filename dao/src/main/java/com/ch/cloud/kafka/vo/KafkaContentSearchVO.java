@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.vo;
 
+import com.ch.cloud.kafka.enums.SearchType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -28,17 +29,26 @@ public class KafkaContentSearchVO {
      * 搜索类型(0.全量 1.按最新 2.最早 3.)
      */
     @ApiModelProperty(name = "搜索类型", value = "(0.全量 1.按最新 2.最早)", required = true, position = 3)
-    private String type;
+    private SearchType type;
+
+    @ApiModelProperty(name = "搜索量", position = 6, example = "1000")
+    private int limit = 1000;
+    /**
+     * 内容
+     */
+    @ApiModelProperty(name = "搜索Key", position = 5)
+    private String key;
     /**
      * 内容
      */
     @ApiModelProperty(name = "搜索内容", position = 4)
     private String content;
 
-    @ApiModelProperty(name = "搜索页", hidden = true)
-    private Integer page = 1;
+    @ApiModelProperty(name = "搜索分区")
+    private Integer partition;
 
-    @ApiModelProperty(name = "搜索量", position = 6, example = "1000")
-    private int limit = 1000;
+    @ApiModelProperty(name = "搜索offset")
+    private Integer offset = 0;
+
 
 }

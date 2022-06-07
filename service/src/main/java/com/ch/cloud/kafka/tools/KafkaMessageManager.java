@@ -2,6 +2,8 @@ package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.dto.KafkaMessageDTO;
 import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.pojo.TopicInfo;
+import com.ch.cloud.kafka.vo.KafkaContentSearchVO;
 import com.ch.cloud.kafka.vo.KafkaMessageVO;
 import com.ch.utils.CommonUtils;
 import lombok.SneakyThrows;
@@ -33,12 +35,15 @@ public class KafkaMessageManager extends AbsKafkaManager {
     @SneakyThrows
     public long send(KafkaMessageVO messageVO) {
         KafkaCluster cluster = kafkaClusterService.find(messageVO.getClusterId());
-        KafkaProducer<String, String> kafkaProducer = KafkaClusterUtils.createProducer(cluster.getBrokers(), cluster.getSecurityProtocol(), cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
+        KafkaProducer<String, String> kafkaProducer =
+            KafkaClusterUtils.createProducer(cluster.getBrokers(), cluster.getSecurityProtocol(),
+                cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
         ProducerRecord<String, String> producerRecord;
         if (CommonUtils.isEmpty(messageVO.getPartition())) {
             producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getKey(), messageVO.getValue());
         } else {
-            producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(), messageVO.getValue());
+            producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(),
+                messageVO.getValue());
         }
 
         RecordMetadata recordMetadata = kafkaProducer.send(producerRecord).get();
@@ -48,20 +53,23 @@ public class KafkaMessageManager extends AbsKafkaManager {
     @SneakyThrows
     public long send(KafkaMessageVO messageVO, byte[] data) {
         KafkaCluster cluster = kafkaClusterService.find(messageVO.getClusterId());
-        KafkaProducer<String, byte[]> kafkaProducer = KafkaClusterUtils.createProducerByte(cluster.getBrokers(), cluster.getSecurityProtocol(), cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
+        KafkaProducer<String, byte[]> kafkaProducer =
+            KafkaClusterUtils.createProducerByte(cluster.getBrokers(), cluster.getSecurityProtocol(),
+                cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
         ProducerRecord<String, byte[]> producerRecord;
         if (CommonUtils.isEmpty(messageVO.getPartition())) {
             producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getKey(), data);
         } else {
-            producerRecord = new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(), data);
+            producerRecord =
+                new ProducerRecord<>(messageVO.getTopic(), messageVO.getPartition(), messageVO.getKey(), data);
         }
 
         RecordMetadata recordMetadata = kafkaProducer.send(producerRecord).get();
         return recordMetadata.offset();
     }
 
-
-    public List<KafkaMessageDTO> search(String clusterId, String topicName, Integer tPartition, Long startOffset, int count, String keyFilter, String valueFilter) {
+    public List<KafkaMessageDTO> search(String clusterId, String topicName, Integer tPartition, Long startOffset,
+        int count, String keyFilter, String valueFilter) {
         KafkaCluster cluster = kafkaClusterService.find(clusterId);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(cluster)) {
 
@@ -82,7 +90,8 @@ public class KafkaMessageManager extends AbsKafkaManager {
 
             int emptyPoll = 0;
             while (records.size() < count && currentOffset < endOffset) {
-                List<ConsumerRecord<String, String>> polled = kafkaConsumer.poll(Duration.ofMillis(200)).records(topicPartition);
+                List<ConsumerRecord<String, String>> polled =
+                    kafkaConsumer.poll(Duration.ofMillis(200)).records(topicPartition);
 
                 if (!CollectionUtils.isEmpty(polled)) {
 
@@ -111,26 +120,39 @@ public class KafkaMessageManager extends AbsKafkaManager {
                 }
             }
 
-            return records
-                    .subList(0, Math.min(count, records.size()))
-                    .stream()
-                    .map(record -> {
-                        int partition = record.partition();
-                        long timestamp = record.timestamp();
-                        String key = record.key();
-                        String value = record.value();
-                        long offset = record.offset();
+            return records.subList(0, Math.min(count, records.size())).stream().map(record -> {
+                int partition = record.partition();
+                long timestamp = record.timestamp();
+                String key = record.key();
+                String value = record.value();
+                long offset = record.offset();
 
-                        KafkaMessageDTO consumerMessage = new KafkaMessageDTO();
-                        consumerMessage.setTopic(topicName);
-                        consumerMessage.setOffset(offset);
-                        consumerMessage.setPartition(partition);
-                        consumerMessage.setTimestamp(timestamp);
-                        consumerMessage.setKey(key);
-                        consumerMessage.setValue(value);
+                KafkaMessageDTO consumerMessage = new KafkaMessageDTO();
+                consumerMessage.setTopic(topicName);
+                consumerMessage.setOffset(offset);
+                consumerMessage.setPartition(partition);
+                consumerMessage.setTimestamp(timestamp);
+                consumerMessage.setKey(key);
+                consumerMessage.setValue(value);
 
-                        return consumerMessage;
-                    }).collect(Collectors.toList());
+                return consumerMessage;
+            }).collect(Collectors.toList());
         }
+    }
+
+    public void search(KafkaContentSearchVO record, TopicInfo.Partition partition, Class<?> clazz) {
+        long start = 0;
+        long end = 0;
+        switch (record.getType()) {
+            case ALL:
+                start = partition.getBeginningOffset();
+                end = partition.getBeginningOffset() + record.getLimit();
+                break;
+            case LATEST:
+                start = partition.getEndOffset() - record.getLimit();
+                end = partition.getEndOffset();
+            case EARLIEST:
+        }
+
     }
 }

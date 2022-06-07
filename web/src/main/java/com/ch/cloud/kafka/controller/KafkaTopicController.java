@@ -17,6 +17,7 @@ import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
 import com.ch.cloud.kafka.tools.KafkaTopicManager;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.cloud.utils.ContextUtil;
+import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
@@ -25,7 +26,6 @@ import com.ch.result.ResultUtils;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.e.ExceptionUtils;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
@@ -47,15 +47,15 @@ import java.util.List;
 public class KafkaTopicController {
 
     @Autowired
-    private KafkaTopicService         kafkaTopicService;
+    private KafkaTopicService kafkaTopicService;
     @Autowired
-    private KafkaClusterService       kafkaClusterService;
+    private KafkaClusterService kafkaClusterService;
     @Autowired
-    private KafkaClusterManager       kafkaClusterManager;
+    private KafkaClusterManager kafkaClusterManager;
     @Autowired
     private KafkaConsumerGroupManager kafkaConsumerGroupManager;
     @Autowired
-    private KafkaTopicManager         kafkaTopicManager;
+    private KafkaTopicManager kafkaTopicManager;
 
     @ApiOperation(value = "分页查询", notes = "需要在请求头中附带token")
     @ApiImplicitParams({
@@ -201,25 +201,6 @@ public class KafkaTopicController {
             return c;
         });
     }
-
-    @GetMapping("clusters")
-    public Result<KafkaCluster> getClusters() {
-        return ResultUtils.wrapList(() -> kafkaClusterService.findEnabled());
-    }
-
-    @GetMapping("topics")
-    public Result<String> getTopicsByClusterName(@RequestParam("clusterId") Long clusterId,
-                                                 @RequestParam("topicName") String topicName) {
-        return ResultUtils.wrapList(() -> {
-            AssertUtils.isEmpty(clusterId, PubError.NON_NULL, "集群ID");
-            KafkaCluster cluster = kafkaClusterService.find(clusterId);
-            if (cluster == null) {
-                ExceptionUtils._throw(PubError.NOT_EXISTS);
-            }
-            return ZkTopicUtils.getTopicsByName(cluster.getZookeeper(), topicName);
-        });
-    }
-
 
     @ApiOperation(value = "主题刷新", notes = "注：删除原主题数据, 主题重建信息")
     @PostMapping("refresh")

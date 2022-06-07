@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 public class KafkaSerializeUtils {
 
-    //加载过不用重新加载类对象
+    // 加载过不用重新加载类对象
     private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
 
     /**
@@ -39,7 +39,7 @@ public class KafkaSerializeUtils {
      */
     public static <T> byte[] serializer(T obj) {
         @SuppressWarnings("unchecked")
-        Class<T> clazz = (Class<T>) obj.getClass();
+        Class<T> clazz = (Class<T>)obj.getClass();
         LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         try {
             Schema<T> schema = RuntimeSchema.getSchema(clazz);
@@ -49,7 +49,7 @@ public class KafkaSerializeUtils {
         } finally {
             buffer.clear();
         }
-        return new byte[]{};
+        return new byte[] {};
     }
 
     public static <T> T deSerialize(byte[] data, Class<T> clazz) {
@@ -69,17 +69,19 @@ public class KafkaSerializeUtils {
     }
 
     public static Class<?> loadClazz(String path, String className) {
+        if (CommonUtils.isEmptyOr(path, className))
+            return null;
         String prefix = "file:";
-//        log.debug("load class file path: {} | {}", prefix, path);
+        // log.debug("load class file path: {} | {}", prefix, path);
         try {
             Class<?> clazz = clazzMap.get(className);
             if (clazz == null) {
 
-                try {//先从加载器加载类
+                try {// 先从加载器加载类
                     clazz = Class.forName(className);
                 } catch (ClassNotFoundException ignored) {
                 }
-                if (clazz == null) {//加载器类不存在，从Jar文件加载
+                if (clazz == null) {// 加载器类不存在，从Jar文件加载
                     clazz = JarUtils.loadClassForJar(prefix + path, className);
                 }
                 clazzMap.put(className, clazz);
@@ -92,12 +94,11 @@ public class KafkaSerializeUtils {
         return null;
     }
 
-
     public static ZkSerializer jsonZk() {
         return new ZkSerializer() {
             @Override
             public byte[] serialize(Object o) throws ZkMarshallingError {
-                return JSONUtils.toJson(o).getBytes(StandardCharsets.UTF_8);
+                return JSONUtils.toJson2(o).getBytes(StandardCharsets.UTF_8);
             }
 
             @Override
@@ -106,7 +107,6 @@ public class KafkaSerializeUtils {
             }
         };
     }
-
 
     public static byte[] convertContent(KafkaTopicDTO kafkaTopicDto, String contentMsg) {
 
@@ -117,8 +117,8 @@ public class KafkaSerializeUtils {
                 clazz = KafkaSerializeUtils.loadClazz(kafkaTopicDto.getClassFile(), kafkaTopicDto.getClassName());
             }
             if (clazz != null) {
-                Object obj = JSONUtils.fromJson(contentMsg, clazz, DateUtils.Pattern.DATETIME_CN);
-                log.debug("send clazz content: {}", JSONUtils.toJson(obj));
+                Object obj = JSONUtils.fromJson2(contentMsg, clazz);
+                log.debug("send clazz content: {}", JSONUtils.toJson2(obj));
                 if (obj != null) {
                     return KafkaSerializeUtils.serializer(obj);
                 }

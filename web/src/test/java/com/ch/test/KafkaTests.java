@@ -1,15 +1,7 @@
 package com.ch.test;
 
-import com.ch.cloud.kafka.enums.ContentType;
-import com.ch.cloud.kafka.enums.SearchType;
-import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.kafka.tools.ZkTopicUtils;
-//import kafka.api.OffsetRequest;
-//import kafka.api.OffsetResponse;
-//import kafka.api.PartitionOffsetRequestInfo;
-//import kafka.api.TopicMetadataResponse;
-//import kafka.common.TopicAndPartition;
-//import kafka.consumer.SimpleConsumer;
+import java.util.Properties;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -19,7 +11,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.Test;
 
-import java.util.*;
+import com.ch.cloud.kafka.tools.ZkTopicUtils;
 
 /**
  * @author zhimin.ma
@@ -186,12 +178,6 @@ public class KafkaTests {
 //        System.out.println(JSONUtils.toJson(partitions));
     }
 
-    @Test
-    public void testContentTool() {
-        KafkaContentTool kafkaTool = new KafkaContentTool(zk2,"SHIVA_TRTMS_GROUND_TEMP_REQUIRE");
-
-        kafkaTool.searchTopicContent2(ContentType.JSON, SearchType.LATEST,100,"19101510245766",null);
-    }
 
     @Test
     public void testSend() throws InterruptedException {

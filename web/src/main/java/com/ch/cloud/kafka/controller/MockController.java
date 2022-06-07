@@ -1,14 +1,23 @@
 package com.ch.cloud.kafka.controller;
 
-import com.alibaba.fastjson.JSON;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.model.KafkaTopicExt;
 import com.ch.cloud.kafka.model.KafkaTopicExtProp;
-import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.kafka.tools.KafkaContentTool;
-import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
 import com.ch.cloud.kafka.utils.MapUtils;
 import com.ch.cloud.kafka.utils.MockUtil;
 import com.ch.cloud.mock.pojo.MockProp;
@@ -18,17 +27,12 @@ import com.ch.pool.DefaultThreadPool;
 import com.ch.result.InvokerPage;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
-import com.ch.utils.*;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
 import com.google.common.collect.Lists;
+
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 /**
  * decs:
@@ -63,7 +67,6 @@ public class MockController {
                 int bs = CommonUtils.isNotEmpty(record.getBatchSize()) ? record.getBatchSize() : 1;
 
                 KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(record.getClusterId(), record.getTopicName());
-                KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
 
                 List<Future<List<Object>>> futures = Lists.newArrayList();
 
@@ -116,7 +119,8 @@ public class MockController {
                             log.info("mock: {}", o);
 //                            if (list.size() < ss)
                             list.add(o);
-                            contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, JSON.toJSONString(o)));
+                            //todo send message queue
+//                            contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, JSON.toJSONString(o)));
                         }
 
 //                        log.info("mock size: {}", list.size());
@@ -157,13 +161,13 @@ public class MockController {
             if (checkOK) {
 
                 KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(record.getClusterId(), record.getTopicName());
-                KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
+//                KafkaContentTool contentTool = new KafkaContentTool(kafkaTopicDto.getZookeeper(), kafkaTopicDto.getClusterId(), kafkaTopicDto.getTopicName());
                 List<Future<List<Object>>> futures = Lists.newArrayList();
                 for (int i = 0; i < record.getThreadSize(); i++) {
                     int threadIndex = i;
                     Future<List<Object>> f = DefaultThreadPool.submit(() -> {
                         List<Object> o = mockGPSDataProps(record, props, threadIndex);
-                        o.forEach(e -> contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, JSON.toJSONString(e))));
+//                        o.forEach(e -> contentTool.send(KafkaSerializeUtils.convertContent(kafkaTopicDto, JSON.toJSONString(e))));
 //                        contentTool.send(KafkaSerializeUtils.convertContent(topicDto, JSON.toJSONString(o)));
                         return o;
                     });
