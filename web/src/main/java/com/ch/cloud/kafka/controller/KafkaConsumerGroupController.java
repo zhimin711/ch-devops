@@ -22,22 +22,22 @@ public class KafkaConsumerGroupController {
     @Autowired
     private KafkaConsumerGroupManager kafkaConsumerGroupManager;
 
-    @GetMapping("{clusterId}")
+    @GetMapping("{clusterId:[0-9]+}")
     public Result<ConsumerGroupDTO> list(@PathVariable Long clusterId, String groupId) throws ExecutionException, InterruptedException {
         return ResultUtils.wrap(() -> kafkaConsumerGroupManager.consumerGroup(clusterId, groupId));
     }
 
-    @GetMapping("/{clusterId}/{groupId}")
+    @GetMapping("/{clusterId:[0-9]+}/{groupId}")
     public ConsumerGroupDTO info(@PathVariable String groupId, @PathVariable Long clusterId) throws ExecutionException, InterruptedException {
         return kafkaConsumerGroupManager.info(clusterId, groupId);
     }
 
-    @GetMapping("/{clusterId}/{groupId}/describe")
+    @GetMapping("/{clusterId:[0-9]+}/{groupId}/describe")
     public List<ConsumerGroupDescribeDTO> describe(@PathVariable String groupId, @PathVariable Long clusterId) throws ExecutionException, InterruptedException {
         return kafkaConsumerGroupManager.describe(clusterId, groupId);
     }
 
-    @DeleteMapping("/{clusterId}/{groupId}")
+    @DeleteMapping("/{clusterId:[0-9]+}/{groupId}")
     public void delete(@PathVariable String groupId, @PathVariable Long clusterId) throws ExecutionException, InterruptedException {
         kafkaConsumerGroupManager.delete(clusterId, groupId);
     }

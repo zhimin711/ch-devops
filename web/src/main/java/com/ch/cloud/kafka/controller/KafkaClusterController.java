@@ -39,7 +39,7 @@ public class KafkaClusterController {
     @Autowired
     private KafkaClusterManager kafkaClusterManager;
 
-    @GetMapping(value = {"{num\\d+}/{size\\d+}"})
+    @GetMapping(value = {"{num:\\d+}/{size:\\d+}"})
     public PageResult<KafkaCluster> page(KafkaCluster record,
                                          @PathVariable(value = "num") int pageNum,
                                          @PathVariable(value = "size") int pageSize) {
