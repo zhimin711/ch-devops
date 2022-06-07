@@ -47,7 +47,7 @@ public class KafkaClusterAuthController {
                                        @RequestParam("topicName") String topicName) {
         return ResultUtils.wrapList(() -> {
             List<KafkaTopic> list = kafkaTopicService.findByClusterIdLikeTopicName(id, topicName);
-            return VueRecordUtils.covertTree(list, "topicName", "topicName", null);
+            return VueRecordUtils.covertTree(list, "id", "topicName", null);
         });
     }
 
