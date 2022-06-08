@@ -81,6 +81,9 @@ public class KafkaMessageManager extends AbsKafkaManager {
         String valueFilter = searchVO.getContent();
         int count = searchVO.getLimit();
         KafkaCluster cluster = kafkaClusterService.find(clusterId);
+
+        tPartition = CommonUtils.or(tPartition, searchVO.getPartition());
+
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(cluster)) {
 
             TopicPartition topicPartition = new TopicPartition(topicName, tPartition);
@@ -88,12 +91,27 @@ public class KafkaMessageManager extends AbsKafkaManager {
             kafkaConsumer.assign(topicPartitions);
 
             Long beginningOffset = kafkaConsumer.beginningOffsets(topicPartitions).get(topicPartition);
+            Long endOffset2 = kafkaConsumer.endOffsets(topicPartitions).get(topicPartition);
+            if (startOffset == null) {
+                if (searchVO.getType() == SearchType.LATEST) {
+                    startOffset = searchVO.getOffset() - searchVO.getSize();
+                } else {
+                    startOffset = Math.min(searchVO.getOffset(), endOffset2);
+                }
+            }
+            if (endOffset == null) {
+                if (searchVO.getType() == SearchType.LATEST) {
+                    endOffset = searchVO.getOffset();
+                } else {
+                    endOffset = Math.min(searchVO.getOffset() + searchVO.getSize(), endOffset2);
+                }
+            }
+
             if (startOffset < beginningOffset) {
                 startOffset = beginningOffset;
             }
             kafkaConsumer.seek(topicPartition, startOffset);
 
-            // Long endOffset = kafkaConsumer.endOffsets(topicPartitions).get(topicPartition);
             long currentOffset = startOffset - 1;
 
             List<ConsumerRecord<String, String>> records = new ArrayList<>(count);
@@ -169,5 +187,10 @@ public class KafkaMessageManager extends AbsKafkaManager {
         }
 
         return search(record, partition.getPartition(), start, end);
+    }
+
+    public List<KafkaMessageDTO> more(KafkaContentSearchVO searchVO, Class<?> clazz) {
+        List<KafkaMessageDTO> list = search(searchVO, null, null, null);
+        return list;
     }
 }

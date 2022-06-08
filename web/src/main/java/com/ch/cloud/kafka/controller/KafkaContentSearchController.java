@@ -78,6 +78,23 @@ public class KafkaContentSearchController {
         return result;
     }
 
+    @ApiOperation(value = "更多消息")
+    @GetMapping("more")
+    public Result<?> more(KafkaContentSearchVO searchVO) {
+        AssertUtils.isTrue(CommonUtils.isEmptyOr(searchVO.getPartition(),searchVO.getOffset()),
+            PubError.NOT_ALLOWED, "条件不足！");
+        KafkaTopic kafkaTopic = kafkaTopicService.check(searchVO.getClusterId(), searchVO.getTopicId());
+        Result<KafkaMessageDTO> result = ResultUtils.wrap(() -> {
+            searchVO.setTopic(kafkaTopic.getTopicName());
+            Class<?> clazz = KafkaSerializeUtils.loadClazz(kafkaTopic.getClassFile(), kafkaTopic.getClassName());
+            return kafkaMessageManager.more(searchVO, clazz);
+        });
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("offset", searchVO.getOffset());
+        result.setExtra(extra);
+        return result;
+    }
+
     @PostMapping("send")
     public Result<Integer> sendMessage(@RequestBody KafkaMessageVO messageVO) {
         return ResultUtils.wrap(() -> {
