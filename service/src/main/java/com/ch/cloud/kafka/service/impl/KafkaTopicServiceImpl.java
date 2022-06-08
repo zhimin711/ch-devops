@@ -109,9 +109,9 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     @Override
     public KafkaTopicDTO check(Long clusterId, String topic) {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        AssertUtils.isNull(config,PubError.NOT_EXISTS, clusterId + "集群配置不存在!");
+        AssertUtils.isNull(config,PubError.NOT_EXISTS, clusterId + "集群配置");
         KafkaTopic kafkaTopic = this.findByClusterIdAndTopicName(clusterId, topic);
-        AssertUtils.isNull(kafkaTopic,PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置不存在！");
+        AssertUtils.isNull(kafkaTopic,PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置");
         KafkaTopicDTO dto = new KafkaTopicDTO();
         BeanUtils.copyProperties(kafkaTopic, dto);
         dto.setZookeeper(config.getZookeeper());
