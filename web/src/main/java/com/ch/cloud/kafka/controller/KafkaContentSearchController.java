@@ -3,6 +3,7 @@ package com.ch.cloud.kafka.controller;
 import java.util.List;
 import java.util.Map;
 
+import com.ch.cloud.kafka.model.KafkaTopic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,14 +52,14 @@ public class KafkaContentSearchController {
     public Result<?> search(KafkaContentSearchVO record) {
         AssertUtils.isTrue(record.getType() == SearchType.ALL && CommonUtils.isEmpty(record.getContent()),
             PubError.NOT_ALLOWED, "全量搜索，内容不能为空！");
-        KafkaTopicDTO kafkaTopicDto = kafkaTopicService.check(record.getClusterId(), record.getTopic());
+        KafkaTopic kafkaTopic = kafkaTopicService.check(record.getClusterId(), record.getTopicId());
         Result<KafkaContentSearchDTO> res = ResultUtils.wrap(() -> {
-            TopicInfo info = kafkaClusterManager.info(record.getClusterId(), record.getTopic());
+            TopicInfo info = kafkaClusterManager.info(record.getClusterId(), kafkaTopic.getTopicName());
             AssertUtils.isEmpty(info.getPartitions(), PubError.NOT_EXISTS, "主题分区");
-            Class<?> clazz = KafkaSerializeUtils.loadClazz(kafkaTopicDto.getClassFile(), kafkaTopicDto.getClassName());
+            Class<?> clazz = KafkaSerializeUtils.loadClazz(kafkaTopic.getClassFile(), kafkaTopic.getClassName());
             KafkaContentSearchDTO searchDTO = new KafkaContentSearchDTO();
             searchDTO.setClusterId(record.getClusterId());
-            searchDTO.setTopic(record.getTopic());
+            searchDTO.setTopic(kafkaTopic.getTopicName());
             info.getPartitions().forEach(partition -> {
                 if (CommonUtils.isNotEmpty(record.getPartition()) && record.getPartition() >= 0
                     && !CommonUtils.isEquals(partition.getPartition(), record.getPartition())) {
@@ -71,7 +72,7 @@ public class KafkaContentSearchController {
             return searchDTO;
         });
         Map<String, Object> extra = Maps.newHashMap();
-        extra.put("contentType", kafkaTopicDto.getType());
+        extra.put("contentType", kafkaTopic.getType());
         res.setExtra(extra);
         return res;
     }

@@ -25,8 +25,8 @@ public class KafkaContentSearchVO {
     /**
      * 集群主题
      */
-    @ApiModelProperty(name = "集群主题", required = true, position = 2)
-    private String topic;
+    @ApiModelProperty(name = "主题ID", required = true, position = 2)
+    private Long topicId;
     /**
      * 搜索类型(0.全量 1.按最新 2.最早 3.)
      */

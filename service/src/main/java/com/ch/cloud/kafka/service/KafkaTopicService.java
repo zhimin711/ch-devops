@@ -20,6 +20,7 @@ public interface KafkaTopicService extends IService<KafkaTopic> {
     int saveOrUpdate(List<KafkaTopicDTO> topicList, String username);
 
     KafkaTopicDTO check(Long clusterId, String topic);
+    KafkaTopic check(Long clusterId, Long topicId);
 
     int update(KafkaTopic srcRecord, KafkaTopic targetRecord);
 }

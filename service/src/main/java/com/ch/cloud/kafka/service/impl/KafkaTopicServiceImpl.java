@@ -49,7 +49,7 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
         q.setClusterId(clusterId);
         q.setTopicName(topicName);
         if (CommonUtils.isEmpty(clusterId)) {
-//            return null;
+            // return null;
         }
         return getMapper().selectOne(q);
     }
@@ -66,7 +66,8 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
 
     @Override
     public int saveOrUpdate(List<KafkaTopicDTO> topicList, String username) {
-        if (CommonUtils.isEmpty(topicList)) return 0;
+        if (CommonUtils.isEmpty(topicList))
+            return 0;
         AtomicInteger c = new AtomicInteger();
         topicList.forEach(r -> {
             KafkaTopic topic = this.findByClusterIdAndTopicName(r.getClusterId(), r.getTopicName());
@@ -109,15 +110,26 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
     @Override
     public KafkaTopicDTO check(Long clusterId, String topic) {
         KafkaCluster config = kafkaClusterService.find(clusterId);
-        AssertUtils.isNull(config,PubError.NOT_EXISTS, clusterId + "集群配置");
+        AssertUtils.isNull(config, PubError.NOT_EXISTS, clusterId + "集群配置");
         KafkaTopic kafkaTopic = this.findByClusterIdAndTopicName(clusterId, topic);
-        AssertUtils.isNull(kafkaTopic,PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置");
+        AssertUtils.isNull(kafkaTopic, PubError.NOT_EXISTS, clusterId + ":" + topic + "主题配置");
         KafkaTopicDTO dto = new KafkaTopicDTO();
         BeanUtils.copyProperties(kafkaTopic, dto);
         dto.setZookeeper(config.getZookeeper());
         String path = libsDir + File.separator + kafkaTopic.getClassFile();
         dto.setClassFile(path);
         return dto;
+    }
+
+    @Override
+    public KafkaTopic check(Long clusterId, Long topicId) {
+        KafkaTopic kafkaTopic = this.find(topicId);
+        AssertUtils.isNull(kafkaTopic, PubError.NOT_EXISTS, topicId + "主题配置");
+        AssertUtils.isFalse(CommonUtils.isEquals(kafkaTopic.getClusterId(), clusterId), PubError.NOT_ALLOWED,
+            clusterId + ":" + topicId + "主题配置");
+        String path = libsDir + File.separator + kafkaTopic.getClassFile();
+        kafkaTopic.setClassFile(path);
+        return kafkaTopic;
     }
 
     @Override
