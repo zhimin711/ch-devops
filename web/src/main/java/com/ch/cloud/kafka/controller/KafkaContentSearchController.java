@@ -49,32 +49,33 @@ public class KafkaContentSearchController {
 
     @ApiOperation(value = "消息搜索")
     @GetMapping("search")
-    public Result<?> search(KafkaContentSearchVO record) {
-        AssertUtils.isTrue(record.getType() == SearchType.ALL && CommonUtils.isEmpty(record.getContent()),
+    public Result<?> search(KafkaContentSearchVO searchVO) {
+        AssertUtils.isTrue(searchVO.getType() == SearchType.ALL && CommonUtils.isEmpty(searchVO.getContent()),
             PubError.NOT_ALLOWED, "全量搜索，内容不能为空！");
-        KafkaTopic kafkaTopic = kafkaTopicService.check(record.getClusterId(), record.getTopicId());
-        Result<KafkaContentSearchDTO> res = ResultUtils.wrap(() -> {
-            TopicInfo info = kafkaClusterManager.info(record.getClusterId(), kafkaTopic.getTopicName());
+        KafkaTopic kafkaTopic = kafkaTopicService.check(searchVO.getClusterId(), searchVO.getTopicId());
+        Result<KafkaContentSearchDTO> result = ResultUtils.wrap(() -> {
+            searchVO.setTopic(kafkaTopic.getTopicName());
+            TopicInfo info = kafkaClusterManager.info(searchVO.getClusterId(), kafkaTopic.getTopicName());
             AssertUtils.isEmpty(info.getPartitions(), PubError.NOT_EXISTS, "主题分区");
             Class<?> clazz = KafkaSerializeUtils.loadClazz(kafkaTopic.getClassFile(), kafkaTopic.getClassName());
             KafkaContentSearchDTO searchDTO = new KafkaContentSearchDTO();
-            searchDTO.setClusterId(record.getClusterId());
+            searchDTO.setClusterId(searchVO.getClusterId());
             searchDTO.setTopic(kafkaTopic.getTopicName());
             info.getPartitions().forEach(partition -> {
-                if (CommonUtils.isNotEmpty(record.getPartition()) && record.getPartition() >= 0
-                    && !CommonUtils.isEquals(partition.getPartition(), record.getPartition())) {
+                if (CommonUtils.isNotEmpty(searchVO.getPartition()) && searchVO.getPartition() >= 0
+                    && !CommonUtils.isEquals(partition.getPartition(), searchVO.getPartition())) {
                     return;
                 }
-                List<KafkaMessageDTO> list = kafkaMessageManager.search(record, partition, clazz);
-                searchDTO.putOffset(partition.getPartition(), record.getOffset());
+                List<KafkaMessageDTO> list = kafkaMessageManager.search(searchVO, partition, clazz);
+                searchDTO.putOffset(partition.getPartition(), searchVO.getOffset());
                 searchDTO.putMessages(partition.getPartition(), list);
             });
             return searchDTO;
         });
         Map<String, Object> extra = Maps.newHashMap();
         extra.put("contentType", kafkaTopic.getType());
-        res.setExtra(extra);
-        return res;
+        result.setExtra(extra);
+        return result;
     }
 
     @PostMapping("send")
