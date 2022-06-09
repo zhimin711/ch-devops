@@ -3,6 +3,7 @@ package com.ch.cloud.kafka.tools;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
+import com.ch.utils.AssertUtils;
 import com.google.common.collect.Maps;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
@@ -87,7 +88,7 @@ public class KafkaClusterUtils {
         Properties properties = new Properties();
         properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         properties.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, "5000");
-        properties.put(AdminClientConfig.RETRIES_CONFIG, "0");
+        properties.put(AdminClientConfig.RETRIES_CONFIG, "3");
         if (StringUtils.hasText(securityProtocol)) {
             properties.put("security.protocol", securityProtocol);
         }
@@ -113,15 +114,8 @@ public class KafkaClusterUtils {
     }
 
     public static AdminClient getAdminClient(KafkaCluster cluster) {
-        ExceptionUtils.assertEmpty(cluster, PubError.NOT_EXISTS, "cluster config");
-        synchronized (cluster.getClusterName().intern()) {
-            AdminClient adminClient = clients.get(cluster.getClusterName());
-            if (adminClient == null) {
-                adminClient = createAdminClient(cluster.getBrokers(), cluster.getSecurityProtocol(), cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
-                clients.put(cluster.getClusterName(), adminClient);
-            }
-            return adminClient;
-        }
+        AssertUtils.isNull(cluster, PubError.NOT_EXISTS, "cluster config");
+        return getAdminClient(cluster.getClusterName(),cluster.getBrokers(), cluster.getSecurityProtocol(), cluster.getSaslMechanism(), cluster.getAuthUsername(), cluster.getAuthPassword());
     }
 
     public static KafkaConsumer<String, String> createConsumer(KafkaCluster config) {
