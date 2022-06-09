@@ -17,6 +17,7 @@
 
 package com.ch.cloud.support;
 
+import com.ch.e.ErrorException;
 import com.ch.e.PubError;
 import com.ch.e.PubException;
 import com.ch.result.Result;
@@ -39,7 +40,9 @@ public class GlobalExceptionHandler {
         Result<Object> value = null;
         if (ex != null) {
             log.error("op=global_exception_handler_print_error", ex);
-            if (ex instanceof PubException) {
+            if (ex instanceof ErrorException) {
+                value = Result.error(((ErrorException) ex).getError(), ex.getMessage());
+            } else if (ex instanceof PubException) {
                 value = Result.error(((PubException) ex).getError(), ex.getMessage());
             } else if (ex instanceof MQBrokerException) {
                 value = Result.error(PubError.UNDEFINED, ((MQBrokerException) ex).getErrorMessage());
