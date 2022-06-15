@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface INamespaceService extends IService<Namespace> {
 
-    Namespace findByUid(String uid);
+    Namespace findByUid(Long clusterId, String uid);
 
     List<Namespace> findByClusterIdAndName(Long clusterId, String name);
 

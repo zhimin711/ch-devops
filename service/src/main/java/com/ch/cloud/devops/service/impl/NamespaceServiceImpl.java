@@ -29,10 +29,11 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
     private INacosClusterService nacosClusterService;
 
     @Override
-    public Namespace findByUid(String uid) {
+    public Namespace findByUid(Long clusterId, String uid) {
         if (CommonUtils.isEmpty(uid))
             return null;
         Namespace record = new Namespace();
+        record.setClusterId(clusterId);
         record.setUid(uid);
         return getMapper().selectOne(record);
     }
@@ -43,6 +44,7 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
             return null;
         Namespace record = new Namespace();
         record.setClusterId(clusterId);
+        record.setName(name);
         Sqls sqls = Sqls.custom();
         ExampleUtils.dynCommon(sqls, record);
         ExampleUtils.dynEqual(sqls, record, "clusterId");

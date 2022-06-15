@@ -51,22 +51,20 @@ public class NacosNamespacesController {
     @Autowired
     private INacosNamespaceProjectService nacosNamespaceProjectService;
     @Autowired
-    private INacosClusterService     nacosClusterService;
+    private INacosClusterService nacosClusterService;
 
     @Autowired
     private UpmsProjectClientService projectClientService;
     @Autowired
-    private UpmsTenantClientService  tenantClientService;
+    private UpmsTenantClientService tenantClientService;
 
     @Autowired
     private NacosNamespacesClient nacosNamespacesClient;
 
-
     @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
-    public PageResult<Namespace> page(Namespace record,
-                                      @PathVariable(value = "num") int pageNum,
-                                      @PathVariable(value = "size") int pageSize) {
+    public PageResult<Namespace> page(Namespace record, @PathVariable(value = "num") int pageNum,
+        @PathVariable(value = "size") int pageSize) {
         record.setType(NamespaceType.NACOS);
         return ResultUtils.wrapPage(() -> {
             InvokerPage.Page<Namespace> page = namespaceService.invokerPage(record, pageNum, pageSize);
@@ -76,7 +74,8 @@ public class NacosNamespacesController {
                     e.setAddr(cluster.getUrl());
 
                     NacosNamespaceDTO r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(e));
-                    if (r == null) return;
+                    if (r == null)
+                        return;
                     e.setConfigCount(r.getConfigCount());
                     e.setQuota(r.getQuota());
                 });
@@ -84,7 +83,6 @@ public class NacosNamespacesController {
             return page;
         });
     }
-
 
     @ApiOperation(value = "添加", notes = "添加命名空间")
     @PostMapping
@@ -95,7 +93,7 @@ public class NacosNamespacesController {
                 record.setUid(UUIDGenerator.generateUid().toString());
             } else {
                 NacosNamespaceDTO namespace = nacosNamespacesClient.fetch(record);
-                AssertUtils.notNull(namespace, PubError.EXISTS,"id");
+                AssertUtils.notNull(namespace, PubError.EXISTS, "id");
             }
             boolean syncOk = nacosNamespacesClient.add(record);
             if (!syncOk) {
@@ -148,7 +146,6 @@ public class NacosNamespacesController {
         });
     }
 
-
     @ApiOperation(value = "删除", notes = "删除命名空间")
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
@@ -170,11 +167,13 @@ public class NacosNamespacesController {
     public Result<Boolean> sync(@PathVariable Long clusterId) {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(clusterId);
-            ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
+            AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
             List<NacosNamespaceDTO> list = nacosNamespacesClient.fetchAll(cluster.getUrl());
             List<Namespace> list2 = namespaceService.findByClusterIdAndName(clusterId, null);
-            Map<String, NacosNamespaceDTO> nacosMap = CommonUtils.isNotEmpty(list) ? list.stream().collect(Collectors.toMap(NacosNamespaceDTO::getNamespace, e -> e)) : Maps.newHashMap();
-            Map<String, Namespace> localMap = CommonUtils.isNotEmpty(list2) ? list2.stream().collect(Collectors.toMap(Namespace::getUid, e -> e)) : Maps.newHashMap();
+            Map<String, NacosNamespaceDTO> nacosMap = CommonUtils.isNotEmpty(list)
+                ? list.stream().collect(Collectors.toMap(NacosNamespaceDTO::getNamespace, e -> e)) : Maps.newHashMap();
+            Map<String, Namespace> localMap = CommonUtils.isNotEmpty(list2)
+                ? list2.stream().collect(Collectors.toMap(Namespace::getUid, e -> e)) : Maps.newHashMap();
 
             if (localMap.isEmpty()) {
                 saveNacosNamespaces(list, clusterId);
@@ -183,11 +182,13 @@ public class NacosNamespacesController {
             } else {
                 List<NacosNamespaceDTO> newList = Lists.newArrayList();
                 nacosMap.forEach((k, v) -> {
-                    if (!localMap.containsKey(k)) newList.add(v);
+                    if (!localMap.containsKey(k))
+                        newList.add(v);
                 });
                 saveNacosNamespaces(newList, clusterId);
                 localMap.forEach((k, v) -> {
-                    if (!nacosMap.containsKey(k)) nacosNamespacesClient.add(v);
+                    if (!nacosMap.containsKey(k))
+                        nacosNamespacesClient.add(v);
                 });
             }
             return true;
@@ -203,7 +204,7 @@ public class NacosNamespacesController {
             record.setType(NamespaceType.NACOS);
             record.setUid(e.getNamespace());
             record.setName(e.getNamespaceShowName());
-            Namespace orig = namespaceService.findByUid(e.getNamespace());
+            Namespace orig = namespaceService.findByUid(clusterId, e.getNamespace());
             if (orig != null) {
                 orig.setName(e.getNamespaceShowName());
                 namespaceService.update(orig);
@@ -212,7 +213,6 @@ public class NacosNamespacesController {
             }
         });
     }
-
 
     @GetMapping({"{id:[0-9]+}/projects"})
     public Result<VueRecord2> findProjects(@PathVariable Long id) {
@@ -223,11 +223,9 @@ public class NacosNamespacesController {
         });
     }
 
-
     @PostMapping({"{id:[0-9]+}/projects"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> projectIds) {
         return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignNamespaceProjects(id, projectIds));
     }
 
 }
-
