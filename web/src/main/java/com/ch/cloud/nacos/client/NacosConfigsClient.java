@@ -174,7 +174,7 @@ public class NacosConfigsClient extends BaseClient {
         param.add("file", resource);
         param.add("policy", clientEntity.getData().getPolicy());
 
-        log.error("import url: {}", url);
+        log.info("import url: {}", url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
