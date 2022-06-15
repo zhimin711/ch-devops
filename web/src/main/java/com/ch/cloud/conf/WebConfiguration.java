@@ -25,7 +25,7 @@ public class WebConfiguration {
     @Bean
     public RestTemplate restTemplate(){
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(600000);
+        factory.setReadTimeout(300000);
         factory.setConnectTimeout(3000);
         RestTemplate restTemplate = new RestTemplate(factory);
         // 找出并修改默认的StringHttpMessageConverter
