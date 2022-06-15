@@ -124,9 +124,16 @@ public class NacosUserConfigsController {
     @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
     @GetMapping("export")
     public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportVO record) {
+        String nid = record.getNamespaceId();
         AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
         Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
         if (result.isSuccess()) {
+            record.setTenant(record.getNamespaceId());
+            String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+            if(CommonUtils.isNotEmpty(groupId)) {
+                record.setAppName(null);
+                record.setGroup(groupId);
+            }
             return nacosConfigsClient.export(clientEntity.get());
         }
         return ResponseEntity.badRequest().build();

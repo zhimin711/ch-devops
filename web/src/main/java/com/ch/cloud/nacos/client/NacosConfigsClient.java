@@ -156,7 +156,9 @@ public class NacosConfigsClient extends BaseClient {
     public ResponseEntity<Resource> export(ClientEntity<ConfigExportVO> clientEntity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
         String urlParams = HttpUtil.toParams(param);
-        return restTemplate.getForEntity(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, Resource.class);
+        String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+        log.info("export url: {}", url);
+        return restTemplate.getForEntity(url, Resource.class);
     }
 
     public JSONObject importZip(ClientEntity<ConfigImportVO> clientEntity, MultipartFile file) throws Exception {
@@ -180,15 +182,17 @@ public class NacosConfigsClient extends BaseClient {
         try {
             JSONObject resp = restTemplate.postForObject(url, httpEntity, JSONObject.class);
             AssertUtils.isNull(resp, PubError.CONNECT);
-            if (resp.containsKey("code") && resp.getInteger("code") == 200) {
-                return resp.getJSONObject("data");
-            } else {
-                log.error("import result: {}", resp);
-                AssertUtils.isTrue(true, PubError.UNDEFINED,resp);
+
+            log.debug("import result: {}", resp);
+            boolean success = resp.containsKey("code") && resp.getInteger("code") == 200;
+            String msg = "";
+            if (!success) {
+                msg = resp.getString("message");
             }
+            AssertUtils.isFalse(success, PubError.UNDEFINED, msg);
+            return resp.getJSONObject("data");
         } finally {
             FileUtil.del(f);
         }
-        return null;
     }
 }
