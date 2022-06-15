@@ -119,7 +119,7 @@ public class NacosConfigsController {
     @ApiOperation(value = "导入配置", notes = "导入配置")
     @PostMapping("import")
     public Result<?> importZip(ConfigImportVO record, @RequestPart("file") MultipartFile file) {
-        return ResultUtils.wrap(() -> {
+        return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigImportVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosConfigsClient.importZip(clientEntity, file);
         });

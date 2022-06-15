@@ -43,7 +43,7 @@ public class NacosConfigsClient extends BaseClient {
     @Autowired
     private RestTemplate restTemplate;
     @Value("${fs.path.tmp:/tmp}")
-    private String       fsTmp;
+    private String fsTmp;
 
     public Boolean add(ClientEntity<ConfigVO> entity) {
         return save(entity, true);
@@ -96,9 +96,8 @@ public class NacosConfigsClient extends BaseClient {
         if (isBatch) {
             urlParams += "&delType=ids&ids=" + entity.getData().getIds();
         } else {
-            urlParams += "&dataId=" + entity.getData().getDataId()
-                    + "&group=" + entity.getData().getGroup()
-                    + "&tenant=" + entity.getData().getNamespaceId();
+            urlParams += "&dataId=" + entity.getData().getDataId() + "&group=" + entity.getData().getGroup()
+                + "&tenant=" + entity.getData().getNamespaceId();
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -111,7 +110,8 @@ public class NacosConfigsClient extends BaseClient {
         String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
 
         if (isBatch) {
-            ResponseEntity<JSONObject> resp = restTemplate.exchange(url, HttpMethod.DELETE, httpEntity, JSONObject.class);
+            ResponseEntity<JSONObject> resp =
+                restTemplate.exchange(url, HttpMethod.DELETE, httpEntity, JSONObject.class);
             if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
                 return resp.getBody().containsKey("data") && resp.getBody().getBoolean("data");
             }
@@ -125,16 +125,17 @@ public class NacosConfigsClient extends BaseClient {
     public ConfigDTO fetch(ClientEntity<ConfigQueryVO> clientEntity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
         String urlParams = HttpUtil.toParams(param);
-        JSONObject resp = restTemplate.getForObject(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
-        if (resp != null) return resp.toJavaObject(ConfigDTO.class);
+        JSONObject resp =
+            restTemplate.getForObject(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
+        if (resp != null)
+            return resp.toJavaObject(ConfigDTO.class);
         return null;
     }
 
     public JSONObject clone(ClientEntity<ConfigPolicyVO> clientEntity, ConfigCloneVO[] records) {
-        String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?clone=true&tenant="
-                + clientEntity.getData().getNamespaceId()
-                + "&policy=" + clientEntity.getData().getPolicy()
-                + "&namespaceId=";
+        String url =
+            clientEntity.getUrl() + NacosAPI.CONFIGS + "?clone=true&tenant=" + clientEntity.getData().getNamespaceId()
+                + "&policy=" + clientEntity.getData().getPolicy() + "&namespaceId=";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -150,9 +151,7 @@ public class NacosConfigsClient extends BaseClient {
     }
 
     /**
-     * http://192.168.0.201:8848/nacos/v1/cs/configs?
-     * exportV2=true&tenant=&group=&appName=&ids=48,65
-     * &username=nacos
+     * http://192.168.0.201:8848/nacos/v1/cs/configs? exportV2=true&tenant=&group=&appName=&ids=48,65 &username=nacos
      */
     public ResponseEntity<Resource> export(ClientEntity<ConfigExportVO> clientEntity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
@@ -161,25 +160,31 @@ public class NacosConfigsClient extends BaseClient {
     }
 
     public JSONObject importZip(ClientEntity<ConfigImportVO> clientEntity, MultipartFile file) throws Exception {
-        String urlParams = "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username=" + ContextUtil.getUser();
+        String urlParams =
+            "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username=" + ContextUtil.getUser();
+        String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
 
         File f = new File(fsTmp, FileUtilsV2.generateDateUidFileName(file.getName()));
         FileUtil.writeFromStream(file.getInputStream(), f);
         FileSystemResource resource = new FileSystemResource(f);
-        //参数
+        // 参数
         param.add("file", resource);
         param.add("policy", clientEntity.getData().getPolicy());
 
+        log.error("import url: {}", url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(param, headers);
         try {
-            JSONObject resp = restTemplate.postForObject(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, httpEntity, JSONObject.class);
+            JSONObject resp = restTemplate.postForObject(url, httpEntity, JSONObject.class);
             AssertUtils.isNull(resp, PubError.CONNECT);
             if (resp.containsKey("code") && resp.getInteger("code") == 200) {
                 return resp.getJSONObject("data");
+            } else {
+                log.error("import result: {}", resp);
+                AssertUtils.isTrue(true, PubError.UNDEFINED,resp);
             }
         } finally {
             FileUtil.del(f);
