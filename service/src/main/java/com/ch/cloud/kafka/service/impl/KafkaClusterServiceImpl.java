@@ -5,7 +5,9 @@ import com.ch.cloud.kafka.mapper.KafkaClusterMapper;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
+import com.ch.e.PubError;
 import com.ch.mybatis.service.ServiceImpl;
+import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +19,8 @@ import java.util.Map;
  * @since 2018/9/25 19:14
  */
 @Service
-public class KafkaClusterServiceImpl extends ServiceImpl<KafkaClusterMapper, KafkaCluster> implements KafkaClusterService {
-
+public class KafkaClusterServiceImpl extends ServiceImpl<KafkaClusterMapper, KafkaCluster>
+    implements KafkaClusterService {
 
     @Override
     public int save(KafkaCluster record) {
@@ -28,14 +30,14 @@ public class KafkaClusterServiceImpl extends ServiceImpl<KafkaClusterMapper, Kaf
 
     private void fetchBrokers(KafkaCluster record) {
         Map<String, Integer> brokers = KafkaClusterUtils.getAllBrokersInCluster(record.getZookeeper());
-        if (!brokers.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            brokers.forEach((k, v) -> {
-                if (sb.length() > 0) sb.append(",");
-                sb.append(k).append(":").append(v);
-            });
-            record.setBrokers(sb.toString());
-        }
+        AssertUtils.isTrue(brokers.isEmpty(), PubError.NOT_EXISTS, "brokers");
+        StringBuilder sb = new StringBuilder();
+        brokers.forEach((k, v) -> {
+            if (sb.length() > 0)
+                sb.append(",");
+            sb.append(k).append(":").append(v);
+        });
+        record.setBrokers(sb.toString());
     }
 
     @Override
