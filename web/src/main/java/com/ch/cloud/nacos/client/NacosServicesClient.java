@@ -35,9 +35,6 @@ import java.util.Map;
 @Slf4j
 public class NacosServicesClient extends BaseClient {
 
-    @Autowired
-    private RestTemplate restTemplate;
-
     /**
      * fetch nacos services page
      *

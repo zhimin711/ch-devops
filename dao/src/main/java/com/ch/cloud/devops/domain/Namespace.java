@@ -1,5 +1,6 @@
 package com.ch.cloud.devops.domain;
 
+import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.mybatis.context.BaseEntity;
 import io.swagger.annotations.ApiModel;
@@ -57,7 +58,7 @@ public class Namespace extends BaseEntity {
     private String description;
 
     @Transient
-    private String addr;
+    private NacosCluster cluster;
 
     @Transient
     private Integer configCount;

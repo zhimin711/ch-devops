@@ -38,6 +38,12 @@ public class NacosCluster extends BaseEntity {
      */
     @ApiModelProperty(name = "描述")
     private String description;
+
+    @ApiModelProperty(name = "用户名")
+    private String username;
+
+    @ApiModelProperty(name = "密码")
+    private String password;
     /**
      * 序号（排序）
      */

@@ -29,13 +29,13 @@ import java.util.List;
 public class NacosNamespaceValidator {
 
     @Autowired
-    private INamespaceService             namespaceService;
+    private INamespaceService namespaceService;
     @Autowired
-    private IUserNamespaceService         userNamespaceService;
+    private IUserNamespaceService userNamespaceService;
     @Autowired
     private INacosNamespaceProjectService namespaceProjectService;
     @Autowired
-    private UpmsProjectClientService      upmsProjectClientService;
+    private UpmsProjectClientService upmsProjectClientService;
 
     @Autowired
     private INacosNamespaceProjectService nacosNamespaceProjectService;
@@ -45,26 +45,29 @@ public class NacosNamespaceValidator {
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
         AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
         record.setNamespaceId(namespace.getUid());
-        return new ClientEntity<>(namespace.getAddr(), record);
+        return new ClientEntity<>(namespace.getCluster(), record);
     }
 
     public <T extends NamespaceVO> ClientEntity<T> validUserNamespace(Long projectId, T record) {
         AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
-        AssertUtils.isFalse(userNamespaceService.exists(ContextUtil.getUser(), record.getNamespaceId(), projectId), PubError.NOT_AUTH, "项目" + projectId);
+        AssertUtils.isFalse(userNamespaceService.exists(ContextUtil.getUser(), record.getNamespaceId(), projectId),
+            PubError.NOT_AUTH, "项目" + projectId);
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
         AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
         record.setNamespaceId(namespace.getUid());
-        return new ClientEntity<>(namespace.getAddr(), record);
+        return new ClientEntity<>(namespace.getCluster(), record);
     }
 
     public void validProjectNamespace(Long projectId, List<Long> namespaceIds) {
         List<Long> list = namespaceProjectService.findNamespaceIdsByProjectId(projectId);
-        namespaceIds.forEach(nid -> AssertUtils.isTrue(!list.contains(nid), PubError.NOT_EXISTS, projectId + " project not own namespace id: " + nid));
+        namespaceIds.forEach(nid -> AssertUtils.isTrue(!list.contains(nid), PubError.NOT_EXISTS,
+            projectId + " project not own namespace id: " + nid));
     }
 
     public String fetchGroupId(Long projectId, String namespaceId) {
         if (CommonUtils.isDecimal(namespaceId)) {
-            ProjectNamespaceDTO dto = nacosNamespaceProjectService.findByProjectIdAndNamespaceId(projectId, Long.valueOf(namespaceId));
+            ProjectNamespaceDTO dto =
+                nacosNamespaceProjectService.findByProjectIdAndNamespaceId(projectId, Long.valueOf(namespaceId));
             if (dto != null && CommonUtils.isNotEmpty(dto.getGroupId())) {
                 return dto.getGroupId();
             }

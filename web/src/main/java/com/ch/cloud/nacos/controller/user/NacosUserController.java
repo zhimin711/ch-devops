@@ -80,12 +80,13 @@ public class NacosUserController {
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
 
-
     @ApiOperation(value = "查询空间列表", notes = "查询用户命名空间")
     @GetMapping(value = {"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<VueRecord2> namespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
         return ResultUtils.wrap(() -> {
-            List<NamespaceDto> records = userNamespaceService.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(ContextUtil.getUser(), projectId, clusterId, NamespaceType.NACOS);
+            List<NamespaceDto> records =
+                userNamespaceService.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(
+                    ContextUtil.getUser(), projectId, clusterId, NamespaceType.NACOS);
             return records.stream().map(e -> {
                 VueRecord2 record = new VueRecord2();
                 record.setValue(e.getId().toString());
@@ -120,7 +121,6 @@ public class NacosUserController {
         });
     }
 
-
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目服务实例")
     @GetMapping(value = {"{projectId:[0-9]+}/instances"})
     public PageResult<InstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
@@ -136,7 +136,12 @@ public class NacosUserController {
             if (CommonUtils.isNotEmpty(record.getGroupName())) {
                 servicesQueryVO.setGroupName(record.getGroupName());
             }
-            ServiceDetailDTO detailDTO = nacosServicesClient.fetch(new ClientEntity<>(clientEntity.getUrl(), servicesQueryVO));
+            ClientEntity<ServicesQueryVO> clientEntity2 = new ClientEntity<>();
+            clientEntity2.setUrl(clientEntity.getUrl());
+            clientEntity2.setUsername(clientEntity.getUsername());
+            clientEntity2.setPassword(clientEntity.getPassword());
+            clientEntity2.setData(servicesQueryVO);
+            ServiceDetailDTO detailDTO = nacosServicesClient.fetch(clientEntity2);
             if (detailDTO == null || CommonUtils.isEmpty(detailDTO.getClusters())) {
                 return InvokerPage.build();
             }
@@ -157,19 +162,19 @@ public class NacosUserController {
         });
     }
 
-
     @ApiOperation(value = "查询项目可申请空间列表", notes = "查询项目可申请空间列表")
     @GetMapping({"apply/{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<VueRecord> findApplyNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
         return ResultUtils.wrapList(() -> {
-            List<NamespaceDto> records = nacosNamespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId, clusterId);
+            List<NamespaceDto> records =
+                nacosNamespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId, clusterId);
             return VueRecordUtils.covertIdList(records);
         });
     }
 
-
     @PostMapping({"apply/{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
-    public Result<Boolean> apply(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<Long> namespaceIds) {
+    public Result<Boolean> apply(@PathVariable Long projectId, @PathVariable Long clusterId,
+        @RequestBody List<Long> namespaceIds) {
         return ResultUtils.wrap(() -> {
             nacosNamespaceValidator.validProjectNamespace(projectId, namespaceIds);
             NamespaceApplyRecord record = new NamespaceApplyRecord();

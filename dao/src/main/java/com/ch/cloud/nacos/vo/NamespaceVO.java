@@ -16,4 +16,6 @@ import lombok.NoArgsConstructor;
 public class NamespaceVO {
 
     private String namespaceId;
+
+    private String accessToken;
 }

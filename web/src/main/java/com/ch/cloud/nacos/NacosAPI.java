@@ -8,6 +8,7 @@ package com.ch.cloud.nacos;
  */
 public interface NacosAPI {
 
+    String LOGIN = "/auth/users/login";
     String CLUSTER_NODES = "/core/cluster/nodes";
     String CLUSTER_OP = "/ns/cluster";
     String NAMESPACES = "/console/namespaces";

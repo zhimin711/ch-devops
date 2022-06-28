@@ -25,10 +25,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class NacosSubscribesClient {
-
-    @Autowired
-    private RestTemplate restTemplate;
+public class NacosSubscribesClient extends BaseClient {
 
     /**
      * fetch nacos subscribes page

@@ -21,8 +21,6 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class NacosClusterClient extends BaseClient {
 
-    @Autowired
-    private RestTemplate restTemplate;
 
     public Object fetchNodes(String url) {
         JSONObject resp = restTemplate.getForObject(url + NacosAPI.CLUSTER_NODES, JSONObject.class);

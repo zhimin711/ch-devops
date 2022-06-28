@@ -40,8 +40,6 @@ import java.util.Map;
 @Slf4j
 public class NacosConfigsClient extends BaseClient {
 
-    @Autowired
-    private RestTemplate restTemplate;
     @Value("${fs.path.tmp:/tmp}")
     private String fsTmp;
 

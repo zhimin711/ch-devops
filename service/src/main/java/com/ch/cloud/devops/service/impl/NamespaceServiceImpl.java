@@ -65,8 +65,7 @@ public class NamespaceServiceImpl extends ServiceImpl<NamespaceMapper, Namespace
     public Namespace findWithCluster(Serializable namespaceId) {
         Namespace n = super.find(namespaceId);
         if (n != null) {
-            NacosCluster s = nacosClusterService.find(n.getClusterId());
-            if (s != null) n.setAddr(s.getUrl());
+            n.setCluster(nacosClusterService.find(n.getClusterId()));
         }
         return n;
     }

@@ -28,9 +28,6 @@ import java.util.List;
 @Slf4j
 public class NacosInstancesClient extends BaseClient {
 
-    @Autowired
-    private RestTemplate restTemplate;
-
     /**
      * fetch nacos instances page
      *

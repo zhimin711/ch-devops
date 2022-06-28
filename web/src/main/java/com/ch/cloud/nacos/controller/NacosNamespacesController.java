@@ -8,6 +8,8 @@ import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
+import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.NamespaceVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.client.UpmsTenantClientService;
@@ -71,9 +73,9 @@ public class NacosNamespacesController {
             if (page.getTotal() > 0) {
                 page.getRows().forEach(e -> {
                     NacosCluster cluster = nacosClusterService.find(e.getClusterId());
-                    e.setAddr(cluster.getUrl());
-
-                    NacosNamespaceDTO r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(e));
+                    ClientEntity<NamespaceVO> clientEntity =
+                        new ClientEntity<>(cluster, new NamespaceVO(e.getUid(), ""));
+                    NacosNamespaceDTO r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(clientEntity));
                     if (r == null)
                         return;
                     e.setConfigCount(r.getConfigCount());
@@ -92,7 +94,9 @@ public class NacosNamespacesController {
             if (CommonUtils.isEmpty(record.getUid())) {
                 record.setUid(UUIDGenerator.generateUid().toString());
             } else {
-                NacosNamespaceDTO namespace = nacosNamespacesClient.fetch(record);
+                ClientEntity<NamespaceVO> clientEntity =
+                    new ClientEntity<>(record.getCluster(), new NamespaceVO("", ""));
+                NacosNamespaceDTO namespace = nacosNamespacesClient.fetch(clientEntity);
                 AssertUtils.notNull(namespace, PubError.EXISTS, "id");
             }
             boolean syncOk = nacosNamespacesClient.add(record);
@@ -118,8 +122,8 @@ public class NacosNamespacesController {
 
     private void checkSaveOrUpdate(Namespace record) {
         NacosCluster cluster = nacosClusterService.find(record.getClusterId());
-        ExceptionUtils.assertEmpty(cluster, PubError.CONFIG, "nacos cluster" + record.getClusterId());
-        record.setAddr(cluster.getUrl());
+        AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster" + record.getClusterId());
+        record.setCluster(cluster);
         record.setType(NamespaceType.NACOS);
         if (record.getId() != null) {
             Namespace orig = namespaceService.find(record.getId());
@@ -136,8 +140,10 @@ public class NacosNamespacesController {
                 return null;
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             NamespaceDto dto = BeanUtilsV2.clone(namespace, NamespaceDto.class);
-            namespace.setAddr(cluster.getUrl());
-            NacosNamespaceDTO nn = nacosNamespacesClient.fetch(namespace);
+            namespace.setCluster(cluster);
+            ClientEntity<NamespaceVO> clientEntity =
+                new ClientEntity<>(cluster, new NamespaceVO(namespace.getUid(), ""));
+            NacosNamespaceDTO nn = nacosNamespacesClient.fetch(clientEntity);
             if (nn != null) {
                 dto.setConfigCount(nn.getConfigCount());
                 dto.setQuota(nn.getQuota());
@@ -156,8 +162,9 @@ public class NacosNamespacesController {
             AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()), PubError.NOT_ALLOWED, "保留空间不允许删除");
 
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
-            namespace.setAddr(cluster.getUrl());
-            nacosNamespacesClient.delete(namespace);
+            ClientEntity<NamespaceVO> clientEntity =
+                new ClientEntity<>(cluster, new NamespaceVO(namespace.getUid(), ""));
+            nacosNamespacesClient.delete(clientEntity);
             return namespaceService.delete(id);
         });
     }

@@ -26,10 +26,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class NacosHistoryClient {
-
-    @Autowired
-    private RestTemplate restTemplate;
+public class NacosHistoryClient extends BaseClient{
 
     public InvokerPage.Page<HistoryDTO> fetchPage(ClientEntity<HistoryPageVO> entity) {
         Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
