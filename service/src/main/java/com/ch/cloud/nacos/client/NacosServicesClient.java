@@ -16,11 +16,9 @@ import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;

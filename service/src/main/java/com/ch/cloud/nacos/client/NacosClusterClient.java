@@ -3,14 +3,11 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.InstanceVO;
 import com.ch.cloud.nacos.vo.ServiceClusterVO;
 import com.ch.utils.CommonUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * desc:

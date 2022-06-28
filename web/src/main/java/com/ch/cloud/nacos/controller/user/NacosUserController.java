@@ -1,6 +1,5 @@
 package com.ch.cloud.nacos.controller.user;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
