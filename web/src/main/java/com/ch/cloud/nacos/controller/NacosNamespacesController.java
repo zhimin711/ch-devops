@@ -4,11 +4,13 @@ import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.dto.NamespaceDto;
 import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
+import com.ch.cloud.nacos.client.NacosUserClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.NacosNamespaceVO;
 import com.ch.cloud.nacos.vo.NamespaceVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
@@ -62,6 +64,8 @@ public class NacosNamespacesController {
 
     @Autowired
     private NacosNamespacesClient nacosNamespacesClient;
+    @Autowired
+    private NacosUserClient nacosUserClient;
 
     @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
@@ -75,7 +79,10 @@ public class NacosNamespacesController {
                     NacosCluster cluster = nacosClusterService.find(e.getClusterId());
                     ClientEntity<NamespaceVO> clientEntity =
                         new ClientEntity<>(cluster, new NamespaceVO(e.getUid(), ""));
-                    NacosNamespaceDTO r = ResultUtils.invoke(() -> nacosNamespacesClient.fetch(clientEntity));
+                    NacosNamespaceDTO r = ResultUtils.invoke(() -> {
+                        nacosUserClient.login(clientEntity);
+                        return nacosNamespacesClient.fetch(clientEntity);
+                    });
                     if (r == null)
                         return;
                     e.setConfigCount(r.getConfigCount());
@@ -91,15 +98,16 @@ public class NacosNamespacesController {
     public Result<Integer> add(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
             checkSaveOrUpdate(record);
+            ClientEntity<NamespaceVO> clientEntity = new ClientEntity<>(record.getCluster(), new NamespaceVO());
+            nacosUserClient.login(clientEntity);
             if (CommonUtils.isEmpty(record.getUid())) {
                 record.setUid(UUIDGenerator.generateUid().toString());
             } else {
-                ClientEntity<NamespaceVO> clientEntity =
-                    new ClientEntity<>(record.getCluster(), new NamespaceVO("", ""));
+                clientEntity.getData().setNamespaceId(record.getUid());
                 NacosNamespaceDTO namespace = nacosNamespacesClient.fetch(clientEntity);
-                AssertUtils.notNull(namespace, PubError.EXISTS, "id");
+                AssertUtils.notNull(namespace, PubError.EXISTS, "id" + record.getUid());
             }
-            boolean syncOk = nacosNamespacesClient.add(record);
+            boolean syncOk = convertAndSave(record.getCluster(), clientEntity, record);;
             if (!syncOk) {
                 ExceptionUtils._throw(PubError.CONNECT, "create nacos namespace failed!");
             }
@@ -112,7 +120,13 @@ public class NacosNamespacesController {
     public Result<Integer> edit(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
             checkSaveOrUpdate(record);
-            boolean syncOk = nacosNamespacesClient.edit(record);
+            NacosNamespaceVO namespaceVO = new NacosNamespaceVO();
+            namespaceVO.setNamespaceId(record.getUid());
+            namespaceVO.setName(record.getName());
+            namespaceVO.setDesc(record.getDescription());
+            ClientEntity<NacosNamespaceVO> clientEntity = new ClientEntity<>(record.getCluster(), namespaceVO);
+            nacosUserClient.login(clientEntity);
+            boolean syncOk = nacosNamespacesClient.edit(clientEntity);
             if (!syncOk) {
                 ExceptionUtils._throw(PubError.CONNECT, "update nacos namespace failed!");
             }
@@ -175,7 +189,9 @@ public class NacosNamespacesController {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(clusterId);
             AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
-            List<NacosNamespaceDTO> list = nacosNamespacesClient.fetchAll(cluster.getUrl());
+            ClientEntity<NamespaceVO> clientEntity = new ClientEntity<>(cluster, new NamespaceVO());
+            nacosUserClient.login(clientEntity);
+            List<NacosNamespaceDTO> list = nacosNamespacesClient.fetchAll(clientEntity);
             List<Namespace> list2 = namespaceService.findByClusterIdAndName(clusterId, null);
             Map<String, NacosNamespaceDTO> nacosMap = CommonUtils.isNotEmpty(list)
                 ? list.stream().collect(Collectors.toMap(NacosNamespaceDTO::getNamespace, e -> e)) : Maps.newHashMap();
@@ -185,7 +201,7 @@ public class NacosNamespacesController {
             if (localMap.isEmpty()) {
                 saveNacosNamespaces(list, clusterId);
             } else if (nacosMap.isEmpty()) {
-                list2.forEach(nacosNamespacesClient::add);
+                list2.forEach(record-> convertAndSave(cluster, clientEntity, record));
             } else {
                 List<NacosNamespaceDTO> newList = Lists.newArrayList();
                 nacosMap.forEach((k, v) -> {
@@ -193,13 +209,23 @@ public class NacosNamespacesController {
                         newList.add(v);
                 });
                 saveNacosNamespaces(newList, clusterId);
-                localMap.forEach((k, v) -> {
-                    if (!nacosMap.containsKey(k))
-                        nacosNamespacesClient.add(v);
+                localMap.forEach((k, record) -> {
+                    if (!nacosMap.containsKey(k)){
+                        convertAndSave(cluster, clientEntity, record);
+                    }
                 });
             }
             return true;
         });
+    }
+
+    private boolean convertAndSave(NacosCluster cluster, ClientEntity<NamespaceVO> clientEntity, Namespace record) {
+        NacosNamespaceVO namespaceVO = new NacosNamespaceVO();
+        namespaceVO.setNamespaceId(record.getUid());
+        namespaceVO.setAccessToken(clientEntity.getData().getAccessToken());
+        namespaceVO.setName(record.getName());
+        namespaceVO.setDesc(record.getDescription());
+        return nacosNamespacesClient.add(ClientEntity.build(cluster,namespaceVO));
     }
 
     private void saveNacosNamespaces(List<NacosNamespaceDTO> list, Long clusterId) {

@@ -42,6 +42,9 @@ public class NacosUserClient extends BaseClient {
         if (!CommonUtils.isNotEmpty(clientEntity.getUsername(), clientEntity.getPassword())) {
             return;
         }
+        if(clientEntity.getData() == null) {
+            return;
+        }
         if (TOKEN_MAP.containsKey(clientEntity.getUrl())) {
             String token = TOKEN_MAP.get(clientEntity.getUrl());
             if (validateToken(token)) {

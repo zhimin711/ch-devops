@@ -18,4 +18,8 @@ public class NamespaceVO {
     private String namespaceId;
 
     private String accessToken = "";
+
+    public NamespaceVO(String namespaceId) {
+        this.namespaceId = namespaceId;
+    }
 }

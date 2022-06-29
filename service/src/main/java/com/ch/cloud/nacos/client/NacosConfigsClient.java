@@ -151,7 +151,7 @@ public class NacosConfigsClient extends BaseClient {
     public ResponseEntity<Resource> export(ClientEntity<ConfigExportVO> clientEntity) {
 
         String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
-        log.info("export url: {}", url);
+        log.info("nacos configs export url: {}", url);
         return restTemplate.getForEntity(url, Resource.class);
     }
 
@@ -168,7 +168,7 @@ public class NacosConfigsClient extends BaseClient {
         param.add("file", resource);
         param.add("policy", clientEntity.getData().getPolicy());
 
-        log.info("import url: {}", url);
+        log.info("nacos configs import url: {}", url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -177,7 +177,7 @@ public class NacosConfigsClient extends BaseClient {
             JSONObject resp = restTemplate.postForObject(url, httpEntity, JSONObject.class);
             AssertUtils.isNull(resp, PubError.CONNECT);
 
-            log.debug("import result: {}", resp);
+            log.debug("nacos configs import result: {}", resp);
             boolean success = resp.containsKey("code") && resp.getInteger("code") == 200;
             String msg = "";
             if (!success) {

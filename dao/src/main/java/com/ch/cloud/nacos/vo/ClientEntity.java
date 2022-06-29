@@ -32,14 +32,6 @@ public class ClientEntity<T> {
         this.data = data;
     }
 
-    public static <T> ClientEntity<T> build(NacosCluster cluster) {
-        ClientEntity<T> clientEntity = new ClientEntity<>();
-        clientEntity.url = cluster.getUrl();
-        clientEntity.username = cluster.getUsername();
-        clientEntity.password = cluster.getPassword();
-        return clientEntity;
-    }
-
     public static <T> ClientEntity<T> build(NacosCluster cluster, T data) {
         ClientEntity<T> clientEntity = new ClientEntity<>();
         clientEntity.url = cluster.getUrl();

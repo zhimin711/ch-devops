@@ -1,10 +1,13 @@
 package com.ch.cloud.nacos.controller;
 
 import com.ch.cloud.nacos.client.NacosClusterClient;
+import com.ch.cloud.nacos.client.NacosUserClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.devops.service.INamespaceService;
+import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.NamespaceVO;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.result.PageResult;
@@ -33,16 +36,17 @@ public class NacosClustersController {
     @Autowired
     private INacosClusterService nacosClusterService;
     @Autowired
-    private NacosClusterClient   nacosClusterClient;
+    private NacosClusterClient nacosClusterClient;
+    @Autowired
+    private NacosUserClient nacosUserClient;
 
     @Autowired
     private INamespaceService namespaceService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询nacos集群")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
-    public PageResult<NacosCluster> page(NacosCluster record,
-                                         @PathVariable(value = "num") int pageNum,
-                                         @PathVariable(value = "size") int pageSize) {
+    public PageResult<NacosCluster> page(NacosCluster record, @PathVariable(value = "num") int pageNum,
+        @PathVariable(value = "size") int pageSize) {
         PageInfo<NacosCluster> page = nacosClusterService.findPage(record, pageNum, pageSize);
         return PageResult.success(page.getTotal(), page.getList());
     }
@@ -73,20 +77,23 @@ public class NacosClustersController {
             return cluster;
         });
         if (result.isSuccess()) {
-            Object info = nacosClusterClient.fetchNodes(result.get().getUrl());
+            ClientEntity<NamespaceVO> clientEntity = ClientEntity.build(result.get(), new NamespaceVO());
+            nacosUserClient.login(clientEntity);
+            Object info = nacosClusterClient.fetchNodes(clientEntity);
             result.putExtra("nodes", info);
         }
         return result;
     }
 
-    //    @ApiOperation(value = "删除", notes = "删除nacos集群")
-    //@DeleteMapping({"{id:[0-9]+}"})
+    // @ApiOperation(value = "删除", notes = "删除nacos集群")
+    // @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> nacosClusterService.delete(id));
     }
 
     @GetMapping({"{id:[0-9]+}/namespaces"})
-    public Result<VueRecord> findNamespaces(@PathVariable Long id, @RequestParam(name = "s", required = false) String name) {
+    public Result<VueRecord> findNamespaces(@PathVariable Long id,
+        @RequestParam(name = "s", required = false) String name) {
         return ResultUtils.wrapList(() -> {
             List<Namespace> list = namespaceService.findByClusterIdAndName(id, name);
             return VueRecordUtils.covertIdTree(list);

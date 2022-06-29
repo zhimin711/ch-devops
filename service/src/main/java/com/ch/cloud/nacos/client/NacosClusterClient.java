@@ -3,8 +3,10 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.NamespaceVO;
 import com.ch.cloud.nacos.vo.ServiceClusterVO;
 import com.ch.utils.CommonUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -16,11 +18,13 @@ import org.springframework.util.MultiValueMap;
  * @since 2022/4/25 23:31
  */
 @Component
+@Slf4j
 public class NacosClusterClient extends BaseClient {
 
-
-    public Object fetchNodes(String url) {
-        JSONObject resp = restTemplate.getForObject(url + NacosAPI.CLUSTER_NODES, JSONObject.class);
+    public Object fetchNodes(ClientEntity<NamespaceVO> clientEntity) {
+        String url = url(NacosAPI.CLUSTER_NODES, clientEntity);
+        log.info("nacos cluster fetchNodes url: {}", url);
+        JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("data")) {
             return resp.getJSONArray("data");
         }
@@ -28,12 +32,10 @@ public class NacosClusterClient extends BaseClient {
     }
 
     public Boolean save(ClientEntity<ServiceClusterVO> clientEntity) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters(clientEntity), headers);
-        String resp = "";
-        ResponseEntity<String> resp2 = restTemplate.exchange(clientEntity.getUrl() + NacosAPI.CLUSTER_OP, HttpMethod.PUT, httpEntity, String.class);
-        if (resp2.getStatusCode() == HttpStatus.OK) resp = resp2.getBody();
+        String url = url(NacosAPI.CLUSTER_OP, clientEntity);
+        log.info("nacos cluster save url: {}", url);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);
+        String resp = invoke(url, HttpMethod.PUT, httpEntity, String.class);
         return CommonUtils.isEquals("ok", resp);
     }
 }

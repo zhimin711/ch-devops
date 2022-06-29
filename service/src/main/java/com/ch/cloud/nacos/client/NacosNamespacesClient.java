@@ -6,6 +6,7 @@ import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.NacosNamespaceVO;
 import com.ch.cloud.nacos.vo.NamespaceVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -26,58 +27,46 @@ import java.util.List;
 @Slf4j
 public class NacosNamespacesClient extends BaseClient {
 
-
-    public Boolean add(Namespace record) {
-        return saveNacosNamespace(record, true);
+    public Boolean add(ClientEntity<NacosNamespaceVO> clientEntity) {
+        return saveNacosNamespace(clientEntity, true);
     }
 
-    public Boolean edit(Namespace record) {
-        return saveNacosNamespace(record, false);
+    public Boolean edit(ClientEntity<NacosNamespaceVO> clientEntity) {
+        return saveNacosNamespace(clientEntity, false);
     }
 
-    private boolean saveNacosNamespace(Namespace record, boolean isNew) {
+    private boolean saveNacosNamespace(ClientEntity<NacosNamespaceVO> clientEntity, boolean isNew) {
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
-        param.add("namespaceDesc", record.getDescription());
+        param.add("namespaceDesc", clientEntity.getData().getDesc());
         if (isNew) {
-            param.add("customNamespaceId", record.getUid());
-            param.add("namespaceName", record.getName());
+            param.add("customNamespaceId", clientEntity.getData().getNamespaceId());
+            param.add("namespaceName", clientEntity.getData().getName());
         } else {
-            param.add("namespace", record.getUid());
-            param.add("namespaceShowName", record.getName());
+            param.add("namespace", clientEntity.getData().getNamespaceId());
+            param.add("namespaceShowName", clientEntity.getData().getName());
         }
         Boolean sync;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(param, headers);
+        String url = url(NacosAPI.NAMESPACES, clientEntity);
         if (isNew) {
-            sync = restTemplate.postForObject(record.getCluster().getUrl() + NacosAPI.NAMESPACES, httpEntity, Boolean.class);
+            sync = invoke(url, HttpMethod.POST, httpEntity, Boolean.class);
         } else {
-//            restTemplate.put(nacosUrl + NAMESPACE_ADDR, param);
-            ResponseEntity<Boolean> resp = restTemplate.exchange(record.getCluster().getUrl() + NacosAPI.NAMESPACES, HttpMethod.PUT, httpEntity, Boolean.class);
-            if (resp.getStatusCode() == HttpStatus.OK) {
-                sync = resp.getBody();
-            } else {
-                return false;
-            }
+            sync = invoke(url, HttpMethod.PUT, httpEntity, Boolean.class);
         }
         return sync != null && sync;
     }
 
     public NacosNamespaceDTO fetch(ClientEntity<NamespaceVO> clientEntity) {
-        String param = "?show=all&namespaceId=" + clientEntity.getData().getNamespaceId();
-        NacosNamespaceDTO nn = null;
-        try {
-            nn = retryTemplate.execute((RetryCallback<NacosNamespaceDTO, Throwable>) retryContext ->
-                    restTemplate.getForObject(clientEntity.getUrl() + NacosAPI.NAMESPACES + param,
-                            NacosNamespaceDTO.class));
-        } catch (Throwable e) {
-            log.error(param + " fetch error!", e);
-        }
-        return nn;
+        String url = url(NacosAPI.NAMESPACES, clientEntity);
+        url += "&show=all&namespaceId=" + clientEntity.getData().getNamespaceId();
+        return invoke(url,HttpMethod.GET,HttpEntity.EMPTY, NacosNamespaceDTO.class);
     }
 
-    public List<NacosNamespaceDTO> fetchAll(String url) {
-        JSONObject resp = restTemplate.getForObject(url + NacosAPI.NAMESPACES, JSONObject.class);
+    public List<NacosNamespaceDTO> fetchAll(ClientEntity<NamespaceVO> clientEntity) {
+        String url = url(NacosAPI.NAMESPACES, clientEntity);
+        JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("data")) {
             JSONArray arr = resp.getJSONArray("data");
             return arr.toJavaList(NacosNamespaceDTO.class);
@@ -86,7 +75,8 @@ public class NacosNamespacesClient extends BaseClient {
     }
 
     public Boolean delete(ClientEntity<NamespaceVO> clientEntity) {
-        String url = clientEntity.getUrl() + NacosAPI.NAMESPACES + "?namespaceId=" + clientEntity.getData().getNamespaceId();
+        String url =
+            clientEntity.getUrl() + NacosAPI.NAMESPACES + "?namespaceId=" + clientEntity.getData().getNamespaceId();
         ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, null, Boolean.class);
         if (resp.getStatusCode() == HttpStatus.OK) {
             log.info("delete namespace: {}", resp.getBody());
