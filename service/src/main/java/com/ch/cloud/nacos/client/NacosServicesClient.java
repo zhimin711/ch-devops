@@ -36,11 +36,12 @@ public class NacosServicesClient extends BaseClient {
     /**
      * fetch nacos services page
      *
-     * @param clientEntity query params
+     * @param clientEntity
+     *            query params
      * @return Page
      */
     public InvokerPage.Page<ServiceDTO> fetchPage(ClientEntity<ServicesPageVO> clientEntity) {
-        String url = clientEntity.getUrl() + NacosAPI.SERVICES + "?" + urlParams(clientEntity);
+        String url = urlWithAll(NacosAPI.SERVICES, clientEntity);
         log.info("nacos services page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {
@@ -56,50 +57,40 @@ public class NacosServicesClient extends BaseClient {
     }
 
     public ServiceDetailDTO fetch(ClientEntity<ServicesQueryVO> clientEntity) {
-        Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.SERVICE + "?" + urlParams;
+        String url = urlWithAll(NacosAPI.SERVICE, clientEntity);
         log.info("Nacos service detail url: {}", url);
-        try {
-            return restTemplate.getForObject(url, ServiceDetailDTO.class);
-        } catch (Exception e) {
-            log.error("fetch Nacos service detail error!", e);
-        }
-        return null;
+        return invoke(url, HttpMethod.GET, HttpEntity.EMPTY, ServiceDetailDTO.class);
     }
 
     public Boolean save(ClientEntity<ServiceVO> clientEntity, boolean isNew) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParams(clientEntity), headers);
+        String url = url(NacosAPI.SERVICE_OP, clientEntity);
+        log.info("Nacos service save url: {}", url);
+
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);
         String resp = "";
         if (isNew) {
             try {
-                resp = restTemplate.postForObject(clientEntity.getUrl() + NacosAPI.SERVICE_OP, httpEntity, String.class);
+                resp = restTemplate.postForObject(url, httpEntity, String.class);
             } catch (Exception e) {
                 if (e.getMessage().contains("already exists")) {
-                    ExceptionUtils._throw(PubError.EXISTS, clientEntity.getData().getServiceName() + "@" + clientEntity.getData().getGroupName());
+                    ExceptionUtils._throw(PubError.EXISTS,
+                        clientEntity.getData().getServiceName() + "@" + clientEntity.getData().getGroupName());
                 }
                 throw e;
             }
         } else {
-            ResponseEntity<String> resp2 = restTemplate.exchange(clientEntity.getUrl() + NacosAPI.SERVICE_OP, HttpMethod.PUT, httpEntity, String.class);
-            if (resp2.getStatusCode() == HttpStatus.OK) resp = resp2.getBody();
+            ResponseEntity<String> resp2 = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class);
+            if (resp2.getStatusCode() == HttpStatus.OK)
+                resp = resp2.getBody();
         }
         return CommonUtils.isEquals("ok", resp);
     }
 
     public Boolean delete(ClientEntity<ServicesQueryVO> clientEntity) {
-        Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.SERVICE_OP + "?" + urlParams;
-
-        ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.DELETE, null, String.class);
-        if (resp.getStatusCode() == HttpStatus.OK) {
-            log.info("delete service: {}", resp.getBody());
-            return CommonUtils.isEquals(resp.getBody(), "ok");
-        }
-        return false;
+        String url = urlWithAll(NacosAPI.SERVICE_OP, clientEntity);
+        log.info("Nacos service delete url: {}", url);
+        String resp = invoke(url, HttpMethod.DELETE, null, String.class);
+        return CommonUtils.isEquals(resp, "ok");
     }
 }

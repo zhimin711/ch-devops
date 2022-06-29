@@ -28,13 +28,12 @@ public class NacosSubscribesClient extends BaseClient {
     /**
      * fetch nacos subscribes page
      *
-     * @param clientEntity query params
+     * @param clientEntity
+     *            query params
      * @return Page
      */
     public InvokerPage.Page<SubscriberDTO> fetchPage(ClientEntity<SubscribesPageVO> clientEntity) {
-        Map<String, Object> param = BeanUtilsV2.getDeclaredFieldValueMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.SUBSCRIBERS + "?" + urlParams;
+        String url = urlWithAll(NacosAPI.SUBSCRIBERS, clientEntity);
         log.info("nacos subscribes page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {

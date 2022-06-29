@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.vo;
 
 import com.ch.cloud.nacos.domain.NacosCluster;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,5 +30,22 @@ public class ClientEntity<T> {
         this.username = cluster.getUsername();
         this.password = cluster.getPassword();
         this.data = data;
+    }
+
+    public static <T> ClientEntity<T> build(NacosCluster cluster) {
+        ClientEntity<T> clientEntity = new ClientEntity<>();
+        clientEntity.url = cluster.getUrl();
+        clientEntity.username = cluster.getUsername();
+        clientEntity.password = cluster.getPassword();
+        return clientEntity;
+    }
+
+    public static <T> ClientEntity<T> build(NacosCluster cluster, T data) {
+        ClientEntity<T> clientEntity = new ClientEntity<>();
+        clientEntity.url = cluster.getUrl();
+        clientEntity.username = cluster.getUsername();
+        clientEntity.password = cluster.getPassword();
+        clientEntity.data = data;
+        return clientEntity;
     }
 }

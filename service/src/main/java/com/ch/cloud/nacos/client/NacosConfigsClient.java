@@ -41,39 +41,11 @@ public class NacosConfigsClient extends BaseClient {
     @Value("${fs.path.tmp:/tmp}")
     private String fsTmp;
 
-    public Boolean add(ClientEntity<ConfigVO> entity) {
-        return save(entity, true);
-    }
-
-    public Boolean edit(ClientEntity<ConfigVO> entity) {
-        return save(entity, false);
-    }
-
-    private Boolean save(ClientEntity<ConfigVO> entity, boolean isNew) {
-        if (isNew) {
-            entity.getData().setTenant(entity.getData().getNamespaceId());
-        }
-        if (CommonUtils.isEmpty(entity.getData().getAppName())) {
-            entity.getData().setAppName("");
-        }
-        if (CommonUtils.isEmpty(entity.getData().getConfigTags())) {
-            entity.getData().setConfigTags("");
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters(entity), headers);
-        String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + "username=" + ContextUtil.getUser();
-        log.info("nacos config save or update url: {}", url);
-        return restTemplate.postForObject(url, httpEntity, Boolean.class);
-    }
-
-    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsPageVO> entity) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsPageVO> clientEntity) {
+        // String urlParams = urlParams(clientEntity.getData());
+        String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
         log.info("nacos configs page url: {}", url);
-        JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
+        JSONObject resp = invoke(url, HttpMethod.GET, HttpEntity.EMPTY, JSONObject.class);
         if (resp != null && resp.containsKey("totalCount")) {
             Integer count = resp.getInteger("totalCount");
             if (count <= 0) {
@@ -86,24 +58,53 @@ public class NacosConfigsClient extends BaseClient {
         return InvokerPage.build();
     }
 
-    public Boolean delete(ClientEntity<ConfigDeleteVO> entity) {
-        boolean isBatch = CommonUtils.isNotEmpty(entity.getData().getIds());
-        String urlParams = "username=" + ContextUtil.getUser();
+    public Boolean add(ClientEntity<ConfigVO> entity) {
+        return save(entity, true);
+    }
+
+    public Boolean edit(ClientEntity<ConfigVO> entity) {
+        return save(entity, false);
+    }
+
+    private Boolean save(ClientEntity<ConfigVO> clientEntity, boolean isNew) {
+        if (isNew) {
+            clientEntity.getData().setTenant(clientEntity.getData().getNamespaceId());
+        }
+        if (CommonUtils.isEmpty(clientEntity.getData().getAppName())) {
+            clientEntity.getData().setAppName("");
+        }
+        if (CommonUtils.isEmpty(clientEntity.getData().getConfigTags())) {
+            clientEntity.getData().setConfigTags("");
+        }
+
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);
+        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUser();
+        log.info("nacos config save or update url: {}", url);
+        return invoke(url, HttpMethod.POST, httpEntity, Boolean.class);
+    }
+
+    public Boolean delete(ClientEntity<ConfigDeleteVO> clientEntity) {
+        boolean isBatch = CommonUtils.isNotEmpty(clientEntity.getData().getIds());
+
+        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUser();
+
+        String urlParams = "";
         if (isBatch) {
-            urlParams += "&delType=ids&ids=" + entity.getData().getIds();
+            urlParams += "&delType=ids&ids=" + clientEntity.getData().getIds();
         } else {
-            urlParams += "&dataId=" + entity.getData().getDataId() + "&group=" + entity.getData().getGroup()
-                + "&tenant=" + entity.getData().getNamespaceId();
+            urlParams += "&dataId=" + clientEntity.getData().getDataId() + "&group=" + clientEntity.getData().getGroup()
+                + "&tenant=" + clientEntity.getData().getNamespaceId();
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, Object> formParameters = new LinkedMultiValueMap<>();
-        formParameters.add("namespaceId", entity.getData().getNamespaceId());
+        formParameters.add("namespaceId", clientEntity.getData().getNamespaceId());
 
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParameters, headers);
 
-        String url = entity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+        url += "&" + urlParams;
+        log.info("nacos config delete url: {}", url);
 
         if (isBatch) {
             ResponseEntity<JSONObject> resp =
@@ -119,25 +120,23 @@ public class NacosConfigsClient extends BaseClient {
     }
 
     public ConfigDTO fetch(ClientEntity<ConfigQueryVO> clientEntity) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        JSONObject resp =
-            restTemplate.getForObject(clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams, JSONObject.class);
-        if (resp != null)
-            return resp.toJavaObject(ConfigDTO.class);
-        return null;
+        String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
+        log.info("nacos config fetch url: {}", url);
+        return invoke(url, HttpMethod.GET, HttpEntity.EMPTY, ConfigDTO.class);
     }
 
     public JSONObject clone(ClientEntity<ConfigPolicyVO> clientEntity, ConfigCloneVO[] records) {
-        String url =
-            clientEntity.getUrl() + NacosAPI.CONFIGS + "?clone=true&tenant=" + clientEntity.getData().getNamespaceId()
-                + "&policy=" + clientEntity.getData().getPolicy() + "&namespaceId=";
+
+        String url = url(NacosAPI.CONFIGS, clientEntity);
+        String urlParams = "clone=true&tenant=" + clientEntity.getData().getNamespaceId() + "&policy="
+            + clientEntity.getData().getPolicy() + "&namespaceId=";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<ConfigCloneVO[]> httpEntity = new HttpEntity<>(records, headers);
-
+        url += "&" + urlParams;
+        log.info("nacos config fetch url: {}", url);
         JSONObject resp = restTemplate.postForObject(url, httpEntity, JSONObject.class);
         AssertUtils.isNull(resp, PubError.CONNECT);
         if (resp.containsKey("code") && resp.getInteger("code") == 200) {
@@ -150,9 +149,8 @@ public class NacosConfigsClient extends BaseClient {
      * http://192.168.0.201:8848/nacos/v1/cs/configs? exportV2=true&tenant=&group=&appName=&ids=48,65 &username=nacos
      */
     public ResponseEntity<Resource> export(ClientEntity<ConfigExportVO> clientEntity) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
+
+        String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
         log.info("export url: {}", url);
         return restTemplate.getForEntity(url, Resource.class);
     }

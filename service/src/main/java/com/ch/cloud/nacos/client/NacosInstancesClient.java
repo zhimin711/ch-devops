@@ -29,12 +29,12 @@ public class NacosInstancesClient extends BaseClient {
     /**
      * fetch nacos instances page
      *
-     * @param clientEntity query params
+     * @param clientEntity
+     *            query params
      * @return Page
      */
     public InvokerPage.Page<InstanceDTO> fetchPage(ClientEntity<InstancesPageVO> clientEntity) {
-        String urlParams = urlParams(clientEntity);
-        String url = clientEntity.getUrl() + NacosAPI.INSTANCES + "?" + urlParams;
+        String url = urlWithData(NacosAPI.INSTANCES, clientEntity);
         log.info("nacos instances page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {
@@ -54,12 +54,10 @@ public class NacosInstancesClient extends BaseClient {
     }
 
     public Boolean save(ClientEntity<InstanceVO> clientEntity) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(formParams(clientEntity), headers);
-        String resp = "";
-        ResponseEntity<String> resp2 = restTemplate.exchange(clientEntity.getUrl() + NacosAPI.INSTANCE_OP, HttpMethod.PUT, httpEntity, String.class);
-        if (resp2.getStatusCode() == HttpStatus.OK) resp = resp2.getBody();
+        String url = url(NacosAPI.INSTANCE_OP, clientEntity);
+        log.info("nacos instances save url: {}", url);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);
+        String resp = invoke(url, HttpMethod.PUT, httpEntity, String.class);
         return CommonUtils.isEquals("ok", resp);
     }
 }

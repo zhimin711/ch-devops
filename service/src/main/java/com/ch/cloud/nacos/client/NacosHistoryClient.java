@@ -11,6 +11,8 @@ import com.ch.cloud.nacos.vo.HistoryQueryVO;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,12 +26,10 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class NacosHistoryClient extends BaseClient{
+public class NacosHistoryClient extends BaseClient {
 
-    public InvokerPage.Page<HistoryDTO> fetchPage(ClientEntity<HistoryPageVO> entity) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(entity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        String url = entity.getUrl() + NacosAPI.HISTORY + "?" + urlParams;
+    public InvokerPage.Page<HistoryDTO> fetchPage(ClientEntity<HistoryPageVO> clientEntity) {
+        String url = urlWithData(NacosAPI.HISTORY, clientEntity);
         log.info("nacos history page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("totalCount")) {
@@ -45,10 +45,8 @@ public class NacosHistoryClient extends BaseClient{
     }
 
     public HistoryDTO fetch(ClientEntity<HistoryQueryVO> clientEntity) {
-        Map<String, String> param = BeanUtilsV2.objectToMap(clientEntity.getData());
-        String urlParams = HttpUtil.toParams(param);
-        JSONObject resp = restTemplate.getForObject(clientEntity.getUrl() + NacosAPI.HISTORY + "?" + urlParams, JSONObject.class);
-        if (resp != null) return resp.toJavaObject(HistoryDTO.class);
-        return null;
+        String url = urlWithData(NacosAPI.HISTORY, clientEntity);
+        log.info("nacos history fetch url: {}", url);
+        return invoke(url, HttpMethod.GET, HttpEntity.EMPTY, HistoryDTO.class);
     }
 }

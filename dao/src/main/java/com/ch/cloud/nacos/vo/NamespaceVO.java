@@ -17,5 +17,5 @@ public class NamespaceVO {
 
     private String namespaceId;
 
-    private String accessToken;
+    private String accessToken = "";
 }
