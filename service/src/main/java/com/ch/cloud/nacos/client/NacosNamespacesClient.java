@@ -50,6 +50,7 @@ public class NacosNamespacesClient extends BaseClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(param, headers);
         String url = url(NacosAPI.NAMESPACES, clientEntity);
+        log.info("nacos namespace add or edit url: {}", url);
         if (isNew) {
             sync = invoke(url, HttpMethod.POST, httpEntity, Boolean.class);
         } else {
@@ -61,11 +62,13 @@ public class NacosNamespacesClient extends BaseClient {
     public NacosNamespaceDTO fetch(ClientEntity<NamespaceVO> clientEntity) {
         String url = url(NacosAPI.NAMESPACES, clientEntity);
         url += "&show=all&namespaceId=" + clientEntity.getData().getNamespaceId();
-        return invoke(url,HttpMethod.GET,HttpEntity.EMPTY, NacosNamespaceDTO.class);
+        log.info("nacos namespace fetch url: {}", url);
+        return invoke(url, HttpMethod.GET, HttpEntity.EMPTY, NacosNamespaceDTO.class);
     }
 
     public List<NacosNamespaceDTO> fetchAll(ClientEntity<NamespaceVO> clientEntity) {
         String url = url(NacosAPI.NAMESPACES, clientEntity);
+        log.info("nacos namespace fetchAll url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("data")) {
             JSONArray arr = resp.getJSONArray("data");
@@ -75,13 +78,9 @@ public class NacosNamespacesClient extends BaseClient {
     }
 
     public Boolean delete(ClientEntity<NamespaceVO> clientEntity) {
-        String url =
-            clientEntity.getUrl() + NacosAPI.NAMESPACES + "?namespaceId=" + clientEntity.getData().getNamespaceId();
-        ResponseEntity<Boolean> resp = restTemplate.exchange(url, HttpMethod.DELETE, null, Boolean.class);
-        if (resp.getStatusCode() == HttpStatus.OK) {
-            log.info("delete namespace: {}", resp.getBody());
-            return resp.getBody();
-        }
-        return false;
+
+        String url = urlWithData(NacosAPI.NAMESPACES, clientEntity);
+        log.info("nacos namespace delete url: {}", url);
+        return invoke(url, HttpMethod.DELETE, HttpEntity.EMPTY, Boolean.class);
     }
 }

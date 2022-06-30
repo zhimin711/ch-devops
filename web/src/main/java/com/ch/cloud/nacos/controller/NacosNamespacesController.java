@@ -178,6 +178,7 @@ public class NacosNamespacesController {
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             ClientEntity<NamespaceVO> clientEntity =
                 new ClientEntity<>(cluster, new NamespaceVO(namespace.getUid(), ""));
+            nacosUserClient.login(clientEntity);
             nacosNamespacesClient.delete(clientEntity);
             return namespaceService.delete(id);
         });
