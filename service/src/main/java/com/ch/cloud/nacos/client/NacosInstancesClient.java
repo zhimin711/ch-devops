@@ -34,7 +34,7 @@ public class NacosInstancesClient extends BaseClient {
      * @return Page
      */
     public InvokerPage.Page<InstanceDTO> fetchPage(ClientEntity<InstancesPageVO> clientEntity) {
-        String url = urlWithData(NacosAPI.INSTANCES, clientEntity);
+        String url = urlWithAll(NacosAPI.INSTANCES, clientEntity);
         log.info("nacos instances page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
         if (resp != null && resp.containsKey("count")) {
