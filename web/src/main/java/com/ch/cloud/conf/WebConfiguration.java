@@ -2,6 +2,7 @@ package com.ch.cloud.conf;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -23,10 +24,12 @@ public class WebConfiguration {
 
 
     @Bean
+    @Primary
     public RestTemplate restTemplate(){
+        //设置超时时间
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setReadTimeout(300000);
-        factory.setConnectTimeout(3000);
+        factory.setConnectTimeout(5000);
         RestTemplate restTemplate = new RestTemplate(factory);
         // 找出并修改默认的StringHttpMessageConverter
         // 关闭Accept-Charset的输出&#xff08;防止输出超长的编码列表&#xff09;
