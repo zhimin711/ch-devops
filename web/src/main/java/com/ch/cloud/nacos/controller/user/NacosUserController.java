@@ -130,6 +130,7 @@ public class NacosUserController {
             record.setServiceName(result.get().getCode());
 
             ServicesQueryVO servicesQueryVO = new ServicesQueryVO();
+            servicesQueryVO.setAccessToken(record.getAccessToken());
             servicesQueryVO.setNamespaceId(record.getNamespaceId());
             servicesQueryVO.setServiceName(record.getServiceName());
             if (CommonUtils.isNotEmpty(record.getGroupName())) {
@@ -137,8 +138,8 @@ public class NacosUserController {
             }
             ClientEntity<ServicesQueryVO> clientEntity2 = new ClientEntity<>();
             clientEntity2.setUrl(clientEntity.getUrl());
-            clientEntity2.setUsername(clientEntity.getUsername());
-            clientEntity2.setPassword(clientEntity.getPassword());
+//            clientEntity2.setUsername(clientEntity.getUsername());
+//            clientEntity2.setPassword(clientEntity.getPassword());
             clientEntity2.setData(servicesQueryVO);
             ServiceDetailDTO detailDTO = nacosServicesClient.fetch(clientEntity2);
             if (detailDTO == null || CommonUtils.isEmpty(detailDTO.getClusters())) {
