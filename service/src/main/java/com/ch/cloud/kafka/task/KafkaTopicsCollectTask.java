@@ -45,7 +45,7 @@ public class KafkaTopicsCollectTask {
     @Resource
     private KafkaTopicService   kafkaTopicService;
 
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     public void collectTopic() {
 //        Date date = new Date();
 //        Stopwatch stopwatch = Stopwatch.createStarted();
