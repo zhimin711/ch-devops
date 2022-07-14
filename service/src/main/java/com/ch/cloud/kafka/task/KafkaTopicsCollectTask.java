@@ -45,24 +45,14 @@ public class KafkaTopicsCollectTask {
     @Resource
     private KafkaTopicService   kafkaTopicService;
 
-    @Scheduled(cron = "30 0/1 * * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void collectTopic() {
 //        Date date = new Date();
 //        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             List<KafkaCluster> clusterList = kafkaClusterService.findEnabled();
             for (KafkaCluster cluster : clusterList) {
-                Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(cluster);
-                if(topicNames.isEmpty()){
-                    continue;
-                }
-
-                List<KafkaTopic> existsTopics = kafkaTopicService.findByClusterIdAndTopicNames(cluster.getId(), topicNames);
-                List<String> names = existsTopics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toList());
-
-                Set<String> topics = topicNames.stream().filter(e->!names.contains(e)).collect(Collectors.toSet());
-                List<KafkaTopicDTO> fetchTopics = kafkaClusterManager.topics(cluster, topics);
-                kafkaTopicService.saveOrUpdate(fetchTopics, "admin");
+                kafkaClusterManager.syncTopics(cluster);
             }
 
         } catch (Exception err) {

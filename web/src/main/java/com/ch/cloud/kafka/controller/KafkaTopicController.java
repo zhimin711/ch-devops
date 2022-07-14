@@ -223,6 +223,12 @@ public class KafkaTopicController {
     public Result<Integer> syncTopics(@RequestBody KafkaTopic record) {
         return ResultUtils.wrap(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
+            if (CommonUtils.isEquals(record.getType(), "1")) {
+                // 增量同步
+                KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
+                return kafkaClusterManager.syncTopics(cluster);
+
+            } // 全量同步
             List<KafkaTopicDTO> topicList = kafkaClusterManager.topics(record.getClusterId(), null);
             return kafkaTopicService.saveOrUpdate(topicList, ContextUtil.getUser());
         });

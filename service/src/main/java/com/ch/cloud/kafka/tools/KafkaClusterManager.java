@@ -8,10 +8,10 @@ import com.ch.cloud.kafka.pojo.Partition;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.Node;
@@ -48,7 +48,7 @@ public class KafkaClusterManager extends AbsKafkaManager {
     @Autowired
     private KafkaClusterService kafkaClusterService;
     @Autowired
-    private KafkaTopicService   topicService;
+    private KafkaTopicService kafkaTopicService;
 
     public List<BrokerDTO> brokers(Long clusterId, String topic) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
@@ -73,7 +73,7 @@ public class KafkaClusterManager extends AbsKafkaManager {
         if (StringUtils.hasText(topic)) {
             topicNames = new HashSet<>(Collections.singletonList(topic));
         } else {
-            List<KafkaTopic> topics = topicService.findByClusterIdLikeTopicName(config.getId(), null);
+            List<KafkaTopic> topics = kafkaTopicService.findByClusterIdLikeTopicName(config.getId(), null);
             if (CommonUtils.isNotEmpty(topics)) {
                 topicNames = topics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toSet());
             } else {
@@ -316,4 +316,27 @@ public class KafkaClusterManager extends AbsKafkaManager {
         return topics;
     }
 
+    /**
+     * 增量同步Kafka集群主题
+     * 
+     * @param cluster
+     *            集群信息
+     */
+    @SneakyThrows
+    public int syncTopics(KafkaCluster cluster) {
+        Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(cluster);
+        if (topicNames.isEmpty()) {
+            return 0;
+        }
+
+        List<KafkaTopic> existsTopics = kafkaTopicService.findByClusterIdAndTopicNames(cluster.getId(), topicNames);
+        List<String> names = existsTopics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toList());
+
+        Set<String> topics = topicNames.stream().filter(e -> !names.contains(e)).collect(Collectors.toSet());
+        if (topics.isEmpty()) {
+            return 0;
+        }
+        List<KafkaTopicDTO> fetchTopics = topics(cluster, topics);
+        return kafkaTopicService.saveOrUpdate(fetchTopics, "admin");
+    }
 }
