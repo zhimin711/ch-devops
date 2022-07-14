@@ -6,6 +6,7 @@ import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.mybatis.service.IService;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author zhimin.ma
@@ -23,4 +24,7 @@ public interface KafkaTopicService extends IService<KafkaTopic> {
     KafkaTopic check(Long clusterId, Long topicId);
 
     int update(KafkaTopic srcRecord, KafkaTopic targetRecord);
+
+    List<KafkaTopic> findByClusterIdAndTopicNames(Long id, Set<String> topicNames);
+
 }
