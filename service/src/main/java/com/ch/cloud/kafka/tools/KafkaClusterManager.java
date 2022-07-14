@@ -201,6 +201,7 @@ public class KafkaClusterManager extends AbsKafkaManager {
     public TopicInfo info(Long clusterId, String topicName) throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
+
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
             TopicDescription topicDescription = adminClient.describeTopics(Collections.singletonList(topicName)).all().get().get(topicName);
             TopicInfo topicInfo = new TopicInfo();

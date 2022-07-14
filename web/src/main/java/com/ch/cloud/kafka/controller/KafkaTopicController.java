@@ -12,10 +12,7 @@ import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.kafka.tools.KafkaClusterManager;
-import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
-import com.ch.cloud.kafka.tools.KafkaTopicManager;
-import com.ch.cloud.kafka.tools.ZkTopicUtils;
+import com.ch.cloud.kafka.tools.*;
 import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
@@ -36,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author zhimin.ma
@@ -84,10 +82,14 @@ public class KafkaTopicController {
 
             AssertUtils.isTrue(r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE), PubError.EXISTS, "主题已存在！");
             KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
-            TopicInfo info = kafkaClusterManager.info(cluster.getId(), record.getTopicName());
-            if (info == null) {
+
+
+            Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(cluster);
+
+            if (!topicNames.contains(record.getTopicName())) {
                 kafkaTopicManager.createTopic(record);
             } else {
+                TopicInfo info = kafkaClusterManager.info(cluster.getId(), record.getTopicName());
                 record.setPartitionSize(info.getPartitionSize());
                 record.setReplicaSize(info.getReplicaSize());
             }
