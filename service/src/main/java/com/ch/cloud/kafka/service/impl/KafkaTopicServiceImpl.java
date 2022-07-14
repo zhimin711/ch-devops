@@ -28,6 +28,7 @@ import tk.mybatis.mapper.util.Sqls;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -126,7 +127,7 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
         KafkaTopic kafkaTopic = this.find(topicId);
         AssertUtils.isNull(kafkaTopic, PubError.NOT_EXISTS, topicId + "主题配置");
         AssertUtils.isFalse(CommonUtils.isEquals(kafkaTopic.getClusterId(), clusterId), PubError.NOT_ALLOWED,
-            clusterId + ":" + topicId + "主题配置");
+                clusterId + ":" + topicId + "主题配置");
         String path = libsDir + File.separator + kafkaTopic.getClassFile();
         kafkaTopic.setClassFile(path);
         return kafkaTopic;
@@ -137,5 +138,13 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
         Example example = ExampleUtils.create(srcRecord);
 
         return getMapper().updateByExampleSelective(targetRecord, example);
+    }
+
+    @Override
+    public List<KafkaTopic> findByClusterIdAndTopicNames(Long id, Set<String> topicNames) {
+        Example ex = Example.builder(KafkaTopic.class)
+                .andWhere(Sqls.custom().andEqualTo("clusterId", id)
+                        .andIn("topicName", topicNames)).build();
+        return getMapper().selectByExample(ex);
     }
 }
