@@ -12,10 +12,7 @@ import com.ch.cloud.nacos.client.NacosInstancesClient;
 import com.ch.cloud.nacos.client.NacosServicesClient;
 import com.ch.cloud.nacos.client.NacosSubscribesClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.nacos.dto.HistoryDTO;
-import com.ch.cloud.nacos.dto.InstanceDTO;
-import com.ch.cloud.nacos.dto.ServiceDetailDTO;
-import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.nacos.dto.*;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
@@ -122,32 +119,25 @@ public class NacosUserController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目服务实例")
     @GetMapping(value = {"{projectId:[0-9]+}/instances"})
-    public PageResult<InstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
-        return ResultUtils.wrapPage(() -> {
+    public Result<ServiceInstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
+        return ResultUtils.wrap(() -> {
             ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
 
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
             record.setServiceName(result.get().getCode());
 
-            ServicesQueryVO servicesQueryVO = new ServicesQueryVO();
-            servicesQueryVO.setAccessToken(record.getAccessToken());
-            servicesQueryVO.setNamespaceId(record.getNamespaceId());
-            servicesQueryVO.setServiceName(record.getServiceName());
-            if (CommonUtils.isNotEmpty(record.getGroupName())) {
-                servicesQueryVO.setGroupName(record.getGroupName());
-            }
-            ClientEntity<ServicesQueryVO> clientEntity2 = new ClientEntity<>();
-            clientEntity2.setUrl(clientEntity.getUrl());
-//            clientEntity2.setUsername(clientEntity.getUsername());
-//            clientEntity2.setPassword(clientEntity.getPassword());
-            clientEntity2.setData(servicesQueryVO);
-            ServiceDetailDTO detailDTO = nacosServicesClient.fetch(clientEntity2);
-            if (detailDTO == null || CommonUtils.isEmpty(detailDTO.getClusters())) {
-                return InvokerPage.build();
-            }
-            JSONObject cluster = detailDTO.getClusters().get(0);
-            record.setClusterName(cluster.getString("name"));
-            return nacosInstancesClient.fetchPage(clientEntity);
+            ClientEntity<ServicesPageVO> clientEntity3 = new ClientEntity<>();
+            clientEntity3.setUrl(clientEntity.getUrl());
+            ServicesPageVO servicesPageVO = new ServicesPageVO();
+            servicesPageVO.setAccessToken(record.getAccessToken());
+            servicesPageVO.setServiceNameParam(result.get().getCode());
+            servicesPageVO.setWithInstances(true);
+            List<ServiceInstanceDTO> serviceInstanceDTOS = nacosServicesClient.fetchList(clientEntity3);
+            if (serviceInstanceDTOS.isEmpty())
+                return Lists.newArrayList();
+            return serviceInstanceDTOS.stream()
+                .filter(e -> CommonUtils.isEquals(servicesPageVO.getServiceNameParam(), e.getServiceName()))
+                .collect(Collectors.toList());
         });
     }
 

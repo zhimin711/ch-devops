@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.ServiceDTO;
 import com.ch.cloud.nacos.dto.ServiceDetailDTO;
+import com.ch.cloud.nacos.dto.ServiceInstanceDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.ServiceVO;
 import com.ch.cloud.nacos.vo.ServicesPageVO;
@@ -15,6 +16,7 @@ import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -92,5 +94,14 @@ public class NacosServicesClient extends BaseClient {
         log.info("Nacos service delete url: {}", url);
         String resp = invoke(url, HttpMethod.DELETE, null, String.class);
         return CommonUtils.isEquals(resp, "ok");
+    }
+
+    public List<ServiceInstanceDTO> fetchList(ClientEntity<ServicesPageVO> clientEntity) {
+        String url = urlWithAll(NacosAPI.SERVICES, clientEntity);
+        log.info("nacos services list with instances url: {}", url);
+        JSONArray array = invoke(url, HttpMethod.GET, null, JSONArray.class);
+        if (array.isEmpty())
+            return Lists.newArrayList();
+        return array.toJavaList(ServiceInstanceDTO.class);
     }
 }
