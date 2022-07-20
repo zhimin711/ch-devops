@@ -130,6 +130,7 @@ public class NacosUserController {
             clientEntity3.setUrl(clientEntity.getUrl());
             ServicesPageVO servicesPageVO = new ServicesPageVO();
             servicesPageVO.setAccessToken(record.getAccessToken());
+            servicesPageVO.setNamespaceId(record.getNamespaceId());
             servicesPageVO.setServiceNameParam(result.get().getCode());
             servicesPageVO.setWithInstances(true);
             clientEntity3.setData(servicesPageVO);
