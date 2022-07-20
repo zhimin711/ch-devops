@@ -132,6 +132,7 @@ public class NacosUserController {
             servicesPageVO.setAccessToken(record.getAccessToken());
             servicesPageVO.setServiceNameParam(result.get().getCode());
             servicesPageVO.setWithInstances(true);
+            clientEntity3.setData(servicesPageVO);
             List<ServiceInstanceDTO> serviceInstanceDTOS = nacosServicesClient.fetchList(clientEntity3);
             if (serviceInstanceDTOS.isEmpty())
                 return Lists.newArrayList();
