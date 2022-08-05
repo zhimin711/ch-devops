@@ -1,5 +1,6 @@
 package com.ch.cloud.conf;
 
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
@@ -62,7 +63,8 @@ public class SpringFoxSwaggerConfig {
                 .apiInfo(apiInfo)
                 .groupName("Devops")
                 .select()
-                .apis(RequestHandlerSelectors.withClassAnnotation(Tag.class))
+                .apis(RequestHandlerSelectors.withClassAnnotation(Tag.class).or(RequestHandlerSelectors.withClassAnnotation(
+                        Api.class)))
                 .paths(PathSelectors.any())
                 .build();
     }
