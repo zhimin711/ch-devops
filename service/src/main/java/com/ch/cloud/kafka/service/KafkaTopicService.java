@@ -5,6 +5,7 @@ import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.mybatis.service.IService;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
 
@@ -15,8 +16,14 @@ import java.util.Set;
 public interface KafkaTopicService extends IService<KafkaTopic> {
 
     KafkaTopic findByClusterIdAndTopicName(Long clusterId, String topicName);
-
-    List<KafkaTopic> findByClusterIdLikeTopicName(Long clusterId, String topicName);
+    
+    /**
+     * 查询集群主题
+     * @param clusterId 集群ID
+     * @param topicName 主题名称（非必须）
+     * @return
+     */
+    List<KafkaTopic> findByClusterIdLikeTopicName(@NotNull Long clusterId, String topicName);
 
     int saveOrUpdate(List<KafkaTopicDTO> topicList, String username);
 

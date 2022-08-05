@@ -1,5 +1,6 @@
 package com.ch.cloud.kafka.tools;
 
+import com.ch.StatusS;
 import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
@@ -8,9 +9,12 @@ import com.ch.cloud.kafka.pojo.Partition;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
+import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -36,7 +40,7 @@ public class KafkaClusterManager extends AbsKafkaManager {
 
     private Logger logger = LoggerFactory.getLogger(KafkaClusterManager.class);
 
-    private int timeout    = 100000;
+    private int timeout = 100000;
     private int bufferSize = 64 * 1024;
 
     private Map<String, Integer> brokers;
@@ -107,7 +111,9 @@ public class KafkaClusterManager extends AbsKafkaManager {
 
         if (StringUtils.hasText(topic)) {
             // 使用topic过滤时只展示相关的broker
-            brokers = brokers.stream().filter(broker -> broker.getFollowerPartitions().size() > 0 || broker.getLeaderPartitions().size() > 0).collect(Collectors.toList());
+            brokers = brokers.stream()
+                .filter(broker -> broker.getFollowerPartitions().size() > 0 || broker.getLeaderPartitions().size() > 0)
+                .collect(Collectors.toList());
         }
 
         return brokers;
@@ -116,20 +122,25 @@ public class KafkaClusterManager extends AbsKafkaManager {
     /**
      * 获取指定 topic 的所有分区 offset
      *
-     * @param clusterId 集群ID
-     * @param topicName 主题
+     * @param clusterId
+     *            集群ID
+     * @param topicName
+     *            主题
      * @return
      */
 
-    public List<Partition> partitions(Long clusterId, String topicName) throws ExecutionException, InterruptedException {
+    public List<Partition> partitions(Long clusterId, String topicName)
+        throws ExecutionException, InterruptedException {
         KafkaCluster config = kafkaClusterService.find(clusterId);
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
-            Map<String, TopicDescription> stringTopicDescriptionMap = adminClient.describeTopics(Collections.singletonList(topicName)).all().get();
+            Map<String, TopicDescription> stringTopicDescriptionMap =
+                adminClient.describeTopics(Collections.singletonList(topicName)).all().get();
             TopicDescription topicDescription = stringTopicDescriptionMap.get(topicName);
 
             List<TopicPartitionInfo> partitionInfos = topicDescription.partitions();
-            List<TopicPartition> topicPartitions = partitionInfos.stream().map(x -> new TopicPartition(topicName, x.partition())).collect(Collectors.toList());
+            List<TopicPartition> topicPartitions = partitionInfos.stream()
+                .map(x -> new TopicPartition(topicName, x.partition())).collect(Collectors.toList());
             Map<TopicPartition, Long> beginningOffsets = kafkaConsumer.beginningOffsets(topicPartitions);
             Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitions);
 
@@ -143,8 +154,10 @@ public class KafkaClusterManager extends AbsKafkaManager {
                 partition.setPartition(partitionInfo.partition());
                 partition.setLeader(new Partition.Node(leader.id(), leader.host(), leader.port()));
 
-                List<Partition.Node> isr = partitionInfo.isr().stream().map(node -> new Partition.Node(node.id(), node.host(), node.port())).collect(Collectors.toList());
-                List<Partition.Node> replicas = partitionInfo.replicas().stream().map(node -> new Partition.Node(node.id(), node.host(), node.port())).collect(Collectors.toList());
+                List<Partition.Node> isr = partitionInfo.isr().stream()
+                    .map(node -> new Partition.Node(node.id(), node.host(), node.port())).collect(Collectors.toList());
+                List<Partition.Node> replicas = partitionInfo.replicas().stream()
+                    .map(node -> new Partition.Node(node.id(), node.host(), node.port())).collect(Collectors.toList());
 
                 partition.setIsr(isr);
                 partition.setReplicas(replicas);
@@ -162,7 +175,8 @@ public class KafkaClusterManager extends AbsKafkaManager {
                 }
             }
 
-            List<Integer> brokerIds = brokers(clusterId, topicName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+            List<Integer> brokerIds =
+                brokers(clusterId, topicName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
             Map<Integer, Map<String, LogDirDescription>> integerMapMap = null;
             try {
                 integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
@@ -179,10 +193,13 @@ public class KafkaClusterManager extends AbsKafkaManager {
                         Map<String, LogDirDescription> logDirDescriptionMap = integerMapMap.get(replica.getId());
                         if (logDirDescriptionMap != null) {
                             for (LogDirDescription logDirDescription : logDirDescriptionMap.values()) {
-                                Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap = logDirDescription.replicaInfos();
-                                for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap.entrySet()) {
+                                Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap =
+                                    logDirDescription.replicaInfos();
+                                for (Map.Entry<TopicPartition,
+                                    ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap.entrySet()) {
                                     TopicPartition topicPartition = replicaInfoEntry.getKey();
-                                    if (Objects.equals(topicName, topicPartition.topic()) && topicPartition.partition() == partition.getPartition()) {
+                                    if (Objects.equals(topicName, topicPartition.topic())
+                                        && topicPartition.partition() == partition.getPartition()) {
                                         ReplicaInfo replicaInfo = replicaInfoEntry.getValue();
                                         long size = replicaInfo.size();
                                         replica.setLogSize(replica.getLogSize() + size);
@@ -203,7 +220,8 @@ public class KafkaClusterManager extends AbsKafkaManager {
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(config);
 
         try (KafkaConsumer<String, String> kafkaConsumer = KafkaClusterUtils.createConsumer(config)) {
-            TopicDescription topicDescription = adminClient.describeTopics(Collections.singletonList(topicName)).all().get().get(topicName);
+            TopicDescription topicDescription =
+                adminClient.describeTopics(Collections.singletonList(topicName)).all().get().get(topicName);
             TopicInfo topicInfo = new TopicInfo();
             topicInfo.setClusterId(clusterId);
             topicInfo.setName(topicName);
@@ -215,7 +233,8 @@ public class KafkaClusterManager extends AbsKafkaManager {
             }
             topicInfo.setReplicaSize(replicaCount);
 
-            List<TopicPartition> topicPartitions = partitionInfos.stream().map(x -> new TopicPartition(topicName, x.partition())).collect(Collectors.toList());
+            List<TopicPartition> topicPartitions = partitionInfos.stream()
+                .map(x -> new TopicPartition(topicName, x.partition())).collect(Collectors.toList());
             Map<TopicPartition, Long> beginningOffsets = kafkaConsumer.beginningOffsets(topicPartitions);
             Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitions);
 
@@ -227,16 +246,18 @@ public class KafkaClusterManager extends AbsKafkaManager {
 
             topicInfo.setPartitions(partitions);
 
-
-            List<Integer> brokerIds = brokers(clusterId, topicName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+            List<Integer> brokerIds =
+                brokers(clusterId, topicName).stream().map(BrokerDTO::getId).collect(Collectors.toList());
             Map<Integer, Map<String, LogDirDescription>> integerMapMap;
             try {
                 integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
                 topicInfo.setTotalLogSize(0L);
                 for (Map<String, LogDirDescription> descriptionMap : integerMapMap.values()) {
                     for (LogDirDescription logDirDescription : descriptionMap.values()) {
-                        Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap = logDirDescription.replicaInfos();
-                        for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap.entrySet()) {
+                        Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap =
+                            logDirDescription.replicaInfos();
+                        for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap
+                            .entrySet()) {
                             TopicPartition topicPartition = replicaInfoEntry.getKey();
                             if (!Objects.equals(topicName, topicPartition.topic())) {
                                 continue;
@@ -259,32 +280,30 @@ public class KafkaClusterManager extends AbsKafkaManager {
         AssertUtils.isEmpty(config, PubError.NON_NULL, "集群ID:" + clusterId);
         Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(config);
         if (StringUtils.hasText(name)) {
-            topicNames = topicNames
-                    .stream()
-                    .filter(topic -> topic.toLowerCase().contains(name.toLowerCase(Locale.ROOT)))
+            topicNames =
+                topicNames.stream().filter(topic -> topic.toLowerCase().contains(name.toLowerCase(Locale.ROOT)))
                     .collect(Collectors.toSet());
         }
         return topics(config, topicNames);
     }
 
-    public List<KafkaTopicDTO> topics(KafkaCluster cluster, Set<String> topicNames) throws InterruptedException, ExecutionException {
+    public List<KafkaTopicDTO> topics(KafkaCluster cluster, Set<String> topicNames)
+        throws InterruptedException, ExecutionException {
         AdminClient adminClient = KafkaClusterUtils.getAdminClient(cluster);
         Map<String, TopicDescription> stringTopicDescriptionMap = adminClient.describeTopics(topicNames).all().get();
 
-        List<KafkaTopicDTO> topics = stringTopicDescriptionMap
-                .entrySet()
-                .stream().map(e -> {
-                    KafkaTopicDTO topic = new KafkaTopicDTO();
-                    topic.setClusterId(cluster.getId());
-                    topic.setTopicName(e.getKey());
-                    topic.setPartitionSize(e.getValue().partitions().size());
-                    topic.setTotalLogSize(0L);
-                    topic.setReplicaSize(0);
-                    return topic;
-                })
-                .collect(Collectors.toList());
+        List<KafkaTopicDTO> topics = stringTopicDescriptionMap.entrySet().stream().map(e -> {
+            KafkaTopicDTO topic = new KafkaTopicDTO();
+            topic.setClusterId(cluster.getId());
+            topic.setTopicName(e.getKey());
+            topic.setPartitionSize(e.getValue().partitions().size());
+            topic.setTotalLogSize(0L);
+            topic.setReplicaSize(0);
+            return topic;
+        }).collect(Collectors.toList());
 
-        List<Integer> brokerIds = brokers(cluster.getId(), null).stream().map(BrokerDTO::getId).collect(Collectors.toList());
+        List<Integer> brokerIds =
+            brokers(cluster.getId(), null).stream().map(BrokerDTO::getId).collect(Collectors.toList());
         Map<Integer, Map<String, LogDirDescription>> integerMapMap = null;
         try {
             integerMapMap = adminClient.describeLogDirs(brokerIds).allDescriptions().get();
@@ -298,8 +317,10 @@ public class KafkaClusterManager extends AbsKafkaManager {
             for (KafkaTopicDTO topic : topics) {
                 for (Map<String, LogDirDescription> descriptionMap : integerMapMap.values()) {
                     for (LogDirDescription logDirDescription : descriptionMap.values()) {
-                        Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap = logDirDescription.replicaInfos();
-                        for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap.entrySet()) {
+                        Map<TopicPartition, ReplicaInfo> topicPartitionReplicaInfoMap =
+                            logDirDescription.replicaInfos();
+                        for (Map.Entry<TopicPartition, ReplicaInfo> replicaInfoEntry : topicPartitionReplicaInfoMap
+                            .entrySet()) {
                             TopicPartition topicPartition = replicaInfoEntry.getKey();
                             if (!Objects.equals(topic.getTopicName(), topicPartition.topic())) {
                                 continue;
@@ -330,14 +351,28 @@ public class KafkaClusterManager extends AbsKafkaManager {
             return 0;
         }
 
-        List<KafkaTopic> existsTopics = kafkaTopicService.findByClusterIdAndTopicNames(cluster.getId(), topicNames);
-        List<String> names = existsTopics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toList());
+        // List<KafkaTopic> existsTopics = kafkaTopicService.findByClusterIdAndTopicNames(cluster.getId(), topicNames);
+        List<KafkaTopic> existsTopics = kafkaTopicService.findByClusterIdLikeTopicName(cluster.getId(), null);
+//        List<String> names = existsTopics.stream().map(KafkaTopic::getTopicName).collect(Collectors.toList());
 
-        Set<String> topics = topicNames.stream().filter(e -> !names.contains(e)).collect(Collectors.toSet());
-        if (topics.isEmpty()) {
+        Set<String> newList = Sets.newHashSet(topicNames);
+        if (!existsTopics.isEmpty()) {
+            existsTopics.forEach(topic -> {
+                if(!topicNames.contains(topic.getTopicName())) {
+                    topic.setStatus(StatusS.DELETE);
+                    topic.setUpdateBy(ContextUtil.getUser());
+                    topic.setUpdateAt(DateUtils.current());
+                    kafkaTopicService.update(topic);
+                }else {
+                    newList.remove(topic.getTopicName());
+                }
+            });
+        }
+//        Set<String> topics = topicNames.stream().filter(e -> !names.contains(e)).collect(Collectors.toSet());
+        if (newList.isEmpty()) {
             return 0;
         }
-        List<KafkaTopicDTO> fetchTopics = topics(cluster, topics);
-        return kafkaTopicService.saveOrUpdate(fetchTopics, "admin");
+        List<KafkaTopicDTO> fetchTopics = topics(cluster, newList);
+        return kafkaTopicService.saveOrUpdate(fetchTopics, ContextUtil.getUser());
     }
 }

@@ -220,7 +220,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题")
+    @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题(type1.增量同步)")
     @PostMapping("sync")
     public Result<Integer> syncTopics(@RequestBody KafkaTopic record) {
         return ResultUtils.wrap(() -> {

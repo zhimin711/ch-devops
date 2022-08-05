@@ -73,6 +73,7 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
         topicList.forEach(r -> {
             KafkaTopic topic = this.findByClusterIdAndTopicName(r.getClusterId(), r.getTopicName());
             if (topic != null) {
+                topic.setTopicName(r.getTopicName());
                 topic.setPartitionSize(r.getPartitionSize());
                 topic.setReplicaSize(r.getReplicaSize());
                 topic.setStatus(StatusS.ENABLED);

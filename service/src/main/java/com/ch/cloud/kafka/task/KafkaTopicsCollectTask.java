@@ -23,6 +23,7 @@ import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
+import com.ch.cloud.utils.ContextUtil;
 import com.google.common.base.Throwables;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -50,6 +51,7 @@ public class KafkaTopicsCollectTask {
 //        Date date = new Date();
 //        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
+            ContextUtil.setUser("KafkaTopicsCollectTask");
             List<KafkaCluster> clusterList = kafkaClusterService.findEnabled();
             for (KafkaCluster cluster : clusterList) {
                 kafkaClusterManager.syncTopics(cluster);
