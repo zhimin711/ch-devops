@@ -1,5 +1,6 @@
 package com.ch.cloud.conf;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.CorsEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.actuate.autoconfigure.web.server.ManagementPortType;
@@ -30,7 +31,7 @@ import java.util.List;
  * @author zhimin.ma
  * @since 2022/3/26
  */
-@EnableOpenApi
+//@EnableOpenApi
 @Configuration
 public class SpringFoxSwaggerConfig {
     /**
@@ -59,15 +60,15 @@ public class SpringFoxSwaggerConfig {
     public Docket createRestApi(ApiInfo apiInfo) {
         return new Docket(DocumentationType.OAS_30)
                 .apiInfo(apiInfo)
-                .groupName("ChaoHuaOpenAPI")
+                .groupName("Devops")
                 .select()
-                .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
+                .apis(RequestHandlerSelectors.withClassAnnotation(Tag.class))
                 .paths(PathSelectors.any())
                 .build();
     }
 
     /**
-     * 增加如下配置可解决Spring Boot 6.x 与Swagger 3.0.0 不兼容问题
+     * 增加如下配置可解决Spring Boot 2.6.x 与Swagger 3.0.0 不兼容问题
      *
      * @param webEndpointsSupplier        webEndpointsSupplier
      * @param servletEndpointsSupplier    servletEndpointsSupplier
