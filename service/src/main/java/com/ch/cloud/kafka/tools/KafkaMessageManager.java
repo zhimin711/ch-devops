@@ -117,7 +117,7 @@ public class KafkaMessageManager extends AbsKafkaManager {
             List<ConsumerRecord<String, String>> records = new ArrayList<>(count);
 
             int emptyPoll = 0;
-            while (records.size() < count && currentOffset < endOffset) {
+            while (records.size() < count && currentOffset <= endOffset) {
                 List<ConsumerRecord<String, String>> polled =
                     kafkaConsumer.poll(Duration.ofMillis(200)).records(topicPartition);
 
@@ -182,7 +182,7 @@ public class KafkaMessageManager extends AbsKafkaManager {
                 end = Math.min(partition.getBeginningOffset() + record.getSize(), partition.getEndOffset());
                 break;
             case LATEST:
-                start = Math.min(partition.getEndOffset() - record.getSize(), partition.getBeginningOffset());
+                start = Math.max(partition.getEndOffset() - record.getSize(), partition.getBeginningOffset());
                 end = partition.getEndOffset();
         }
 

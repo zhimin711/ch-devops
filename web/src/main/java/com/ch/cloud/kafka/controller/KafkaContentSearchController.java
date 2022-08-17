@@ -1,9 +1,11 @@
 package com.ch.cloud.kafka.controller;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import com.ch.cloud.kafka.model.KafkaTopic;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,8 +69,9 @@ public class KafkaContentSearchController {
                     return;
                 }
                 List<KafkaMessageDTO> list = kafkaMessageManager.search(searchVO, partition, clazz);
+                
                 searchDTO.putOffset(partition.getPartition(), searchVO.getOffset());
-                searchDTO.putMessages(partition.getPartition(), list);
+                searchDTO.putMessages(partition.getPartition(), Lists.reverse(list));
             });
             return searchDTO;
         });
