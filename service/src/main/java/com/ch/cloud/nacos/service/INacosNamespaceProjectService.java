@@ -16,7 +16,9 @@ import java.util.List;
 public interface INacosNamespaceProjectService {
 
     List<Long> findProjectIdsByNamespaceId(Long namespaceId);
-
+    
+    List<ProjectNamespaceDTO> findByNamespaceId(Long namespaceId);
+    
     Integer assignNamespaceProjects(Long namespaceId, List<Long> projectIds);
 
     List<Long> findNamespaceIdsByProjectId(Long projectId);

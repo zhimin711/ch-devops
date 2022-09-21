@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.controller;
 
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
 import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
 import com.ch.cloud.nacos.client.NacosUserClient;
@@ -202,7 +203,7 @@ public class NacosNamespacesController {
             if (localMap.isEmpty()) {
                 saveNacosNamespaces(list, clusterId);
             } else if (nacosMap.isEmpty()) {
-                list2.forEach(record-> convertAndSave(cluster, clientEntity, record));
+                list2.forEach(record -> convertAndSave(cluster, clientEntity, record));
             } else {
                 List<NacosNamespaceDTO> newList = Lists.newArrayList();
                 nacosMap.forEach((k, v) -> {
@@ -211,7 +212,7 @@ public class NacosNamespacesController {
                 });
                 saveNacosNamespaces(newList, clusterId);
                 localMap.forEach((k, record) -> {
-                    if (!nacosMap.containsKey(k)){
+                    if (!nacosMap.containsKey(k)) {
                         convertAndSave(cluster, clientEntity, record);
                     }
                 });
@@ -226,7 +227,7 @@ public class NacosNamespacesController {
         namespaceVO.setAccessToken(clientEntity.getData().getAccessToken());
         namespaceVO.setName(record.getName());
         namespaceVO.setDesc(record.getDescription());
-        return nacosNamespacesClient.add(ClientEntity.build(cluster,namespaceVO));
+        return nacosNamespacesClient.add(ClientEntity.build(cluster, namespaceVO));
     }
 
     private void saveNacosNamespaces(List<NacosNamespaceDTO> list, Long clusterId) {
@@ -251,9 +252,24 @@ public class NacosNamespacesController {
     @GetMapping({"{id:[0-9]+}/projects"})
     public Result<VueRecord2> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
-            List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
-            Result<ProjectDto> projects = projectClientService.infoByIds(projectIds);
-            return VueRecordUtils.covert(projects.getRows());
+            List<ProjectNamespaceDTO> list = nacosNamespaceProjectService.findByNamespaceId(id);
+            if (list.isEmpty())
+                return null;
+            Map<Long, List<ProjectNamespaceDTO>> projectMap =
+                list.stream().collect(Collectors.groupingBy(ProjectNamespaceDTO::getProjectId));
+            Result<ProjectDto> result = projectClientService.infoByIds(Lists.newArrayList(projectMap.keySet()));
+            if (result.isEmpty()) {
+                return null;
+            }
+            result.getRows().forEach(e -> {
+                if (projectMap.containsKey(e.getId())) {
+                    ProjectNamespaceDTO pn = projectMap.get(e.getId()).get(0);
+                    if(CommonUtils.isNotEmpty(pn.getGroupId())){
+                        e.setCode(pn.getGroupId());
+                    }
+                }
+            });
+            return VueRecordUtils.covert(result.getRows());
         });
     }
 

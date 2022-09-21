@@ -33,6 +33,11 @@ public class NacosNamespaceProjectServiceImpl implements INacosNamespaceProjectS
     }
 
     @Override
+    public List<ProjectNamespaceDTO> findByNamespaceId(Long namespaceId) {
+        return namespaceProjectsMapper.findByNamespaceId(namespaceId);
+    }
+
+    @Override
     public Integer assignNamespaceProjects(Long namespaceId, List<Long> projectIds) {
         List<Long> uList = namespaceProjectsMapper.findProjectIdByNamespaceId(namespaceId);
 

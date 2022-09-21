@@ -17,6 +17,8 @@ public interface NamespaceProjectsMapper {
 
     @Select("select project_id from rt_project_namespace where namespace_id = #{namespaceId}")
     List<Long> findProjectIdByNamespaceId(Long namespaceId);
+    @Select("select project_id, namespace_id, group_id from rt_project_namespace where namespace_id = #{namespaceId}")
+    List<ProjectNamespaceDTO> findByNamespaceId(Long namespaceId);
 
     @Select("select namespace_id from rt_project_namespace where project_id = #{projectId}")
     List<Long> findNamespaceIdByProjectId(Long projectId);
