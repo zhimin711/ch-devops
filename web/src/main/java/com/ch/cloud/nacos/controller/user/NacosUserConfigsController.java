@@ -9,6 +9,7 @@ import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.utils.ContextUtil;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -56,16 +57,17 @@ import io.swagger.annotations.ApiOperation;
  */
 @RestController
 @RequestMapping("/nacos/user/{projectId:[0-9]+}/configs")
+@Slf4j
 public class NacosUserConfigsController {
 
     @Autowired
-    private NacosConfigsClient nacosConfigsClient;
+    private NacosConfigsClient      nacosConfigsClient;
     @Autowired
     private NacosNamespaceValidator nacosNamespaceValidator;
     @Autowired
-    private IUserNamespaceService userNamespaceService;
+    private IUserNamespaceService   userNamespaceService;
     @Autowired
-    private INacosClusterService nacosClusterService;
+    private INacosClusterService    nacosClusterService;
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
@@ -106,7 +108,7 @@ public class NacosUserConfigsController {
         return ResultUtils.wrap(() -> {
             List<ConfigDTO> configs = Lists.newArrayList();
             List<NamespaceDto> namespaces = userNamespaceService.findNamespacesByUsernameAndProjectIdAndNamespaceType(
-                ContextUtil.getUser(), projectId, NamespaceType.NACOS);
+                    ContextUtil.getUser(), projectId, NamespaceType.NACOS);
             if (namespaces.isEmpty())
                 return null;
             String currNamespace = record.getNamespaceId();
@@ -117,20 +119,24 @@ public class NacosUserConfigsController {
                     return;
                 }
                 record.setNamespaceId(nid);
-                ClientEntity<ConfigQueryVO> clientEntity =
-                    nacosNamespaceValidator.validUserNamespace(projectId, record);
-                record.setTenant(record.getNamespaceId());
+                try {
+                    ClientEntity<ConfigQueryVO> clientEntity =
+                            nacosNamespaceValidator.validUserNamespace(projectId, record);
+                    record.setTenant(record.getNamespaceId());
 
-                String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
-                record.setGroup(groupId);
-                ConfigDTO config = nacosConfigsClient.fetch(clientEntity);
-                if (config != null) {
-                    config.setTenant(e.getName());
-                    NacosCluster cluster = nacosClusterService.find(e.getClusterId());
-                    if (cluster != null) {
-                        config.setAppName(cluster.getName() + "-" + cluster.getDescription());
+                    String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
+                    record.setGroup(groupId);
+                    ConfigDTO config = nacosConfigsClient.fetch(clientEntity);
+                    if (config != null) {
+                        config.setTenant(e.getName());
+                        NacosCluster cluster = nacosClusterService.find(e.getClusterId());
+                        if (cluster != null) {
+                            config.setAppName(cluster.getName() + "-" + cluster.getDescription());
+                        }
+                        configs.add(config);
                     }
-                    configs.add(config);
+                } catch (Exception ex) {
+                    log.error("fetch compare config error!", ex);
                 }
             });
             return configs;
@@ -193,7 +199,7 @@ public class NacosUserConfigsController {
         String nid = record.getNamespaceId();
         AtomicReference<ClientEntity<ConfigExportVO>> clientEntity = new AtomicReference<>();
         Result<Object> result =
-            ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
+                ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
         if (result.isSuccess()) {
             record.setTenant(record.getNamespaceId());
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
@@ -209,7 +215,7 @@ public class NacosUserConfigsController {
     @ApiOperation(value = "导入项目配置", notes = "导入项目配置")
     @PostMapping("import")
     public Result<?> importZip(@PathVariable Long projectId, ConfigImportVO record,
-        @RequestPart("file") MultipartFile file) {
+                               @RequestPart("file") MultipartFile file) {
         return ResultUtils.wrap(() -> {
             ClientEntity<ConfigImportVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             return nacosConfigsClient.importZip(clientEntity, file);
@@ -220,7 +226,7 @@ public class NacosUserConfigsController {
     @ApiOperation(value = "查询", notes = "查询配置详情")
     @PutMapping("rollback")
     public Result<Boolean> rollback(@PathVariable Long projectId, @RequestParam String opType,
-        @RequestBody HistoryRollbackVO record) {
+                                    @RequestBody HistoryRollbackVO record) {
         return ResultUtils.wrapFail(() -> {
             switch (opType) {
                 case "I":
