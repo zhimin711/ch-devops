@@ -27,7 +27,16 @@ public class UserNamespaceServiceImpl implements IUserNamespaceService {
     }
 
     @Override
-    public List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, NamespaceType namespaceType) {
-        return userProjectNamespaceMapper.findNamespacesByUserIdAndProjectIdAndClusterIdAndNamespaceType(username, projectId,clusterId, namespaceType.name());
+    public List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username,
+        Long projectId, Long clusterId, NamespaceType namespaceType) {
+        return userProjectNamespaceMapper.findNamespacesByUserIdAndProjectIdAndClusterIdAndNamespaceType(username,
+            projectId, clusterId, namespaceType.name());
+    }
+
+    @Override
+    public List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndNamespaceType(String username, Long projectId,
+        NamespaceType namespaceType) {
+        return userProjectNamespaceMapper.findNamespacesByUsernameAndProjectIdAndNamespaceType(username, projectId,
+            namespaceType.name());
     }
 }

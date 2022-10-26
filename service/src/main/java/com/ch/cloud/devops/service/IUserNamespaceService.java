@@ -16,4 +16,6 @@ public interface IUserNamespaceService {
     boolean exists(String userId, String namespaceId, Long projectId);
 
     List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, NamespaceType namespaceType);
+    
+    List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndNamespaceType(String user, Long projectId, NamespaceType namespaceType);
 }

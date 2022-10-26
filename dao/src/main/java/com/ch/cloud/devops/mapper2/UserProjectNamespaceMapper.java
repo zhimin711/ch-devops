@@ -33,9 +33,15 @@ public interface UserProjectNamespaceMapper {
     @Select("select count(1) from rt_user_namespace where USER_ID=#{userId} and NAMESPACE_ID=#{namespaceId} and PROJECT_ID=#{projectId}")
     int countByUserIdAndNamespaceIdAndProjectId(@Param("userId") String userId, @Param("namespaceId") String namespaceId, @Param("projectId") Long projectId);
 
-    @Select("SELECT t1.* from bt_namespace t1" +
+    @Select("SELECT t1.id,t1.name,t1.cluster_id as clusterId,t1.uid from bt_namespace t1" +
             " INNER JOIN rt_user_namespace t2 ON t1.id  = t2.NAMESPACE_ID" +
             " WHERE EXISTS(SELECT * FROM rt_project_namespace WHERE PROJECT_ID = t2.PROJECT_ID and NAMESPACE_ID = t2.NAMESPACE_ID)" +
             " and t2.project_id =#{projectId} and t2.USER_ID=#{userId} and t1.cluster_id = #{clusterId} and t1.type = #{namespaceType}")
     List<NamespaceDto> findNamespacesByUserIdAndProjectIdAndClusterIdAndNamespaceType(String userId, Long projectId, Long clusterId, String namespaceType);
+    
+    @Select("SELECT t1.id,t1.name,t1.cluster_id as clusterId,t1.uid from bt_namespace t1" +
+            " INNER JOIN rt_user_namespace t2 ON t1.id  = t2.NAMESPACE_ID" +
+            " WHERE EXISTS(SELECT * FROM rt_project_namespace WHERE PROJECT_ID = t2.PROJECT_ID and NAMESPACE_ID = t2.NAMESPACE_ID)" +
+            " and t2.project_id =#{projectId} and t2.USER_ID=#{userId} and t1.type = #{namespaceType}")
+    List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndNamespaceType(String userId, Long projectId, String namespaceType);
 }
