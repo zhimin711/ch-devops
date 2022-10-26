@@ -17,6 +17,7 @@
 package com.ch.cloud.rocketmq.controller;
 
 import com.ch.Constants;
+import com.ch.Separator;
 import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
@@ -75,7 +76,7 @@ public class TestRocketMQController {
             TopicList list = topicService.fetchAllTopicList();
             allTopics = list.getTopicList();
         }
-        List<String> topics = StringUtilsV2.splitStr(Constants.SEPARATOR_2, topicStr);
+        List<String> topics = StringUtilsV2.splitStr(Separator.S2, topicStr);
         Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e)).collect(Collectors.toSet());
         if (list.isEmpty()) return null;
         int consumerThreadSize2 = CommonUtils.isEmpty(consumerThreadSize) ? 1 : consumerThreadSize;

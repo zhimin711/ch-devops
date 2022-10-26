@@ -1,16 +1,17 @@
 package com.ch.cloud.kafka.utils;
 
-import com.alibaba.fastjson.JSON;
-import com.ch.Constants;
-import com.ch.utils.CommonUtils;
-import com.google.common.collect.Lists;
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GeodeticCurve;
 import org.gavaghan.geodesy.GlobalCoordinates;
 
-import java.math.BigDecimal;
-import java.util.List;
+import com.alibaba.fastjson2.JSON;
+import com.ch.Separator;
+import com.ch.utils.CommonUtils;
+import com.google.common.collect.Lists;
 
 /**
  * decs:
@@ -62,8 +63,8 @@ public class MapUtils {
         if (CommonUtils.isEmptyOr(point1, point2)) {
             return 0;
         }
-        String[] arr1 = point1.split(Constants.SEPARATOR_2);
-        String[] arr2 = point2.split(Constants.SEPARATOR_2);
+        String[] arr1 = point1.split(Separator.S2);
+        String[] arr2 = point2.split(Separator.S2);
         double p1x = Double.parseDouble(arr1[0]);
         double p1y = Double.parseDouble(arr1[1]);
         double p2x = Double.parseDouble(arr2[0]);
@@ -95,7 +96,7 @@ public class MapUtils {
 
 
     public static double[] parsePoint(String point) {
-        String[] arr1 = point.split(Constants.SEPARATOR_2);
+        String[] arr1 = point.split(Separator.S2);
         double p1x = Double.parseDouble(arr1[0]);
         double p1y = Double.parseDouble(arr1[1]);
         return new double[]{p1x, p1y};

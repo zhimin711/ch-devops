@@ -16,8 +16,8 @@
  */
 package com.ch.cloud.rocketmq.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.base.Ticker;
@@ -99,7 +99,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         for (String string : strings) {
             sb.append(string);
         }
-        JSONObject json = (JSONObject) JSONObject.parse(sb.toString());
+        JSONObject json = JSONObject.parseObject(sb.toString());
         Set<Map.Entry<String, Object>> entries = json.entrySet();
         Map<String, List<String>> map = Maps.newHashMap();
         for (Map.Entry<String, Object> entry : entries) {

@@ -101,7 +101,7 @@ public class KafkaTopicExtServiceImpl extends ServiceImpl<KafkaTopicExtMapper, K
                 r.setUid(UUIDGenerator.generate());
             }
             if (CommonUtils.isEmpty(r.getStatus())) {
-                r.setStatus(Constants.ENABLED);
+                r.setStatus(StatusS.ENABLED);
             }
             propMapper.insert(r);
             if (CommonUtils.isNotEmpty(r.getChildren())) {

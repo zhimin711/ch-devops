@@ -1,7 +1,7 @@
 package com.ch.test.nacos;
 
 import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ServicesQueryVO;
 import com.ch.utils.BeanUtilsV2;

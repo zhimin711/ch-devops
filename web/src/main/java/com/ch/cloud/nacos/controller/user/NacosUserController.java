@@ -1,6 +1,6 @@
 package com.ch.cloud.nacos.controller.user;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
 import com.ch.cloud.devops.dto.NamespaceDto;

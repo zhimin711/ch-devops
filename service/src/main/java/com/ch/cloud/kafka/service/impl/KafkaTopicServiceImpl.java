@@ -57,7 +57,7 @@ public class KafkaTopicServiceImpl extends ServiceImpl<KafkaTopicMapper, KafkaTo
 
     @Override
     public List<KafkaTopic> findByClusterIdLikeTopicName(Long clusterId, String topicName) {
-        Sqls sqls = Sqls.custom().andEqualTo("clusterId", clusterId).andEqualTo("status", Constants.ENABLED);
+        Sqls sqls = Sqls.custom().andEqualTo("clusterId", clusterId).andEqualTo("status", StatusS.ENABLED);
         if (CommonUtils.isNotEmpty(topicName)) {
             sqls.andLike("topicName", SQLUtils.likeAny(topicName));
         }

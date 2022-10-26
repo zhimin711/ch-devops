@@ -1,6 +1,6 @@
 package com.ch.test.nacos;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;

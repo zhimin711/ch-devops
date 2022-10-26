@@ -1,7 +1,7 @@
 package com.ch.cloud.devops.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.devops.mapper2.UserProjectNamespaceMapper;
 import com.ch.mybatis.service.ServiceImpl;;
 import com.ch.s.ApproveStatus;

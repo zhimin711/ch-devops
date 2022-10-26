@@ -16,12 +16,15 @@
  */
 package com.ch.cloud.rocketmq.service.impl;
 
+import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Throwables;
+import lombok.SneakyThrows;
 import org.apache.rocketmq.common.MixAll;
 import com.ch.cloud.rocketmq.model.ConsumerMonitorConfig;
 import com.ch.cloud.rocketmq.service.MonitorService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class MonitorServiceImpl implements MonitorService {
 
-    @Value("${rocketmq.console.data}")
-    private String rocketMqConsoleDataPath;
+    @Autowired
+    private RMQConfigure configure;
 
     private Map<String, ConsumerMonitorConfig> configMap = new ConcurrentHashMap<>();
 
@@ -64,7 +67,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     //rocketmq.console.data.path/monitor/consumerMonitorConfig.json
     private String getConsumerMonitorConfigDataPath() {
-        return rocketMqConsoleDataPath + File.separatorChar + "monitor" + File.separatorChar + "consumerMonitorConfig.json";
+        return configure.getConsoleCollectData() + File.separatorChar + "monitor" + File.separatorChar + "consumerMonitorConfig.json";
     }
 
     private String getConsumerMonitorConfigDataPathBackUp() {
@@ -84,6 +87,7 @@ public class MonitorServiceImpl implements MonitorService {
         }
     }
 
+    @SneakyThrows
     @PostConstruct
     private void loadData() {
         String content = MixAll.file2String(getConsumerMonitorConfigDataPath());

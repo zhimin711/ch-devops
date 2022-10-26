@@ -2,7 +2,7 @@ package com.ch.cloud.nacos.client;
 
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.ch.cloud.nacos.dto.NacosTokenDTO;
 import com.ch.cloud.nacos.vo.NamespaceVO;
 import com.ch.e.ExceptionUtils;
@@ -17,7 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.utils.CommonUtils;

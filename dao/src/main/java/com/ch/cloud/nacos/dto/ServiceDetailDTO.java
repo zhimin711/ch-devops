@@ -1,6 +1,6 @@
 package com.ch.cloud.nacos.dto;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 
 import java.util.List;

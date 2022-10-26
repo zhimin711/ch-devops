@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.vo;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 描述：
@@ -9,6 +10,7 @@ import lombok.Data;
  * @since 2022/4/29
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class SubscribesPageVO  extends NamespaceVO {
 
     private int pageNo = 1;

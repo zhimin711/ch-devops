@@ -1,7 +1,15 @@
 package com.ch.cloud.kafka.utils;
 
-import com.alibaba.fastjson.JSONObject;
-import com.ch.Constants;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.BeanUtils;
+
+import com.alibaba.fastjson2.JSONObject;
+import com.ch.Separator;
 import com.ch.cloud.kafka.model.KafkaTopicExt;
 import com.ch.cloud.kafka.model.KafkaTopicExtProp;
 import com.ch.cloud.mock.Mock;
@@ -10,17 +18,15 @@ import com.ch.cloud.mock.MockRule;
 import com.ch.cloud.mock.pojo.MockProp;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
-import com.ch.utils.*;
+import com.ch.utils.BeanUtilsV2;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
+import com.ch.utils.JarUtils;
+import com.ch.utils.NumberUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * decs:
@@ -99,9 +105,9 @@ public class MockUtil {
                 if (NumberUtils.isNumeric(prop.getValRegex())) {
                     return prop.getValRegex();
                 }
-                String[] arr = prop.getValRegex().split(Constants.SEPARATOR);
+                String[] arr = prop.getValRegex().split(Separator.S0);
                 if (arr.length == 1) {
-                    arr = prop.getValRegex().split(Constants.SEPARATOR_5);
+                    arr = prop.getValRegex().split(Separator.S5);
                 }
                 if (arr.length == 1 && type != BeanUtilsV2.BasicType.STRING) {
                     return prop.getValRegex();
@@ -122,7 +128,7 @@ public class MockUtil {
                         break;
                     case STRING:
                         config.setStringEnum(MockConfig.StringEnum.ARRAY);
-                        config.stringSeed(prop.getValRegex().split(Constants.SEPARATOR_2));
+                        config.stringSeed(prop.getValRegex().split(Separator.S2));
                         break;
                     default:
                         isRegex = false;
@@ -153,7 +159,7 @@ public class MockUtil {
         if (BeanUtilsV2.isDate(clazz1)) {
             MockConfig config = new MockConfig();
             if (CommonUtils.isNotEmpty(prop.getValRegex())) {
-                String[] dArr = prop.getValRegex().split(Constants.SEPARATOR_5);
+                String[] dArr = prop.getValRegex().split(Separator.S5);
                 if (dArr.length == 1) {
                     Date date = DateUtils.parse(prop.getValRegex());
                     if (date != null) return date;
@@ -242,11 +248,11 @@ public class MockUtil {
                     }
                     String[] arr;
                     if (type == BeanUtilsV2.BasicType.STRING || type == BeanUtilsV2.BasicType.CHAR) {
-                        arr = tmp.split(Constants.SEPARATOR_2);
+                        arr = tmp.split(Separator.S2);
                     } else if (isDate) {
-                        arr = tmp.split(Constants.SEPARATOR_5);
+                        arr = tmp.split(Separator.S5);
                     } else {
-                        arr = tmp.split(Constants.SEPARATOR_5);
+                        arr = tmp.split(Separator.S5);
                     }
                     if (arr.length < 2) {
                         ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
@@ -428,7 +434,7 @@ public class MockUtil {
             case RANDOM_RANGE:
                 if (isString) {
                     config.setStringEnum(MockConfig.StringEnum.ARRAY);
-                    config.stringSeed(prop.getValRegex().split(Constants.SEPARATOR_2));
+                    config.stringSeed(prop.getValRegex().split(Separator.S2));
                 } else {
                     config.doubleRange(prop.getMin(), prop.getMax());
                     config.intRange((int) prop.getMin(), (int) prop.getMax());
@@ -521,7 +527,7 @@ public class MockUtil {
     }
 
     public static String getPropCode(String propCode) {
-        int s = propCode.indexOf(Constants.SEPARATOR_1);
+        int s = propCode.indexOf(Separator.S1);
         if (s < 0) return propCode;
         return propCode.substring(s + 1);
     }

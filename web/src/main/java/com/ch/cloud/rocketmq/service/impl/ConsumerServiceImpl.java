@@ -138,12 +138,8 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
         catch (Exception e) {
             throw propagate(e);
         }
-        List<MessageQueue> mqList = Lists.newArrayList(Iterables.filter(consumeStats.getOffsetTable().keySet(), new Predicate<MessageQueue>() {
-            @Override
-            public boolean apply(MessageQueue o) {
-                return StringUtils.isBlank(topic) || o.getTopic().equals(topic);
-            }
-        }));
+        List<MessageQueue> mqList = Lists.newArrayList(Iterables.filter(consumeStats.getOffsetTable().keySet(),
+                o -> StringUtils.isBlank(topic) || o.getTopic().equals(topic)));
         Collections.sort(mqList);
         List<TopicConsumerInfo> topicConsumerInfoList = Lists.newArrayList();
         TopicConsumerInfo nowTopicConsumerInfo = null;
