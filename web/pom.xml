@@ -184,6 +184,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+                </configuration>
             </plugin>
             <!--  assembly 打压缩包插件 -->
             <!--<plugin>
