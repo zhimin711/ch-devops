@@ -89,9 +89,11 @@ public class NacosNamespaceValidator {
     public ClientEntity<ConfigVO> validUserNamespace2edit(Long projectId, ConfigVO record) {
         AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
-        AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
-        List<ProjectRoleDto> result = upmsUserClientService.findProjectRoles(ContextUtil.getUser(), projectId);
-
+        AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "空间ID：" + record.getNamespaceId());
+        if (CommonUtils.isNotEmpty(namespace.getRoles())) {
+            List<ProjectRoleDto> result = upmsUserClientService.findProjectRoles(ContextUtil.getUser(), projectId);
+            AssertUtils.isEmpty(result, PubError.NOT_ALLOWED, "空间数据", "编辑");
+        }
 
         record.setNamespaceId(namespace.getUid());
         ClientEntity<ConfigVO> clientEntity = ClientEntity.build(namespace.getCluster(), record);

@@ -59,7 +59,7 @@ public class Namespace extends BaseEntity {
      * 管理角色（数据权限-修改空间下数据）
      */
     @ApiModelProperty(name = "管理角色")
-    private String role;
+    private String roles;
 
     @Transient
     private NacosCluster cluster;
