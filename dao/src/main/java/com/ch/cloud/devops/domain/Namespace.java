@@ -24,10 +24,8 @@ import javax.persistence.Transient;
 @Table(name = "bt_namespace")
 public class Namespace extends BaseEntity {
 
-    // private static final long serialVersionUID = 1L;
-
     /**
-     * $column.columnComment
+     * 集群ID
      */
     @ApiModelProperty(name = "集群ID")
     private Long clusterId;
@@ -56,6 +54,12 @@ public class Namespace extends BaseEntity {
      */
     @ApiModelProperty(name = "描述")
     private String description;
+
+    /**
+     * 管理角色（数据权限-修改空间下数据）
+     */
+    @ApiModelProperty(name = "管理角色")
+    private String role;
 
     @Transient
     private NacosCluster cluster;
