@@ -21,21 +21,13 @@
             <artifactId>ch-devops-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ch</groupId>
-            <artifactId>ch-mybatis</artifactId>
+            <groupId>com.ch.cloud</groupId>
+            <artifactId>ch-cloud-starter-mybatis</artifactId>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.30</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.validation</groupId>
