@@ -148,7 +148,7 @@ public class NacosUserConfigsController {
     public Result<Boolean> add(@PathVariable Long projectId, @RequestBody ConfigVO record) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.validUserNamespace2edit(projectId, record);
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             record.setGroup(groupId);
             return nacosConfigsClient.add(clientEntity);
