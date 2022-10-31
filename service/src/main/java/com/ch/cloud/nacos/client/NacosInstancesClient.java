@@ -5,8 +5,8 @@ import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.InstanceVO;
-import com.ch.cloud.nacos.vo.InstancesPageVO;
+import com.ch.cloud.nacos.vo.InstanceClientVO;
+import com.ch.cloud.nacos.vo.InstancesPageClientVO;
 import com.ch.result.InvokerPage;
 import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class NacosInstancesClient extends BaseClient {
      *            query params
      * @return Page
      */
-    public InvokerPage.Page<InstanceDTO> fetchPage(ClientEntity<InstancesPageVO> clientEntity) {
+    public InvokerPage.Page<InstanceDTO> fetchPage(ClientEntity<InstancesPageClientVO> clientEntity) {
         String url = urlWithAll(NacosAPI.INSTANCES, clientEntity);
         log.info("nacos instances page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
@@ -53,7 +53,7 @@ public class NacosInstancesClient extends BaseClient {
         return InvokerPage.build();
     }
 
-    public Boolean save(ClientEntity<InstanceVO> clientEntity) {
+    public Boolean save(ClientEntity<InstanceClientVO> clientEntity) {
         String url = url(NacosAPI.INSTANCE_OP, clientEntity);
         log.info("nacos instances save url: {}", url);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);

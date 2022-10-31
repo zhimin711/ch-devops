@@ -3,14 +3,12 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
-import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.NacosNamespaceVO;
-import com.ch.cloud.nacos.vo.NamespaceVO;
+import com.ch.cloud.nacos.vo.NacosNamespaceClientVO;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.retry.RetryCallback;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -27,15 +25,15 @@ import java.util.List;
 @Slf4j
 public class NacosNamespacesClient extends BaseClient {
 
-    public Boolean add(ClientEntity<NacosNamespaceVO> clientEntity) {
+    public Boolean add(ClientEntity<NacosNamespaceClientVO> clientEntity) {
         return saveNacosNamespace(clientEntity, true);
     }
 
-    public Boolean edit(ClientEntity<NacosNamespaceVO> clientEntity) {
+    public Boolean edit(ClientEntity<NacosNamespaceClientVO> clientEntity) {
         return saveNacosNamespace(clientEntity, false);
     }
 
-    private boolean saveNacosNamespace(ClientEntity<NacosNamespaceVO> clientEntity, boolean isNew) {
+    private boolean saveNacosNamespace(ClientEntity<NacosNamespaceClientVO> clientEntity, boolean isNew) {
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
         param.add("namespaceDesc", clientEntity.getData().getDesc());
         if (isNew) {
@@ -59,14 +57,14 @@ public class NacosNamespacesClient extends BaseClient {
         return sync != null && sync;
     }
 
-    public NacosNamespaceDTO fetch(ClientEntity<NamespaceVO> clientEntity) {
+    public NacosNamespaceDTO fetch(ClientEntity<NamespaceClientVO> clientEntity) {
         String url = url(NacosAPI.NAMESPACES, clientEntity);
         url += "&show=all&namespaceId=" + clientEntity.getData().getNamespaceId();
         log.info("nacos namespace fetch url: {}", url);
         return invoke(url, HttpMethod.GET, HttpEntity.EMPTY, NacosNamespaceDTO.class);
     }
 
-    public List<NacosNamespaceDTO> fetchAll(ClientEntity<NamespaceVO> clientEntity) {
+    public List<NacosNamespaceDTO> fetchAll(ClientEntity<NamespaceClientVO> clientEntity) {
         String url = url(NacosAPI.NAMESPACES, clientEntity);
         log.info("nacos namespace fetchAll url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
@@ -77,7 +75,7 @@ public class NacosNamespacesClient extends BaseClient {
         return null;
     }
 
-    public Boolean delete(ClientEntity<NamespaceVO> clientEntity) {
+    public Boolean delete(ClientEntity<NamespaceClientVO> clientEntity) {
 
         String url = urlWithData(NacosAPI.NAMESPACES, clientEntity);
         log.info("nacos namespace delete url: {}", url);

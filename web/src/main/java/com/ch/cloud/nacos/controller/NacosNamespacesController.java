@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.ch.cloud.devops.vo.NamespaceVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +27,8 @@ import com.ch.cloud.nacos.dto.NacosNamespaceDTO;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.NacosNamespaceVO;
-import com.ch.cloud.nacos.vo.NamespaceVO;
+import com.ch.cloud.nacos.vo.NacosNamespaceClientVO;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.client.UpmsTenantClientService;
@@ -78,21 +80,22 @@ public class NacosNamespacesController {
     private NacosNamespacesClient nacosNamespacesClient;
     @Autowired
     private NacosUserClient nacosUserClient;
-    
+
     @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
-//    @ApiImplicitParam(dataTypeClass = Namespace.class)
+    // @ApiImplicitParam(dataTypeClass = Namespace.class)
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
-    public PageResult<Namespace> page( @PathVariable(value = "num") int pageNum,
-            @PathVariable(value = "size") int pageSize, Namespace record) {
-//        Namespace record = new Namespace();
+    public PageResult<Namespace> page(@PathVariable(value = "num") int pageNum,
+        @PathVariable(value = "size") int pageSize, NamespaceVO record) {
         record.setType(NamespaceType.NACOS);
+        Namespace namespace = new Namespace();
+        BeanUtils.copyProperties(record, namespace);
         return ResultUtils.wrapPage(() -> {
-            InvokerPage.Page<Namespace> page = namespaceService.invokerPage(record, pageNum, pageSize);
+            InvokerPage.Page<Namespace> page = namespaceService.invokerPage(namespace, pageNum, pageSize);
             if (page.getTotal() > 0) {
                 page.getRows().forEach(e -> {
                     NacosCluster cluster = nacosClusterService.find(e.getClusterId());
-                    ClientEntity<NamespaceVO> clientEntity =
-                            new ClientEntity<>(cluster, new NamespaceVO(e.getUid(), ""));
+                    ClientEntity<NamespaceClientVO> clientEntity =
+                        new ClientEntity<>(cluster, new NamespaceClientVO(e.getUid(), ""));
                     NacosNamespaceDTO r = ResultUtils.invoke(() -> {
                         nacosUserClient.login(clientEntity);
                         return nacosNamespacesClient.fetch(clientEntity);
@@ -106,13 +109,14 @@ public class NacosNamespacesController {
             return page;
         });
     }
-    
+
     @ApiOperation(value = "添加", notes = "添加命名空间")
     @PostMapping
     public Result<Integer> add(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
             checkSaveOrUpdate(record);
-            ClientEntity<NamespaceVO> clientEntity = new ClientEntity<>(record.getCluster(), new NamespaceVO());
+            ClientEntity<NamespaceClientVO> clientEntity =
+                new ClientEntity<>(record.getCluster(), new NamespaceClientVO());
             nacosUserClient.login(clientEntity);
             if (CommonUtils.isEmpty(record.getUid())) {
                 record.setUid(UUIDGenerator.generateUid().toString());
@@ -134,11 +138,11 @@ public class NacosNamespacesController {
     public Result<Integer> edit(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
             checkSaveOrUpdate(record);
-            NacosNamespaceVO namespaceVO = new NacosNamespaceVO();
+            NacosNamespaceClientVO namespaceVO = new NacosNamespaceClientVO();
             namespaceVO.setNamespaceId(record.getUid());
             namespaceVO.setName(record.getName());
             namespaceVO.setDesc(record.getDescription());
-            ClientEntity<NacosNamespaceVO> clientEntity = new ClientEntity<>(record.getCluster(), namespaceVO);
+            ClientEntity<NacosNamespaceClientVO> clientEntity = new ClientEntity<>(record.getCluster(), namespaceVO);
             nacosUserClient.login(clientEntity);
             boolean syncOk = nacosNamespacesClient.edit(clientEntity);
             if (!syncOk) {
@@ -159,7 +163,7 @@ public class NacosNamespacesController {
             record.setUid(orig.getUid());
         }
     }
-    
+
     @ApiOperation(value = "查询命名空间详细", notes = "查询命名空间详细")
     @GetMapping({"{id:[0-9]+}"})
     public Result<NamespaceDto> find(@PathVariable Long id) {
@@ -170,8 +174,8 @@ public class NacosNamespacesController {
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             NamespaceDto dto = BeanUtilsV2.clone(namespace, NamespaceDto.class);
             namespace.setCluster(cluster);
-            ClientEntity<NamespaceVO> clientEntity =
-                new ClientEntity<>(cluster, new NamespaceVO(namespace.getUid(), ""));
+            ClientEntity<NamespaceClientVO> clientEntity =
+                new ClientEntity<>(cluster, new NamespaceClientVO(namespace.getUid(), ""));
             NacosNamespaceDTO nn = nacosNamespacesClient.fetch(clientEntity);
             if (nn != null) {
                 dto.setConfigCount(nn.getConfigCount());
@@ -191,8 +195,8 @@ public class NacosNamespacesController {
             AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()), PubError.NOT_ALLOWED, "保留空间不允许删除");
 
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
-            ClientEntity<NamespaceVO> clientEntity =
-                new ClientEntity<>(cluster, new NamespaceVO(namespace.getUid(), ""));
+            ClientEntity<NamespaceClientVO> clientEntity =
+                new ClientEntity<>(cluster, new NamespaceClientVO(namespace.getUid(), ""));
             nacosUserClient.login(clientEntity);
             nacosNamespacesClient.delete(clientEntity);
             return namespaceService.delete(id);
@@ -205,7 +209,7 @@ public class NacosNamespacesController {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(clusterId);
             AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
-            ClientEntity<NamespaceVO> clientEntity = new ClientEntity<>(cluster, new NamespaceVO());
+            ClientEntity<NamespaceClientVO> clientEntity = new ClientEntity<>(cluster, new NamespaceClientVO());
             nacosUserClient.login(clientEntity);
             List<NacosNamespaceDTO> list = nacosNamespacesClient.fetchAll(clientEntity);
             List<Namespace> list2 = namespaceService.findByClusterIdAndName(clusterId, null);
@@ -235,8 +239,9 @@ public class NacosNamespacesController {
         });
     }
 
-    private boolean convertAndSave(NacosCluster cluster, ClientEntity<NamespaceVO> clientEntity, Namespace record) {
-        NacosNamespaceVO namespaceVO = new NacosNamespaceVO();
+    private boolean convertAndSave(NacosCluster cluster, ClientEntity<NamespaceClientVO> clientEntity,
+        Namespace record) {
+        NacosNamespaceClientVO namespaceVO = new NacosNamespaceClientVO();
         namespaceVO.setNamespaceId(record.getUid());
         namespaceVO.setAccessToken(clientEntity.getData().getAccessToken());
         namespaceVO.setName(record.getName());
@@ -262,7 +267,7 @@ public class NacosNamespacesController {
             }
         });
     }
-    
+
     @ApiOperation(value = "查询命名空间下项目列表", notes = "查询命名空间下项目列表")
     @GetMapping({"{id:[0-9]+}/projects"})
     public Result<VueRecord2> findProjects(@PathVariable Long id) {
@@ -279,7 +284,7 @@ public class NacosNamespacesController {
             result.getRows().forEach(e -> {
                 if (projectMap.containsKey(e.getId())) {
                     ProjectNamespaceDTO pn = projectMap.get(e.getId()).get(0);
-                    if(CommonUtils.isNotEmpty(pn.getGroupId())){
+                    if (CommonUtils.isNotEmpty(pn.getGroupId())) {
                         e.setCode(pn.getGroupId());
                     }
                 }
@@ -287,7 +292,7 @@ public class NacosNamespacesController {
             return VueRecordUtils.covert(result.getRows());
         });
     }
-    
+
     @ApiOperation(value = "修改命名空间下项目列表", notes = "修改命名空间下项目列表")
     @PostMapping({"{id:[0-9]+}/projects"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> projectIds) {

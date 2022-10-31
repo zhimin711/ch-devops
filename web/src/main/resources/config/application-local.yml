@@ -22,7 +22,7 @@ spring:
   thymeleaf:
     mode: HTML5
     cache: false
-  mvc:
+  mvc: # 解决Swagger3.0 + spring boot 2.6.x兼容
     pathmatch:
       matching-strategy: ant_path_matcher
 
@@ -50,3 +50,10 @@ rocketmq:
   producer:
     send-message-timeout: 300000
     group: ch-devops
+mybatis:
+#  type-aliases-package: #实体类的存放路径，如:com.beyondbit.ias.*.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true #开启驼峰功能
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #sql控制台打印
+#  configuration-properties: { dbSchema: *.* } #配置数据库的模式

@@ -2,10 +2,8 @@ package com.ch.cloud.nacos.client;
 
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
-import com.alibaba.fastjson2.JSON;
 import com.ch.cloud.nacos.dto.NacosTokenDTO;
-import com.ch.cloud.nacos.vo.NamespaceVO;
-import com.ch.e.ExceptionUtils;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import com.ch.e.PubError;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.DateUtils;
@@ -17,7 +15,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.utils.CommonUtils;
@@ -38,7 +35,7 @@ public class NacosUserClient extends BaseClient {
 
     private final static Map<String, String> TOKEN_MAP = Maps.newConcurrentMap();
 
-    public void login(ClientEntity<? extends NamespaceVO> clientEntity) {
+    public void login(ClientEntity<? extends NamespaceClientVO> clientEntity) {
         if (!CommonUtils.isNotEmpty(clientEntity.getUsername(), clientEntity.getPassword())) {
             return;
         }

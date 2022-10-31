@@ -3,8 +3,6 @@ package com.ch.cloud.nacos.vo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
-
 /**
  * 描述： export config
  *
@@ -13,7 +11,7 @@ import java.util.List;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigExportVO extends NamespaceVO {
+public class ConfigExportClientVO extends NamespaceClientVO {
 
     private Boolean export;
 

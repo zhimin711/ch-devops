@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class HistoryPageVO extends NamespaceVO {
+public class HistoryPageClientVO extends NamespaceClientVO {
 
     private String search;
 

@@ -2,8 +2,7 @@ package com.ch.cloud.nacos.client;
 
 import java.util.Map;
 
-import com.ch.cloud.nacos.vo.NamespaceVO;
-import com.ch.utils.CommonUtils;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import com.ch.utils.JSONUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,11 +59,11 @@ public abstract class BaseClient {
         return new HttpEntity<>(formParams(clientEntity), headers);
     }
 
-    protected <T extends NamespaceVO> String urlParams(T data) {
+    protected <T extends NamespaceClientVO> String urlParams(T data) {
         return urlParams(data, false);
     }
 
-    protected <T extends NamespaceVO> String urlParams(T data, boolean containsSupper) {
+    protected <T extends NamespaceClientVO> String urlParams(T data, boolean containsSupper) {
         Map<String, ?> param;
         if (containsSupper) {
             param = BeanUtilsV2.getDeclaredFieldValueMap(data);
@@ -74,7 +73,7 @@ public abstract class BaseClient {
         return HttpUtil.toParams(param);
     }
 
-    protected String url(String api, ClientEntity<? extends NamespaceVO> clientEntity) {
+    protected String url(String api, ClientEntity<? extends NamespaceClientVO> clientEntity) {
         String url = clientEntity.getUrl() + api;
 //        if (CommonUtils.isNotEmpty(clientEntity.getData().getAccessToken())) {
             url += "?accessToken=" + clientEntity.getData().getAccessToken();
@@ -82,7 +81,7 @@ public abstract class BaseClient {
         return url;
     }
 
-    protected String urlWithData(String api, ClientEntity<? extends NamespaceVO> clientEntity) {
+    protected String urlWithData(String api, ClientEntity<? extends NamespaceClientVO> clientEntity) {
         String url = clientEntity.getUrl() + api;
         // if (CommonUtils.isNotEmpty(clientEntity.getData().getAccessToken())) {
         // }
@@ -91,7 +90,7 @@ public abstract class BaseClient {
         return url;
     }
 
-    protected String urlWithAll(String api, ClientEntity<? extends NamespaceVO> clientEntity) {
+    protected String urlWithAll(String api, ClientEntity<? extends NamespaceClientVO> clientEntity) {
         String url = clientEntity.getUrl() + api;
         String param = urlParams(clientEntity.getData(),true);
         url += "?" + param;

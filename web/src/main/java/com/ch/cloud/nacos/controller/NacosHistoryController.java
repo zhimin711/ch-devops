@@ -34,9 +34,9 @@ public class NacosHistoryController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询nacos配置历史")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
-    public PageResult<HistoryDTO> page(HistoryPageVO record) {
+    public PageResult<HistoryDTO> page(HistoryPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.valid(record);
+            ClientEntity<HistoryPageClientVO> entity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
             return nacosHistoryClient.fetchPage(entity);
         });
@@ -45,9 +45,9 @@ public class NacosHistoryController {
 
     @ApiOperation(value = "查询", notes = "查询配置详情")
     @GetMapping
-    public Result<HistoryDTO> get(HistoryQueryVO record) {
+    public Result<HistoryDTO> get(HistoryQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<HistoryQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<HistoryQueryClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
             return nacosHistoryClient.fetch(clientEntity);
         });
@@ -55,7 +55,7 @@ public class NacosHistoryController {
 
     @ApiOperation(value = "查询", notes = "查询配置详情")
     @PutMapping
-    public Result<Boolean> rollback(@RequestParam String opType, @RequestBody HistoryRollbackVO record) {
+    public Result<Boolean> rollback(@RequestParam String opType, @RequestBody HistoryRollbackClientVO record) {
         return ResultUtils.wrapFail(() -> {
             switch (opType) {
                 case "I":
@@ -70,17 +70,17 @@ public class NacosHistoryController {
         });
     }
 
-    private Boolean save(HistoryRollbackVO record) {
-        ConfigVO configVO = new ConfigVO();
+    private Boolean save(HistoryRollbackClientVO record) {
+        ConfigClientVO configVO = new ConfigClientVO();
         BeanUtil.copyProperties(record, configVO);
-        ClientEntity<ConfigVO> clientEntity = nacosNamespaceValidator.valid(configVO);
+        ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.valid(configVO);
         return nacosConfigsClient.add(clientEntity);
     }
 
-    private Boolean delete(HistoryRollbackVO record) {
-        ConfigDeleteVO deleteVO = new ConfigDeleteVO();
+    private Boolean delete(HistoryRollbackClientVO record) {
+        ConfigDeleteClientVO deleteVO = new ConfigDeleteClientVO();
         BeanUtil.copyProperties(record, deleteVO);
-        ClientEntity<ConfigDeleteVO> clientEntity = nacosNamespaceValidator.valid(deleteVO);
+        ClientEntity<ConfigDeleteClientVO> clientEntity = nacosNamespaceValidator.valid(deleteVO);
         return nacosConfigsClient.delete(clientEntity);
     }
 }

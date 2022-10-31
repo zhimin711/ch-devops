@@ -4,8 +4,8 @@ import com.ch.cloud.nacos.client.NacosInstancesClient;
 import com.ch.cloud.nacos.dto.InstanceDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.InstanceVO;
-import com.ch.cloud.nacos.vo.InstancesPageVO;
+import com.ch.cloud.nacos.vo.InstanceClientVO;
+import com.ch.cloud.nacos.vo.InstancesPageClientVO;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
@@ -30,18 +30,18 @@ public class NacosInstancesController {
 
     @ApiOperation(value = "查询分页", notes = "分页查询服务实例")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
-    public PageResult<InstanceDTO> instances(InstancesPageVO record) {
+    public PageResult<InstanceDTO> instances(InstancesPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<InstancesPageClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosInstancesClient.fetchPage(clientEntity);
         });
     }
 
     @ApiOperation(value = "修改", notes = "修改实例配置")
     @PutMapping
-    public Result<Boolean> edit(@RequestBody InstanceVO record) {
+    public Result<Boolean> edit(@RequestBody InstanceClientVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<InstanceVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<InstanceClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosInstancesClient.save(clientEntity);
         });
     }

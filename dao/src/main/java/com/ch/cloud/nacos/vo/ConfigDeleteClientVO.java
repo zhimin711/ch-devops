@@ -4,15 +4,18 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 描述： export config
+ * 描述：
  *
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigImportVO extends NamespaceVO {
+public class ConfigDeleteClientVO extends NamespaceClientVO {
 
-    private String policy;
+    private String dataId;
 
+    private String group;
+
+    private String ids;
 }

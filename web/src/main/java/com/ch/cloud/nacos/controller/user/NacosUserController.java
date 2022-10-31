@@ -30,11 +30,11 @@ import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.HistoryPageVO;
-import com.ch.cloud.nacos.vo.HistoryQueryVO;
-import com.ch.cloud.nacos.vo.InstancesPageVO;
-import com.ch.cloud.nacos.vo.ServicesPageVO;
-import com.ch.cloud.nacos.vo.SubscribesPageVO;
+import com.ch.cloud.nacos.vo.HistoryPageClientVO;
+import com.ch.cloud.nacos.vo.HistoryQueryClientVO;
+import com.ch.cloud.nacos.vo.InstancesPageClientVO;
+import com.ch.cloud.nacos.vo.ServicesPageClientVO;
+import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
@@ -108,10 +108,10 @@ public class NacosUserController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置历史")
     @GetMapping(value = {"{projectId:[0-9]+}/history"})
-    public PageResult<HistoryDTO> history(@PathVariable Long projectId, HistoryPageVO record) {
+    public PageResult<HistoryDTO> history(@PathVariable Long projectId, HistoryPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<HistoryPageVO> entity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            ClientEntity<HistoryPageClientVO> entity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
             record.setGroup(nacosNamespaceValidator.fetchGroupId(projectId, nid));
             return nacosHistoryClient.fetchPage(entity);
@@ -120,10 +120,10 @@ public class NacosUserController {
 
     @ApiOperation(value = "查询", notes = "查询配置详情")
     @GetMapping(value = {"{projectId:[0-9]+}/history/detail"})
-    public Result<HistoryDTO> getHistoryDetail(@PathVariable Long projectId, HistoryQueryVO record) {
+    public Result<HistoryDTO> getHistoryDetail(@PathVariable Long projectId, HistoryQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<HistoryQueryVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            ClientEntity<HistoryQueryClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             record.setTenant(record.getNamespaceId());
             record.setGroup(nacosNamespaceValidator.fetchGroupId(projectId, nid));
             return nacosHistoryClient.fetch(clientEntity);
@@ -132,16 +132,16 @@ public class NacosUserController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目服务实例")
     @GetMapping(value = {"{projectId:[0-9]+}/instances"})
-    public Result<ServiceInstanceDTO> instances(@PathVariable Long projectId, InstancesPageVO record) {
+    public Result<ServiceInstanceDTO> instances(@PathVariable Long projectId, InstancesPageClientVO record) {
         return ResultUtils.wrap(() -> {
-            ClientEntity<InstancesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            ClientEntity<InstancesPageClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
 
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
             record.setServiceName(result.get().getCode());
 
-            ClientEntity<ServicesPageVO> clientEntity3 = new ClientEntity<>();
+            ClientEntity<ServicesPageClientVO> clientEntity3 = new ClientEntity<>();
             clientEntity3.setUrl(clientEntity.getUrl());
-            ServicesPageVO servicesPageVO = new ServicesPageVO();
+            ServicesPageClientVO servicesPageVO = new ServicesPageClientVO();
             servicesPageVO.setAccessToken(record.getAccessToken());
             servicesPageVO.setNamespaceId(record.getNamespaceId());
             servicesPageVO.setServiceNameParam(result.get().getCode());
@@ -158,9 +158,9 @@ public class NacosUserController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
     @GetMapping(value = {"{projectId:[0-9]+}/subscribers"})
-    public PageResult<SubscriberDTO> subscribers(@PathVariable Long projectId, SubscribesPageVO record) {
+    public PageResult<SubscriberDTO> subscribers(@PathVariable Long projectId, SubscribesPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<SubscribesPageVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            ClientEntity<SubscribesPageClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
             record.setServiceName(result.get().getCode());
             return nacosSubscribesClient.fetchPage(clientEntity);

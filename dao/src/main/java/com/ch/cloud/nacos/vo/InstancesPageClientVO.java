@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * 描述：
@@ -11,9 +12,17 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ServicesQueryVO extends NamespaceVO {
+@ToString
+public class InstancesPageClientVO extends NamespaceClientVO {
+
+    private int pageNo = 1;
+
+    private int pageSize = 10;
 
     private String serviceName;
 
+    private String clusterName;
+
     private String groupName;
+
 }

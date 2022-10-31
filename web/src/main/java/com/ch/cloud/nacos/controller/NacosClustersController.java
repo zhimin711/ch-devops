@@ -7,7 +7,7 @@ import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.NamespaceVO;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.result.PageResult;
@@ -77,7 +77,7 @@ public class NacosClustersController {
             return cluster;
         });
         if (result.isSuccess()) {
-            ClientEntity<NamespaceVO> clientEntity = ClientEntity.build(result.get(), new NamespaceVO());
+            ClientEntity<NamespaceClientVO> clientEntity = ClientEntity.build(result.get(), new NamespaceClientVO());
             nacosUserClient.login(clientEntity);
             Object info = nacosClusterClient.fetchNodes(clientEntity);
             result.putExtra("nodes", info);

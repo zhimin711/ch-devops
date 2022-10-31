@@ -11,11 +11,16 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigDeleteVO extends NamespaceVO {
+public class HistoryRollbackClientVO extends NamespaceClientVO {
+
+    private String appName;
+
+    private String tenant;
 
     private String dataId;
 
     private String group;
 
-    private String ids;
+    private String content;
+
 }

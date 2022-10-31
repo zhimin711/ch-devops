@@ -13,7 +13,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
-public class ServicesPageVO extends NamespaceVO {
+public class ServicesPageClientVO extends NamespaceClientVO {
 
     private boolean hasIpCount = true;
 

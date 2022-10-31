@@ -1,19 +1,16 @@
 package com.ch.cloud.nacos.client;
 
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.SubscriberDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.SubscribesPageVO;
+import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
 import com.ch.result.InvokerPage;
-import com.ch.utils.BeanUtilsV2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * desc: nacos 服务 client
@@ -32,7 +29,7 @@ public class NacosSubscribesClient extends BaseClient {
      *            query params
      * @return Page
      */
-    public InvokerPage.Page<SubscriberDTO> fetchPage(ClientEntity<SubscribesPageVO> clientEntity) {
+    public InvokerPage.Page<SubscriberDTO> fetchPage(ClientEntity<SubscribesPageClientVO> clientEntity) {
         String url = urlWithAll(NacosAPI.SUBSCRIBERS, clientEntity);
         log.info("nacos subscribes page url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);

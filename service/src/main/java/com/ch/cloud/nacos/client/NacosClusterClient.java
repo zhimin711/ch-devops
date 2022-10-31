@@ -3,8 +3,8 @@ package com.ch.cloud.nacos.client;
 import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.NamespaceVO;
-import com.ch.cloud.nacos.vo.ServiceClusterVO;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
+import com.ch.cloud.nacos.vo.ServiceClusterClientVO;
 import com.ch.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -21,7 +21,7 @@ import org.springframework.util.MultiValueMap;
 @Slf4j
 public class NacosClusterClient extends BaseClient {
 
-    public Object fetchNodes(ClientEntity<NamespaceVO> clientEntity) {
+    public Object fetchNodes(ClientEntity<NamespaceClientVO> clientEntity) {
         String url = url(NacosAPI.CLUSTER_NODES, clientEntity);
         log.info("nacos cluster fetchNodes url: {}", url);
         JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
@@ -31,7 +31,7 @@ public class NacosClusterClient extends BaseClient {
         return null;
     }
 
-    public Boolean save(ClientEntity<ServiceClusterVO> clientEntity) {
+    public Boolean save(ClientEntity<ServiceClusterClientVO> clientEntity) {
         String url = url(NacosAPI.CLUSTER_OP, clientEntity);
         log.info("nacos cluster save url: {}", url);
         HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);

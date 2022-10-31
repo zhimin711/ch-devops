@@ -12,8 +12,8 @@ import com.ch.cloud.devops.service.IUserNamespaceService;
 import com.ch.cloud.nacos.client.NacosUserClient;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.cloud.nacos.vo.ConfigVO;
-import com.ch.cloud.nacos.vo.NamespaceVO;
+import com.ch.cloud.nacos.vo.ConfigClientVO;
+import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.client.UpmsUserClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
@@ -50,7 +50,7 @@ public class NacosNamespaceValidator {
     @Autowired
     private NacosUserClient nacosUserClient;
 
-    public <T extends NamespaceVO> ClientEntity<T> valid(T record) {
+    public <T extends NamespaceClientVO> ClientEntity<T> valid(T record) {
         AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
         AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "集群ID：" + record.getNamespaceId());
@@ -61,7 +61,7 @@ public class NacosNamespaceValidator {
         return clientEntity;
     }
 
-    public <T extends NamespaceVO> ClientEntity<T> validUserNamespace(Long projectId, T record) {
+    public <T extends NamespaceClientVO> ClientEntity<T> validUserNamespace(Long projectId, T record) {
         AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
         AssertUtils.isFalse(userNamespaceService.exists(ContextUtil.getUsername(), record.getNamespaceId(), projectId),
                 PubError.NOT_AUTH, "项目" + projectId);
@@ -87,7 +87,7 @@ public class NacosNamespaceValidator {
         return result.get().getCode();
     }
 
-    public ClientEntity<ConfigVO> validUserNamespace2edit(Long projectId, ConfigVO record) {
+    public ClientEntity<ConfigClientVO> validUserNamespace2edit(Long projectId, ConfigClientVO record) {
         AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
         AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "空间ID：" + record.getNamespaceId());
@@ -97,7 +97,7 @@ public class NacosNamespaceValidator {
         }
 
         record.setNamespaceId(namespace.getUid());
-        ClientEntity<ConfigVO> clientEntity = ClientEntity.build(namespace.getCluster(), record);
+        ClientEntity<ConfigClientVO> clientEntity = ClientEntity.build(namespace.getCluster(), record);
         nacosUserClient.login(clientEntity);
         return clientEntity;
     }

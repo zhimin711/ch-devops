@@ -4,21 +4,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 描述：
+ * 描述： export config
  *
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class HistoryQueryVO extends NamespaceVO {
+public class ConfigImportClientVO extends NamespaceClientVO {
 
-    private String nid;
-
-    private String tenant;
-
-    private String dataId;
-
-    private String group;
+    private String policy;
 
 }

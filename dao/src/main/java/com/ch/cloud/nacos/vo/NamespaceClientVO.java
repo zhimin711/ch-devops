@@ -13,13 +13,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NamespaceVO {
+public class NamespaceClientVO {
 
     private String namespaceId;
 
     private String accessToken = "";
 
-    public NamespaceVO(String namespaceId) {
+    public NamespaceClientVO(String namespaceId) {
         this.namespaceId = namespaceId;
     }
 }

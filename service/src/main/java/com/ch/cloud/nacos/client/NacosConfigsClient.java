@@ -23,13 +23,13 @@ import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.ConfigCloneVO;
-import com.ch.cloud.nacos.vo.ConfigDeleteVO;
-import com.ch.cloud.nacos.vo.ConfigExportVO;
-import com.ch.cloud.nacos.vo.ConfigImportVO;
-import com.ch.cloud.nacos.vo.ConfigPolicyVO;
-import com.ch.cloud.nacos.vo.ConfigQueryVO;
-import com.ch.cloud.nacos.vo.ConfigVO;
-import com.ch.cloud.nacos.vo.ConfigsPageVO;
+import com.ch.cloud.nacos.vo.ConfigDeleteClientVO;
+import com.ch.cloud.nacos.vo.ConfigExportClientVO;
+import com.ch.cloud.nacos.vo.ConfigImportClientVO;
+import com.ch.cloud.nacos.vo.ConfigPolicyClientVO;
+import com.ch.cloud.nacos.vo.ConfigQueryClientVO;
+import com.ch.cloud.nacos.vo.ConfigClientVO;
+import com.ch.cloud.nacos.vo.ConfigsPageClientVO;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.toolkit.ContextUtil;
@@ -53,7 +53,7 @@ public class NacosConfigsClient extends BaseClient {
     @Value("${fs.path.tmp:/tmp}")
     private String fsTmp;
 
-    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsPageVO> clientEntity) {
+    public InvokerPage.Page<ConfigDTO> fetchPage(ClientEntity<ConfigsPageClientVO> clientEntity) {
         // String urlParams = urlParams(clientEntity.getData());
         String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
         log.info("nacos configs page url: {}", url);
@@ -70,15 +70,15 @@ public class NacosConfigsClient extends BaseClient {
         return InvokerPage.build();
     }
 
-    public Boolean add(ClientEntity<ConfigVO> entity) {
+    public Boolean add(ClientEntity<ConfigClientVO> entity) {
         return save(entity, true);
     }
 
-    public Boolean edit(ClientEntity<ConfigVO> entity) {
+    public Boolean edit(ClientEntity<ConfigClientVO> entity) {
         return save(entity, false);
     }
 
-    private Boolean save(ClientEntity<ConfigVO> clientEntity, boolean isNew) {
+    private Boolean save(ClientEntity<ConfigClientVO> clientEntity, boolean isNew) {
         if (isNew) {
             clientEntity.getData().setTenant(clientEntity.getData().getNamespaceId());
         }
@@ -95,7 +95,7 @@ public class NacosConfigsClient extends BaseClient {
         return invoke(url, HttpMethod.POST, httpEntity, Boolean.class);
     }
 
-    public Boolean delete(ClientEntity<ConfigDeleteVO> clientEntity) {
+    public Boolean delete(ClientEntity<ConfigDeleteClientVO> clientEntity) {
         boolean isBatch = CommonUtils.isNotEmpty(clientEntity.getData().getIds());
 
         String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUsername();
@@ -131,13 +131,13 @@ public class NacosConfigsClient extends BaseClient {
         return resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null ? resp.getBody() : false;
     }
 
-    public ConfigDTO fetch(ClientEntity<ConfigQueryVO> clientEntity) {
+    public ConfigDTO fetch(ClientEntity<ConfigQueryClientVO> clientEntity) {
         String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
         log.info("nacos config fetch url: {}", url);
         return invoke(url, HttpMethod.GET, HttpEntity.EMPTY, ConfigDTO.class);
     }
 
-    public JSONObject clone(ClientEntity<ConfigPolicyVO> clientEntity, ConfigCloneVO[] records) {
+    public JSONObject clone(ClientEntity<ConfigPolicyClientVO> clientEntity, ConfigCloneVO[] records) {
 
         String url = url(NacosAPI.CONFIGS, clientEntity);
         String urlParams = "clone=true&tenant=" + clientEntity.getData().getNamespaceId() + "&policy="
@@ -160,14 +160,14 @@ public class NacosConfigsClient extends BaseClient {
     /**
      * http://192.168.0.201:8848/nacos/v1/cs/configs? exportV2=true&tenant=&group=&appName=&ids=48,65 &username=nacos
      */
-    public ResponseEntity<Resource> export(ClientEntity<ConfigExportVO> clientEntity) {
+    public ResponseEntity<Resource> export(ClientEntity<ConfigExportClientVO> clientEntity) {
 
         String url = urlWithData(NacosAPI.CONFIGS, clientEntity);
         log.info("nacos configs export url: {}", url);
         return restTemplate.getForEntity(url, Resource.class);
     }
 
-    public JSONObject importZip(ClientEntity<ConfigImportVO> clientEntity, MultipartFile file) throws Exception {
+    public JSONObject importZip(ClientEntity<ConfigImportClientVO> clientEntity, MultipartFile file) throws Exception {
         String urlParams =
             "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username=" + ContextUtil.getUsername();
         String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;

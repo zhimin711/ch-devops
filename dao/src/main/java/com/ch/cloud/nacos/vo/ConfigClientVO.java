@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfigVO extends NamespaceVO {
+public class ConfigClientVO extends NamespaceClientVO {
 
     private String dataId;
 

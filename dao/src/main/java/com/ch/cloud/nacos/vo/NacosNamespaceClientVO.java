@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class NacosNamespaceVO extends NamespaceVO {
+public class NacosNamespaceClientVO extends NamespaceClientVO {
 
     private String name;
 

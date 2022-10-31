@@ -11,13 +11,8 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SubscribersQueryVO extends NamespaceVO {
+public class ConfigPolicyClientVO extends NamespaceClientVO {
 
-    private int pageNo = 1;
+    private String policy;
 
-    private int pageSize = 10;
-
-    private String serviceName;
-
-    private String groupName;
 }

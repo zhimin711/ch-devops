@@ -33,54 +33,54 @@ public class NacosServicesController {
 
     @ApiOperation(value = "查询分页", notes = "分页查询服务")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
-    public PageResult<ServiceDTO> page(ServicesPageVO record) {
+    public PageResult<ServiceDTO> page(ServicesPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
-            ClientEntity<ServicesPageVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<ServicesPageClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosServicesClient.fetchPage(clientEntity);
         });
     }
 
     @ApiOperation(value = "查询详情", notes = "查询服务详情")
     @GetMapping
-    public Result<ServiceDetailDTO> detail(ServicesQueryVO record) {
+    public Result<ServiceDetailDTO> detail(ServicesQueryClientVO record) {
         return ResultUtils.wrap(() -> {
-            ClientEntity<ServicesQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<ServicesQueryClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosServicesClient.fetch(clientEntity);
         });
     }
 
     @ApiOperation(value = "添加", notes = "添加服务")
     @PostMapping
-    public Result<Boolean> add(@RequestBody ServiceVO record) {
+    public Result<Boolean> add(@RequestBody ServiceClientVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ServiceVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<ServiceClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosServicesClient.save(clientEntity, true);
         });
     }
 
     @ApiOperation(value = "修改", notes = "修改服务")
     @PutMapping
-    public Result<Boolean> edit(@RequestBody ServiceVO record) {
+    public Result<Boolean> edit(@RequestBody ServiceClientVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ServiceVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<ServiceClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosServicesClient.save(clientEntity, false);
         });
     }
 
     @ApiOperation(value = "删除", notes = "删除服务")
     @DeleteMapping
-    public Result<Boolean> delete(ServicesQueryVO record) {
+    public Result<Boolean> delete(ServicesQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ServicesQueryVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<ServicesQueryClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosServicesClient.delete(clientEntity);
         });
     }
 
     @ApiOperation(value = "修改", notes = "修改服务")
     @PutMapping("cluster")
-    public Result<Boolean> editCluster(@RequestBody ServiceClusterVO record) {
+    public Result<Boolean> editCluster(@RequestBody ServiceClusterClientVO record) {
         return ResultUtils.wrapFail(() -> {
-            ClientEntity<ServiceClusterVO> clientEntity = nacosNamespaceValidator.valid(record);
+            ClientEntity<ServiceClusterClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosClusterClient.save(clientEntity);
         });
     }

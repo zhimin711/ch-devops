@@ -3,8 +3,6 @@ package com.ch.cloud.nacos.vo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Map;
-
 /**
  * desc:
  *
@@ -13,7 +11,7 @@ import java.util.Map;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class InstanceVO extends NamespaceVO {
+public class InstanceClientVO extends NamespaceClientVO {
 
     private String clusterName;
     private String serviceName;

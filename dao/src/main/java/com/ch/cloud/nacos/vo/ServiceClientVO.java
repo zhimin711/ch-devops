@@ -11,17 +11,15 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ServiceClusterVO extends NamespaceVO {
+public class ServiceClientVO extends NamespaceClientVO {
 
     private String serviceName;
 
-    private String clusterName;
+    private String groupName;
 
-    private Integer checkPort;
-
-    private Boolean useInstancePort4Check;
+    private Float protectThreshold;
 
     private String metadata;
 
-    private String healthChecker;
+    private String selector;
 }
