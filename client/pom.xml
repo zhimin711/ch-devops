@@ -19,8 +19,8 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.ch</groupId>
-            <artifactId>ch-core</artifactId>
+            <groupId>com.ch.cloud</groupId>
+            <artifactId>ch-cloud-starter-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

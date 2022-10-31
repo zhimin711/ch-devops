@@ -20,14 +20,14 @@ import javax.persistence.Transient;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel("业务-命名空间")
+@ApiModel(value = "业务-命名空间", parent = BaseEntity.class)
 @Table(name = "bt_namespace")
 public class Namespace extends BaseEntity {
 
     /**
      * 集群ID
      */
-    @ApiModelProperty(name = "集群ID")
+    @ApiModelProperty(name = "clusterId", value = "集群ID")
     private Long clusterId;
 
     /**
@@ -52,7 +52,7 @@ public class Namespace extends BaseEntity {
     /**
      * 描述
      */
-    @ApiModelProperty(name = "描述")
+    @ApiModelProperty(name = "空间描述")
     private String description;
 
     /**
@@ -66,6 +66,7 @@ public class Namespace extends BaseEntity {
 
     @Transient
     private Integer configCount;
+    
     @Transient
     private Integer quota;
 }

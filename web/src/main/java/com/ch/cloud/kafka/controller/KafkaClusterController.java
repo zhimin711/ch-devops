@@ -20,11 +20,11 @@ import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.KafkaClusterManager;
 import com.ch.cloud.kafka.tools.KafkaClusterUtils;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageInfo;
 
@@ -64,7 +64,7 @@ public class KafkaClusterController {
             return Result.error(PubError.EXISTS);
         }
         record.setStatus(StatusS.ENABLED);
-        record.setCreateBy(ContextUtil.getUser());
+        record.setCreateBy(ContextUtil.getUsername());
         return ResultUtils.wrapFail(() -> kafkaClusterService.save(record));
     }
 
@@ -72,7 +72,7 @@ public class KafkaClusterController {
     @PutMapping({"{id:\\d+}"})
     public Result<Integer> edit(@PathVariable Long id, @RequestBody KafkaCluster record) {
         return ResultUtils.wrapFail(() -> {
-            record.setUpdateBy(ContextUtil.getUser());
+            record.setUpdateBy(ContextUtil.getUsername());
             record.setUpdateAt(DateUtils.current());
             return kafkaClusterService.update(record);
         });
@@ -89,7 +89,7 @@ public class KafkaClusterController {
             srcRecord.setStatus(StatusS.ENABLED);
             KafkaTopic targetRecord = new KafkaTopic();
             targetRecord.setStatus(StatusS.DELETE);
-            targetRecord.setUpdateBy(ContextUtil.getUser());
+            targetRecord.setUpdateBy(ContextUtil.getUsername());
             targetRecord.setUpdateAt(DateUtils.current());
             int c2 = kafkaTopicService.update(srcRecord, targetRecord);
             return kafkaClusterService.delete(id);

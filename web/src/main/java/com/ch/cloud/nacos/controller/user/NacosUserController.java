@@ -1,5 +1,16 @@
 package com.ch.cloud.nacos.controller.user;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
@@ -12,33 +23,35 @@ import com.ch.cloud.nacos.client.NacosInstancesClient;
 import com.ch.cloud.nacos.client.NacosServicesClient;
 import com.ch.cloud.nacos.client.NacosSubscribesClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.nacos.dto.*;
+import com.ch.cloud.nacos.dto.HistoryDTO;
+import com.ch.cloud.nacos.dto.ServiceInstanceDTO;
+import com.ch.cloud.nacos.dto.SubscriberDTO;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
-import com.ch.cloud.nacos.vo.*;
+import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.HistoryPageVO;
+import com.ch.cloud.nacos.vo.HistoryQueryVO;
+import com.ch.cloud.nacos.vo.InstancesPageVO;
+import com.ch.cloud.nacos.vo.ServicesPageVO;
+import com.ch.cloud.nacos.vo.SubscribesPageVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
-import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * 描述：
@@ -82,7 +95,7 @@ public class NacosUserController {
         return ResultUtils.wrap(() -> {
             List<NamespaceDto> records =
                 userNamespaceService.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(
-                    ContextUtil.getUser(), projectId, clusterId, NamespaceType.NACOS);
+                    ContextUtil.getUsername(), projectId, clusterId, NamespaceType.NACOS);
             return records.stream().map(e -> {
                 VueRecord2 record = new VueRecord2();
                 record.setValue(e.getId().toString());
@@ -170,7 +183,7 @@ public class NacosUserController {
         return ResultUtils.wrap(() -> {
             nacosNamespaceValidator.validProjectNamespace(projectId, namespaceIds);
             NamespaceApplyRecord record = new NamespaceApplyRecord();
-            record.setCreateBy(ContextUtil.getUser());
+            record.setCreateBy(ContextUtil.getUsername());
             record.setType(NamespaceType.NACOS.getCode());
             record.setDataKey(projectId + "-" + clusterId);
             record.setStatus(ApproveStatus.STAY.getCode() + "");
@@ -182,7 +195,7 @@ public class NacosUserController {
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
 
             JSONObject object = new JSONObject();
-            object.put("userId", ContextUtil.getUser());
+            object.put("userId", ContextUtil.getUsername());
             object.put("projectId", projectId);
             object.put("projectName", result.get().getName());
             object.put("clusterId", clusterId);

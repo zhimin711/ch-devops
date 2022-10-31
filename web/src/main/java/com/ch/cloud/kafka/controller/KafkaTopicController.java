@@ -13,13 +13,13 @@ import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.tools.*;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
@@ -102,11 +102,11 @@ public class KafkaTopicController {
                 r.setClusterId(record.getClusterId());
                 r.setDescription(record.getDescription());
                 r.setStatus(StatusS.ENABLED);
-                r.setUpdateBy(ContextUtil.getUser());
+                r.setUpdateBy(ContextUtil.getUsername());
                 r.setUpdateAt(DateUtils.current());
                 return kafkaTopicService.update(r);
             }
-            record.setCreateBy(ContextUtil.getUser());
+            record.setCreateBy(ContextUtil.getUsername());
             record.setStatus(StatusS.ENABLED);
             return kafkaTopicService.save(record);
         });
@@ -127,7 +127,7 @@ public class KafkaTopicController {
     public Result<Integer> update(@PathVariable Long id, @RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
-            record.setUpdateBy(ContextUtil.getUser());
+            record.setUpdateBy(ContextUtil.getUsername());
             record.setUpdateAt(DateUtils.current());
             return kafkaTopicService.update(record);
         });
@@ -190,7 +190,7 @@ public class KafkaTopicController {
             KafkaTopic record = new KafkaTopic();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
-            record.setUpdateBy(ContextUtil.getUser());
+            record.setUpdateBy(ContextUtil.getUsername());
             record.setUpdateAt(DateUtils.current());
             int c = kafkaTopicService.update(record);
             if (c > 0) {
@@ -232,7 +232,7 @@ public class KafkaTopicController {
 
             } // 全量同步
             List<KafkaTopicDTO> topicList = kafkaClusterManager.topics(record.getClusterId(), null);
-            return kafkaTopicService.saveOrUpdate(topicList, ContextUtil.getUser());
+            return kafkaTopicService.saveOrUpdate(topicList, ContextUtil.getUsername());
         });
     }
 

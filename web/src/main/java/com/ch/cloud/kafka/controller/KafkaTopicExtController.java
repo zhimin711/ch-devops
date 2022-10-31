@@ -1,5 +1,19 @@
 package com.ch.cloud.kafka.controller;
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.model.KafkaTopicExt;
@@ -7,27 +21,21 @@ import com.ch.cloud.kafka.model.KafkaTopicExtProp;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicExtService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
+import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.toolkit.ContextUtil;
 import com.ch.toolkit.UUIDGenerator;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.e.ExceptionUtils;
 import com.google.common.collect.Lists;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author zhimin.ma
@@ -52,7 +60,7 @@ public class KafkaTopicExtController {
     @ApiOperation(value = "加载主题扩展信息加载主题扩展信息", notes = "加载主题扩展信息")
     @GetMapping
     public Result<KafkaTopicExt> configs(KafkaTopicExt record) {
-        return ResultUtils.wrapList(() -> kafkaTopicExtService.findByClusterIdAndTopicNameAndCreateBy(record.getClusterId(), record.getTopicName(), ContextUtil.getUser()));
+        return ResultUtils.wrapList(() -> kafkaTopicExtService.findByClusterIdAndTopicNameAndCreateBy(record.getClusterId(), record.getTopicName(), ContextUtil.getUsername()));
     }
 
     @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
@@ -130,11 +138,11 @@ public class KafkaTopicExtController {
 
             if (r != null) {
                 record.setId(r.getId());
-                record.setUpdateBy(ContextUtil.getUser());
+                record.setUpdateBy(ContextUtil.getUsername());
                 record.setUpdateAt(DateUtils.current());
             } else {
                 record.setId(null);
-                record.setCreateBy(ContextUtil.getUser());
+                record.setCreateBy(ContextUtil.getUsername());
                 record.setStatus(StatusS.ENABLED);
             }
             kafkaTopicExtService.save(record);
@@ -149,7 +157,7 @@ public class KafkaTopicExtController {
             KafkaTopicExt record = new KafkaTopicExt();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
-            record.setUpdateBy(ContextUtil.getUser());
+            record.setUpdateBy(ContextUtil.getUsername());
             record.setUpdateAt(DateUtils.current());
             return kafkaTopicExtService.update(record);
         });

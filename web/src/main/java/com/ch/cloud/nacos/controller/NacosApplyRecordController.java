@@ -1,10 +1,17 @@
 package com.ch.cloud.nacos.controller;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
 import com.ch.cloud.devops.service.INamespaceApplyRecordService;
 import com.ch.cloud.types.NamespaceType;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
@@ -12,13 +19,13 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.s.ApproveStatus;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -65,9 +72,9 @@ public class NacosApplyRecordController {
                 ExceptionUtils._throw(PubError.NOT_ALLOWED, "approve status is not correct!");
             }
             orig.setStatus(record.getStatus());
-            orig.setApproveBy(ContextUtil.getUser());
+            orig.setApproveBy(ContextUtil.getUsername());
             orig.setApproveAt(DateUtils.current());
-            orig.setUpdateBy(ContextUtil.getUser());
+            orig.setUpdateBy(ContextUtil.getUsername());
             orig.setUpdateAt(DateUtils.current());
             return namespaceApplyRecordService.approveNacos(orig) > 0;
         });

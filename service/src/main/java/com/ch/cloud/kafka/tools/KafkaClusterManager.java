@@ -1,22 +1,23 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.StatusS;
-import com.ch.cloud.kafka.dto.KafkaTopicDTO;
-import com.ch.cloud.kafka.model.KafkaCluster;
-import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.dto.BrokerDTO;
-import com.ch.cloud.kafka.pojo.Partition;
-import com.ch.cloud.kafka.pojo.TopicInfo;
-import com.ch.cloud.kafka.service.KafkaClusterService;
-import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.utils.ContextUtil;
-import com.ch.e.PubError;
-import com.ch.utils.AssertUtils;
-import com.ch.utils.CommonUtils;
-import com.ch.utils.DateUtils;
-import com.google.common.collect.Sets;
-import lombok.SneakyThrows;
-import org.apache.kafka.clients.admin.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.DescribeClusterResult;
+import org.apache.kafka.clients.admin.LogDirDescription;
+import org.apache.kafka.clients.admin.ReplicaInfo;
+import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
@@ -27,9 +28,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+import com.ch.StatusS;
+import com.ch.cloud.kafka.dto.BrokerDTO;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.model.KafkaTopic;
+import com.ch.cloud.kafka.pojo.Partition;
+import com.ch.cloud.kafka.pojo.TopicInfo;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
+import com.ch.e.PubError;
+import com.ch.toolkit.ContextUtil;
+import com.ch.utils.AssertUtils;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
+import com.google.common.collect.Sets;
+
+import lombok.SneakyThrows;
 
 /**
  * @author zhimin.ma
@@ -360,7 +375,7 @@ public class KafkaClusterManager extends AbsKafkaManager {
             existsTopics.forEach(topic -> {
                 if(!topicNames.contains(topic.getTopicName())) {
                     topic.setStatus(StatusS.DELETE);
-                    topic.setUpdateBy(ContextUtil.getUser());
+                    topic.setUpdateBy(ContextUtil.getUsername());
                     topic.setUpdateAt(DateUtils.current());
                     kafkaTopicService.update(topic);
                 }else {
@@ -373,6 +388,6 @@ public class KafkaClusterManager extends AbsKafkaManager {
             return 0;
         }
         List<KafkaTopicDTO> fetchTopics = topics(cluster, newList);
-        return kafkaTopicService.saveOrUpdate(fetchTopics, ContextUtil.getUser());
+        return kafkaTopicService.saveOrUpdate(fetchTopics, ContextUtil.getUsername());
     }
 }

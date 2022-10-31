@@ -1,5 +1,10 @@
 package com.ch.cloud.nacos.validators;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
 import com.ch.cloud.devops.service.INamespaceService;
@@ -13,15 +18,11 @@ import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.client.UpmsUserClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.cloud.upms.dto.ProjectRoleDto;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.Result;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * desc:
@@ -62,7 +63,7 @@ public class NacosNamespaceValidator {
 
     public <T extends NamespaceVO> ClientEntity<T> validUserNamespace(Long projectId, T record) {
         AssertUtils.isEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
-        AssertUtils.isFalse(userNamespaceService.exists(ContextUtil.getUser(), record.getNamespaceId(), projectId),
+        AssertUtils.isFalse(userNamespaceService.exists(ContextUtil.getUsername(), record.getNamespaceId(), projectId),
                 PubError.NOT_AUTH, "项目" + projectId);
         return valid(record);
     }
@@ -91,7 +92,7 @@ public class NacosNamespaceValidator {
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
         AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "空间ID：" + record.getNamespaceId());
         if (CommonUtils.isNotEmpty(namespace.getRoles())) {
-            List<ProjectRoleDto> result = upmsUserClientService.findProjectRoles(ContextUtil.getUser(), projectId);
+            List<ProjectRoleDto> result = upmsUserClientService.findProjectRoles(ContextUtil.getUsername(), projectId);
             AssertUtils.isEmpty(result, PubError.NOT_ALLOWED, "空间数据", "编辑");
         }
 

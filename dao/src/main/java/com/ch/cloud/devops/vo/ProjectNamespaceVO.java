@@ -12,6 +12,8 @@ import lombok.Data;
 public class ProjectNamespaceVO {
 
     private Long   projectId;
+    
     private Long   namespaceId;
+    
     private String groupId;
 }

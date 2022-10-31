@@ -30,9 +30,9 @@ import com.ch.cloud.nacos.vo.ConfigPolicyVO;
 import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsPageVO;
-import com.ch.cloud.utils.ContextUtil;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.FileUtilsV2;
@@ -90,7 +90,7 @@ public class NacosConfigsClient extends BaseClient {
         }
 
         HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);
-        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUser();
+        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUsername();
         log.info("nacos config save or update url: {}", url);
         return invoke(url, HttpMethod.POST, httpEntity, Boolean.class);
     }
@@ -98,7 +98,7 @@ public class NacosConfigsClient extends BaseClient {
     public Boolean delete(ClientEntity<ConfigDeleteVO> clientEntity) {
         boolean isBatch = CommonUtils.isNotEmpty(clientEntity.getData().getIds());
 
-        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUser();
+        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUsername();
 
         String urlParams = "";
         if (isBatch) {
@@ -169,7 +169,7 @@ public class NacosConfigsClient extends BaseClient {
 
     public JSONObject importZip(ClientEntity<ConfigImportVO> clientEntity, MultipartFile file) throws Exception {
         String urlParams =
-            "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username=" + ContextUtil.getUser();
+            "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username=" + ContextUtil.getUsername();
         String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
 

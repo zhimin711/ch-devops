@@ -16,24 +16,22 @@
  */
 package com.ch.cloud.kafka.task;
 
-import com.ch.cloud.kafka.dto.KafkaTopicDTO;
-import com.ch.cloud.kafka.model.KafkaCluster;
-import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.service.KafkaClusterService;
-import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.kafka.tools.KafkaClusterManager;
-import com.ch.cloud.kafka.tools.KafkaClusterUtils;
-import com.ch.cloud.utils.ContextUtil;
-import com.google.common.base.Throwables;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
+import com.ch.cloud.kafka.tools.KafkaClusterManager;
+import com.ch.toolkit.ContextUtil;
+import com.google.common.base.Throwables;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -51,7 +49,7 @@ public class KafkaTopicsCollectTask {
 //        Date date = new Date();
 //        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
-            ContextUtil.setUser("KafkaTopicsCollectTask");
+            ContextUtil.setUsername("KafkaTopicsCollectTask");
             List<KafkaCluster> clusterList = kafkaClusterService.findEnabled();
             for (KafkaCluster cluster : clusterList) {
                 kafkaClusterManager.syncTopics(cluster);

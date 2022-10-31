@@ -3,13 +3,6 @@ package com.ch.cloud.nacos.controller.user;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.ch.cloud.devops.dto.NamespaceDto;
-import com.ch.cloud.nacos.domain.NacosCluster;
-import com.ch.cloud.nacos.service.INacosClusterService;
-import com.ch.cloud.types.NamespaceType;
-import com.ch.cloud.utils.ContextUtil;
-import com.google.common.collect.Lists;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +18,12 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ch.cloud.devops.dto.NamespaceDto;
 import com.ch.cloud.devops.service.IUserNamespaceService;
 import com.ch.cloud.nacos.client.NacosConfigsClient;
+import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.dto.ConfigDTO;
+import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.ConfigCloneVO;
@@ -39,15 +35,19 @@ import com.ch.cloud.nacos.vo.ConfigQueryVO;
 import com.ch.cloud.nacos.vo.ConfigVO;
 import com.ch.cloud.nacos.vo.ConfigsPageVO;
 import com.ch.cloud.nacos.vo.HistoryRollbackVO;
+import com.ch.cloud.types.NamespaceType;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.CommonUtils;
+import com.google.common.collect.Lists;
 
 import cn.hutool.core.bean.BeanUtil;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 描述：配置
@@ -108,7 +108,7 @@ public class NacosUserConfigsController {
         return ResultUtils.wrap(() -> {
             List<ConfigDTO> configs = Lists.newArrayList();
             List<NamespaceDto> namespaces = userNamespaceService.findNamespacesByUsernameAndProjectIdAndNamespaceType(
-                    ContextUtil.getUser(), projectId, NamespaceType.NACOS);
+                    ContextUtil.getUsername(), projectId, NamespaceType.NACOS);
             if (namespaces.isEmpty())
                 return null;
             String currNamespace = record.getNamespaceId();

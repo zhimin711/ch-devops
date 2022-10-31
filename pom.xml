@@ -64,16 +64,6 @@
                 <artifactId>ch-devops-service</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
-                <groupId>com.ch</groupId>
-                <artifactId>ch-core</artifactId>
-                <version>${ch.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.ch</groupId>
-                <artifactId>ch-mybatis</artifactId>
-                <version>${ch.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
