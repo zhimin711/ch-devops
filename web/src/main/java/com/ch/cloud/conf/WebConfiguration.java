@@ -1,5 +1,6 @@
 package com.ch.cloud.conf;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
  * @since 2022/4/27
  */
 @Configuration
+@MapperScan("com.ch.cloud.devops.mapper2")
 public class WebConfiguration {
 
 
