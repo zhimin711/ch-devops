@@ -25,6 +25,9 @@ spring:
   mvc: # 解决Swagger3.0 + spring boot 2.6.x兼容
     pathmatch:
       matching-strategy: ant_path_matcher
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
 
 logging:
   config: classpath:config/logback.xml

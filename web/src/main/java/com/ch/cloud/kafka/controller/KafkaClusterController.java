@@ -2,6 +2,8 @@ package com.ch.cloud.kafka.controller;
 
 import java.util.Set;
 
+import com.ch.cloud.kafka.vo.KafkaClusterVO;
+import com.ch.utils.BeanUtilsV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,14 +30,14 @@ import com.ch.toolkit.ContextUtil;
 import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageInfo;
 
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @author zhimin.ma
  * @since 2018/9/25 20:29
  */
-@Tag(name = "kafka-cluster-controller", description = "KAFKA集群配置")
+@Api(tags = "KAFKA集群配置")
 @RestController
 @RequestMapping("/kafka/cluster")
 public class KafkaClusterController {
@@ -50,9 +52,10 @@ public class KafkaClusterController {
 
     @Operation(summary = "分页查询集群", description = "分页查询集群")
     @GetMapping(value = {"{num:\\d+}/{size:\\d+}"})
-    public PageResult<KafkaCluster> page(KafkaCluster record, @PathVariable(value = "num") int pageNum,
+    public PageResult<KafkaCluster> page(KafkaClusterVO record, @PathVariable(value = "num") int pageNum,
         @PathVariable(value = "size") int pageSize) {
-        PageInfo<KafkaCluster> pageInfo = kafkaClusterService.findPage(record, pageNum, pageSize);
+        PageInfo<KafkaCluster> pageInfo =
+            kafkaClusterService.findPage(BeanUtilsV2.clone(record, KafkaCluster.class), pageNum, pageSize);
         return PageResult.success(pageInfo.getTotal(), pageInfo.getList());
     }
 
