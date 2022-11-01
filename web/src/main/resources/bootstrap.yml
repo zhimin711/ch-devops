@@ -1,10 +1,12 @@
 nacos:
   config:
-    namespace: cloud-dev
-    server-addr: 192.168.0.204:8848
+#    namespace: cloud-dev
+    server-addr: 192.168.150.203:8848
 spring:
   application:
     name: ch-devops
+  profiles:
+    active: local
   cloud:
     nacos:
       discovery:
@@ -19,3 +21,8 @@ spring:
             dataId: ch-devops.yml
             refresh: true
             group: ${spring.application.name}
+          -
+            dataId: ch-devops.properties
+            refresh: true
+            group: ${spring.application.name}
+#        enabled: false

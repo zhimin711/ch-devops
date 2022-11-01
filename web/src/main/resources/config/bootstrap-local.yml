@@ -44,10 +44,9 @@ rocketmq:
   namesrv:
 #    addr: 10.206.46.77:9876
     isVIPChannel: true
+    consoleCollect: true
 #    consoleCollectData: D:\\tmp\\rocket\\console\\data
     consoleCollectData: data/rocket/console/data
-  console:
-    data: data/rocket/console/data
 #  name-server: 192.168.0.205:9876 # 自己的RocketMQ服务地址
 #  name-server: false
   producer:
