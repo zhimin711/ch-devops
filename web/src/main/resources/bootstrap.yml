@@ -5,8 +5,6 @@ nacos:
 spring:
   application:
     name: ch-devops
-  profiles:
-    active: local
   cloud:
     nacos:
       discovery:

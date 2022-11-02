@@ -43,6 +43,7 @@ fs:
 rocketmq:
   namesrv:
 #    addr: 10.206.46.77:9876
+#    addr: 192.168.20.244:9876
     isVIPChannel: true
     consoleCollect: true
 #    consoleCollectData: D:\\tmp\\rocket\\console\\data
