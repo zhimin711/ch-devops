@@ -16,6 +16,18 @@
  */
 package com.ch.cloud.rocketmq.controller;
 
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.ch.cloud.rocketmq.model.request.SendTopicMessageRequest;
 import com.ch.cloud.rocketmq.model.request.TopicConfigInfo;
 import com.ch.cloud.rocketmq.service.ConsumerService;
@@ -23,12 +35,8 @@ import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
-import io.swagger.annotations.Api;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import io.swagger.annotations.Api;
 
 @Api(tags = "Rocket MQ 主题管理模块")
 @RestController
@@ -97,7 +105,7 @@ public class RocketMQTopicController {
         return topicService.deleteTopic(topic, clusterName);
     }
 
-    @RequestMapping(value = "/deleteTopicByBroker.do", method = {RequestMethod.POST})
+    @PostMapping("/deleteTopicByBroker")
     public Object deleteTopicByBroker(@RequestParam String brokerName, @RequestParam String topic) {
         return topicService.deleteTopicInBroker(brokerName, topic);
     }
