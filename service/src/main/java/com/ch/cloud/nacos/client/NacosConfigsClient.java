@@ -90,7 +90,8 @@ public class NacosConfigsClient extends BaseClient {
         }
         
         HttpEntity<MultiValueMap<String, Object>> httpEntity = formHttpEntity(clientEntity);
-        String url = url(NacosAPI.CONFIGS, clientEntity) + "&" + "username=" + ContextUtil.getUsername();
+        String url = url(NacosAPI.CONFIGS, clientEntity) + "&username=" + ContextUtil.getUsername() + "&src_user="
+                + ContextUtil.getUsername();
         log.info("nacos config save or update url: {}", url);
         return invoke(url, HttpMethod.POST, httpEntity, Boolean.class);
     }
@@ -143,7 +144,9 @@ public class NacosConfigsClient extends BaseClient {
         String tenant = CommonUtils.isEmpty(clientEntity.getData().getNamespaceId()) ? "public"
                 : clientEntity.getData().getNamespaceId();
         String urlParams =
-                "clone=true&tenant=" + tenant + "&policy=" + clientEntity.getData().getPolicy() + "&namespaceId=";
+                "clone=true&tenant=" + tenant + "&policy=" + clientEntity.getData().getPolicy() + "&namespaceId="
+                        + "&src_user=" + ContextUtil.getUsername();
+        ;
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -171,7 +174,7 @@ public class NacosConfigsClient extends BaseClient {
     
     public JSONObject importZip(ClientEntity<ConfigImportClientVO> clientEntity, MultipartFile file) throws Exception {
         String urlParams = "import=true&namespace=" + clientEntity.getData().getNamespaceId() + "&username="
-                + ContextUtil.getUsername();
+                + ContextUtil.getUsername() + "&src_user=" + ContextUtil.getUsername();
         String url = clientEntity.getUrl() + NacosAPI.CONFIGS + "?" + urlParams;
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
         

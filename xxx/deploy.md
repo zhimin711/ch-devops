@@ -2,7 +2,7 @@
 ### 上传配置 
 ```
 scp -r src/main/docker/Dockerfile zhimin@192.168.199.194:/home/zhimin/docker/ch-devops
-scp -r build/libs/ch-devops-1.0.0-SNAPSHOT.jar zhimin@192.168.199.194:/home/zhimin/docker/ch-devops
+scp -r web/target/ch-devops-1.0.0-SNAPSHOT.jar zhimin@192.168.199.194:/home/zhimin/docker/ch-devops
 ```
 ### 打包
 ```
