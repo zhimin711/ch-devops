@@ -2,6 +2,7 @@ package com.ch.cloud.nacos.validators;
 
 import java.util.List;
 
+import com.ch.cloud.upms.enums.RoleType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -92,8 +93,8 @@ public class NacosNamespaceValidator {
         Namespace namespace = namespaceService.findWithCluster(record.getNamespaceId());
         AssertUtils.isNull(namespace, PubError.NOT_EXISTS, "空间ID：" + record.getNamespaceId());
         if (CommonUtils.isNotEmpty(namespace.getRoles())) {
-            List<ProjectRoleDto> result = upmsUserClientService.findProjectRoles(ContextUtil.getUsername(), projectId);
-            AssertUtils.isEmpty(result, PubError.NOT_ALLOWED, "空间数据", "编辑");
+            List<RoleType> list = upmsUserClientService.listProjectRoles(ContextUtil.getUsername(), projectId, null);
+            AssertUtils.isEmpty(list, PubError.NOT_ALLOWED, "空间数据", "编辑");
         }
 
         record.setNamespaceId(namespace.getUid());

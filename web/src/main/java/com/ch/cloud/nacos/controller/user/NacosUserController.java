@@ -3,6 +3,7 @@ package com.ch.cloud.nacos.controller.user;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,6 +60,7 @@ import io.swagger.annotations.ApiOperation;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@Api(tags = "Nacos用户服务")
 @RestController
 @RequestMapping("/nacos/user")
 public class NacosUserController {

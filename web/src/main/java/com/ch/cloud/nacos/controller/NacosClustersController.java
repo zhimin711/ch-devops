@@ -17,6 +17,7 @@ import com.ch.utils.AssertUtils;
 import com.ch.utils.VueRecordUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,7 @@ import java.util.List;
  * @since 2022/4/23 22:44
  */
 @RestController
+@Api(tags = "Nacos集群服务")
 @RequestMapping("/nacos/clusters")
 public class NacosClustersController {
 

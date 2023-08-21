@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>com.ch.cloud</groupId>
-            <artifactId>ch-cloud-starter-mybatis</artifactId>
+            <artifactId>ch-cloud-starter-tk-mybatis</artifactId>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

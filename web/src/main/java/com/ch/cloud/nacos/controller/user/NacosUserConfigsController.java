@@ -3,6 +3,8 @@ package com.ch.cloud.nacos.controller.user;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.ch.cloud.web.annotation.OriginalReturn;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@Api(tags = "Nacos用户配置服务")
 @RestController
 @RequestMapping("/nacos/user/{projectId:[0-9]+}/configs")
 @Slf4j
@@ -195,6 +198,7 @@ public class NacosUserConfigsController {
 
     @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
     @GetMapping("export")
+    @OriginalReturn
     public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportClientVO record) {
         String nid = record.getNamespaceId();
         AtomicReference<ClientEntity<ConfigExportClientVO>> clientEntity = new AtomicReference<>();

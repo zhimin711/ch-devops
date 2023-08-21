@@ -7,6 +7,7 @@ import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
 import com.ch.result.PageResult;
 import com.ch.result.ResultUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@Api(tags = "Nacos订阅服务")
 @RestController
 @RequestMapping("/nacos/subscribers")
 public class NacosSubscribersController {

@@ -1,22 +1,19 @@
 package com.ch.cloud.kafka.service.impl;
 
-import com.ch.Constants;
 import com.ch.StatusS;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
 import com.ch.cloud.kafka.mapper.KafkaTopicMapper;
 import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.dto.KafkaTopicDTO;
-import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.mybatis.service.ServiceImpl;
 import com.ch.mybatis.utils.ExampleUtils;
+import com.ch.tools.sql.utils.SQLUtils;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
-import com.ch.utils.SQLUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;

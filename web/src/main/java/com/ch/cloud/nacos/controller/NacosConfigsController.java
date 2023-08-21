@@ -3,18 +3,34 @@ package com.ch.cloud.nacos.controller;
 import com.ch.cloud.nacos.client.NacosConfigsClient;
 import com.ch.cloud.nacos.dto.ConfigDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
-import com.ch.cloud.nacos.vo.*;
+import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.ConfigClientVO;
+import com.ch.cloud.nacos.vo.ConfigCloneVO;
+import com.ch.cloud.nacos.vo.ConfigDeleteClientVO;
+import com.ch.cloud.nacos.vo.ConfigExportClientVO;
+import com.ch.cloud.nacos.vo.ConfigImportClientVO;
+import com.ch.cloud.nacos.vo.ConfigPolicyClientVO;
+import com.ch.cloud.nacos.vo.ConfigQueryClientVO;
+import com.ch.cloud.nacos.vo.ConfigsPageClientVO;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
-import com.ch.cloud.upms.dto.ProjectDto;
+import com.ch.cloud.web.annotation.OriginalReturn;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,6 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 2022/4/29
  */
 @RestController
+@Api(tags = "Nacos配置服务")
 @RequestMapping("/nacos/configs")
 public class NacosConfigsController {
     
@@ -109,6 +126,7 @@ public class NacosConfigsController {
      */
     @ApiOperation(value = "导出配置", notes = "导出配置")
     @GetMapping("export")
+    @OriginalReturn
     public ResponseEntity<Resource> export(ConfigExportClientVO record) {
         AtomicReference<ClientEntity<ConfigExportClientVO>> clientEntity = new AtomicReference<>();
         Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(nacosNamespaceValidator.valid(record)));

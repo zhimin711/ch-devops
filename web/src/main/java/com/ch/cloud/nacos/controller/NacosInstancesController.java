@@ -9,6 +9,7 @@ import com.ch.cloud.nacos.vo.InstancesPageClientVO;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@Api(tags = "Nacos配置实例服务")
 @RestController
 @RequestMapping("/nacos/instances")
 public class NacosInstancesController {
