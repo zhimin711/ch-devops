@@ -75,7 +75,7 @@ public class KafkaTopicController {
 
     @ApiOperation(value = "新增主题信息", notes = "")
     @PostMapping
-    public Result<Integer> add(@RequestBody KafkaTopic record) {
+    public Result<Integer> add(@RequestBody KafkaTopic record,@RequestParam(required = false) Boolean force) {
         return ResultUtils.wrapFail(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
             KafkaTopic r = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
@@ -187,20 +187,17 @@ public class KafkaTopicController {
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
+            KafkaTopic topic = kafkaTopicService.find(id);
+            KafkaCluster cluster = kafkaClusterService.find(topic.getClusterId());
+            if (cluster != null) {
+                kafkaTopicManager.deleteTopic(cluster.getId(), Lists.newArrayList(topic.getTopicName()));
+            }
             KafkaTopic record = new KafkaTopic();
             record.setId(id);
             record.setStatus(StatusS.DELETE);
             record.setUpdateBy(ContextUtil.getUsername());
             record.setUpdateAt(DateUtils.current());
-            int c = kafkaTopicService.update(record);
-            if (c > 0) {
-                KafkaTopic topic = kafkaTopicService.find(id);
-                KafkaCluster cluster = kafkaClusterService.find(topic.getClusterId());
-                if (cluster != null) {
-                    kafkaTopicManager.deleteTopic(cluster.getId(), Lists.newArrayList(topic.getTopicName()));
-                }
-            }
-            return c;
+            return kafkaTopicService.update(record);
         });
     }
 
