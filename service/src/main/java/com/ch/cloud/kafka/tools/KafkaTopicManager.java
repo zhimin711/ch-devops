@@ -38,7 +38,7 @@ public class KafkaTopicManager extends AbsKafkaManager {
     }
 
     @SneakyThrows
-    public List<KafkaTopicConfigDTO> getConfigs(Long clusterId, String topic) throws ExecutionException, InterruptedException {
+    public List<KafkaTopicConfigDTO> getConfigs(Long clusterId, String topic) {
         AdminClient adminClient = getAdminClient(clusterId);
 
         ConfigResource configResource = new ConfigResource(ConfigResource.Type.TOPIC, topic);

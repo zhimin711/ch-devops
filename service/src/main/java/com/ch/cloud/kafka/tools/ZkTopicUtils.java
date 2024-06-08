@@ -92,7 +92,7 @@ public class ZkTopicUtils {
             AdminUtils.deleteTopic(zkUtils, topic);
             zkUtils.close();
         } catch (Exception e) {
-            log.error("delete error! => " + topic, e);
+            log.error("delete error! => {}", topic, e);
         } finally {
             close(zkUtils);
         }
