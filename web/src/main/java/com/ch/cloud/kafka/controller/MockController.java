@@ -1,17 +1,5 @@
 package com.ch.cloud.kafka.controller;
 
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.kafka.dto.KafkaTopicDTO;
@@ -30,9 +18,19 @@ import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.google.common.collect.Lists;
-
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * decs:
@@ -48,7 +46,7 @@ public class MockController {
     @Autowired
     private KafkaTopicService kafkaTopicService;
 
-    @ApiOperation(value = "生成数据", notes = "生成主题数据")
+    @Operation(summary = "生成数据", description = "生成主题数据")
     @PostMapping
     public Result<?> mock(@RequestBody KafkaTopicExt record) {
 
@@ -146,7 +144,7 @@ public class MockController {
     }
 
 
-    @ApiOperation(value = "生成GPS数据", notes = "生成GPS数据并发送Kafka")
+    @Operation(summary = "生成GPS数据", description = "生成GPS数据并发送Kafka")
     @PostMapping("gps")
     public Result<?> gps(@RequestBody KafkaTopicExt record) {
         return ResultUtils.wrapPage(() -> {

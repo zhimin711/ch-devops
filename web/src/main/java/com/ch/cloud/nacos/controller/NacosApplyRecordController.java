@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,6 @@ import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
-import io.swagger.annotations.ApiOperation;
 
 /**
  * <p>
@@ -42,7 +42,7 @@ public class NacosApplyRecordController {
     @Autowired
     private INamespaceApplyRecordService namespaceApplyRecordService;
 
-    @ApiOperation(value = "Nacos申请分页查询", notes = "分页查询命名空间")
+    @Operation(summary = "Nacos申请分页查询", description = "分页查询命名空间")
     @GetMapping(value = {"/{num:[0-9]+}/{size:[0-9]+}"})
     public PageResult<NamespaceApplyRecord> nacosPage(NamespaceApplyRecord record,
                                                       @PathVariable(value = "num") int pageNum,
@@ -59,7 +59,7 @@ public class NacosApplyRecordController {
     }
 
 
-    @ApiOperation(value = "审核空间", notes = "审核申请命名空间")
+    @Operation(summary = "审核空间", description = "审核申请命名空间")
     @PostMapping({"/{id:[0-9]+}/approve"})
     public Result<Boolean> approveNacos(@RequestBody NamespaceApplyRecord record) {
         return ResultUtils.wrapFail(() -> {

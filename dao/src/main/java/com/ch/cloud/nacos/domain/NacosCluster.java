@@ -1,10 +1,10 @@
 package com.ch.cloud.nacos.domain;
 
 import com.ch.mybatis.context.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Table;
 
 /**
@@ -15,7 +15,7 @@ import javax.persistence.Table;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel("业务-nacos集群")
+@Schema(description = "业务-nacos集群")
 @Table(name = "bt_nacos_cluster")
 public class NacosCluster extends BaseEntity {
 
@@ -24,30 +24,30 @@ public class NacosCluster extends BaseEntity {
     /**
      * 集群API
      */
-    @ApiModelProperty(name = "集群API")
+    @Schema(description = "集群API")
     private String url;
 
     /**
      * 空间名称
      */
-    @ApiModelProperty(name = "集群名称")
+    @Schema(description = "集群名称")
     private String name;
 
     /**
      * 描述
      */
-    @ApiModelProperty(name = "描述")
+    @Schema(description = "描述")
     private String description;
 
-    @ApiModelProperty(name = "用户名")
+    @Schema(description = "用户名")
     private String username;
 
-    @ApiModelProperty(name = "密码")
+    @Schema(description = "密码")
     private String password;
     /**
      * 序号（排序）
      */
-    @ApiModelProperty(name = "序号（排序）")
+    @Schema(description = "序号（排序）")
     private Integer sort;
 
 }

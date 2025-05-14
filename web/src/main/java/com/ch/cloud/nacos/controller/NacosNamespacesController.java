@@ -48,8 +48,8 @@ import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * <p>
@@ -61,7 +61,7 @@ import io.swagger.annotations.ApiOperation;
  */
 @RestController
 @RequestMapping("/nacos/namespaces")
-@Api(tags = "Nacos命名空间服务")
+@Tag(name = "Nacos命名空间服务")
 public class NacosNamespacesController {
 
     @Autowired
@@ -81,8 +81,7 @@ public class NacosNamespacesController {
     @Autowired
     private NacosUserClient nacosUserClient;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询命名空间")
-    // @ApiImplicitParam(dataTypeClass = Namespace.class)
+    @Operation(summary = "分页查询", description = "分页查询命名空间")
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
     public PageResult<Namespace> page(@PathVariable(value = "num") int pageNum,
         @PathVariable(value = "size") int pageSize, NamespaceVO record) {
@@ -110,7 +109,7 @@ public class NacosNamespacesController {
         });
     }
 
-    @ApiOperation(value = "添加", notes = "添加命名空间")
+    @Operation(summary = "添加", description = "添加命名空间")
     @PostMapping
     public Result<Integer> add(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
@@ -133,7 +132,7 @@ public class NacosNamespacesController {
         });
     }
 
-    @ApiOperation(value = "修改", notes = "修改命名空间")
+    @Operation(summary = "修改", description = "修改命名空间")
     @PutMapping({"{id:[0-9]+}"})
     public Result<Integer> edit(@RequestBody Namespace record) {
         return ResultUtils.wrapFail(() -> {
@@ -164,7 +163,7 @@ public class NacosNamespacesController {
         }
     }
 
-    @ApiOperation(value = "查询命名空间详细", notes = "查询命名空间详细")
+    @Operation(summary = "查询命名空间详细", description = "查询命名空间详细")
     @GetMapping({"{id:[0-9]+}"})
     public Result<NamespaceDto> find(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
@@ -185,7 +184,7 @@ public class NacosNamespacesController {
         });
     }
 
-    @ApiOperation(value = "删除", notes = "删除命名空间")
+    @Operation(summary = "删除", description = "删除命名空间")
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
@@ -203,7 +202,7 @@ public class NacosNamespacesController {
         });
     }
 
-    @ApiOperation(value = "同步", notes = "同步-NACOS命名空间")
+    @Operation(summary = "同步", description = "同步-NACOS命名空间")
     @PostMapping({"/sync/{clusterId}"})
     public Result<Boolean> sync(@PathVariable Long clusterId) {
         return ResultUtils.wrapFail(() -> {
@@ -268,7 +267,7 @@ public class NacosNamespacesController {
         });
     }
 
-    @ApiOperation(value = "查询命名空间下项目列表", notes = "查询命名空间下项目列表")
+    @Operation(summary = "查询命名空间下项目列表", description = "查询命名空间下项目列表")
     @GetMapping({"{id:[0-9]+}/projects"})
     public Result<VueRecord2> findProjects(@PathVariable Long id) {
         return ResultUtils.wrapList(() -> {
@@ -293,10 +292,9 @@ public class NacosNamespacesController {
         });
     }
 
-    @ApiOperation(value = "修改命名空间下项目列表", notes = "修改命名空间下项目列表")
+    @Operation(summary = "修改命名空间下项目列表", description = "修改命名空间下项目列表")
     @PostMapping({"{id:[0-9]+}/projects"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long id, @RequestBody List<Long> projectIds) {
         return ResultUtils.wrap(() -> nacosNamespaceProjectService.assignNamespaceProjects(id, projectIds));
     }
-
 }

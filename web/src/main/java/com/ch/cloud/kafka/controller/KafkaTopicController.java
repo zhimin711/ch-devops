@@ -12,7 +12,11 @@ import com.ch.cloud.kafka.pojo.TopicConfig;
 import com.ch.cloud.kafka.pojo.TopicInfo;
 import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.kafka.tools.*;
+import com.ch.cloud.kafka.tools.KafkaClusterManager;
+import com.ch.cloud.kafka.tools.KafkaClusterUtils;
+import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
+import com.ch.cloud.kafka.tools.KafkaTopicManager;
+import com.ch.cloud.kafka.tools.ZkTopicUtils;
 import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
@@ -25,12 +29,21 @@ import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Set;
@@ -39,32 +52,33 @@ import java.util.Set;
  * @author zhimin.ma
  * @since 2018/9/25 20:29
  */
-@Api(tags = "KAFKA主题配置模块")
+@Tag(name = "KAFKA主题配置模块")
 @RestController
 @RequestMapping("/kafka/topic")
 public class KafkaTopicController {
 
     @Autowired
     private KafkaTopicService kafkaTopicService;
+
     @Autowired
     private KafkaClusterService kafkaClusterService;
+
     @Autowired
     private KafkaClusterManager kafkaClusterManager;
+
     @Autowired
     private KafkaConsumerGroupManager kafkaConsumerGroupManager;
+
     @Autowired
     private KafkaTopicManager kafkaTopicManager;
 
-    @ApiOperation(value = "分页查询", notes = "需要在请求头中附带token")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "num", value = "页码", required = true),
-            @ApiImplicitParam(name = "size", value = "分页大小", required = true),
-            @ApiImplicitParam(name = "record", value = "查询条件", paramType = "query")
-    })
+    @Operation(summary = "分页查询", description = "需要在请求头中附带token")
+    @Parameters({@Parameter(name = "num", description = "页码", required = true),
+            @Parameter(name = "size", description = "分页大小", required = true),
+            @Parameter(name = "record", description = "查询条件", in = ParameterIn.QUERY)})
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
-    public PageResult<KafkaTopic> page(KafkaTopic record,
-                                       @PathVariable(value = "num") int pageNum,
-                                       @PathVariable(value = "size") int pageSize) {
+    public PageResult<KafkaTopic> page(KafkaTopic record, @PathVariable(value = "num") int pageNum,
+            @PathVariable(value = "size") int pageSize) {
         return ResultUtils.wrapPage(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
             PageInfo<KafkaTopic> pageInfo = kafkaTopicService.findPage(record, pageNum, pageSize);
@@ -73,16 +87,16 @@ public class KafkaTopicController {
 
     }
 
-    @ApiOperation(value = "新增主题信息", notes = "")
+    @Operation(summary = "新增主题信息", description = "")
     @PostMapping
-    public Result<Integer> add(@RequestBody KafkaTopic record,@RequestParam(required = false) Boolean force) {
+    public Result<Integer> add(@RequestBody KafkaTopic record, @RequestParam(required = false) Boolean force) {
         return ResultUtils.wrapFail(() -> {
             AssertUtils.isEmpty(record.getClusterId(), PubError.NON_NULL, "集群ID");
             KafkaTopic r = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
 
-            AssertUtils.isTrue(r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE), PubError.EXISTS, "主题已存在！");
+            AssertUtils.isTrue(r != null && !CommonUtils.isEquals(r.getStatus(), StatusS.DELETE), PubError.EXISTS,
+                    "主题已存在！");
             KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
-
 
             Set<String> topicNames = KafkaClusterUtils.fetchTopicNames(cluster);
 
@@ -118,11 +132,11 @@ public class KafkaTopicController {
         config.setTopicName(record.getTopicName());
         config.setPartitions(record.getPartitionSize());
         config.setReplicationFactor(record.getReplicaSize());
-//        TopicManager.createTopic(config);
+        //        TopicManager.createTopic(config);
         ZkTopicUtils.createTopicByCommand(config);
     }
 
-    @ApiOperation(value = "修改主题信息", notes = "")
+    @Operation(summary = "修改主题信息")
     @PutMapping({"{id:[0-9]+}"})
     public Result<Integer> update(@PathVariable Long id, @RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
@@ -133,7 +147,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "获取主题信息", notes = "")
+    @Operation(summary = "获取主题信息")
     @GetMapping({"{id:[0-9]+}"})
     public Result<TopicInfo> detail(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
@@ -143,7 +157,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "获取主题信息", notes = "")
+    @Operation(summary = "获取主题信息")
     @GetMapping({"{id:[0-9]+}/partitions"})
     public Result<Partition> detailPartitions(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
@@ -153,7 +167,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "获取主题信息", notes = "")
+    @Operation(summary = "获取主题信息")
     @GetMapping({"{id:[0-9]+}/brokers"})
     public Result<BrokerDTO> detailBrokers(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
@@ -163,7 +177,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "获取主题信息", notes = "")
+    @Operation(summary = "获取主题信息")
     @GetMapping({"{id:[0-9]+}/consumerGroups"})
     public Result<ConsumerGroupDTO> detailConsumerGroups(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
@@ -173,7 +187,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "获取主题信息", notes = "")
+    @Operation(summary = "获取主题信息")
     @GetMapping({"{id:[0-9]+}/configs"})
     public Result<KafkaTopicConfigDTO> detailConfigs(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {
@@ -183,7 +197,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "删除主题信息", notes = "")
+    @Operation(summary = "删除主题信息")
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
@@ -201,12 +215,13 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "主题刷新", notes = "注：删除原主题数据, 主题重建信息")
+    @Operation(summary = "主题刷新", description = "注：删除原主题数据, 主题重建信息")
     @PostMapping("refresh")
     public Result<Integer> refreshTopic(@RequestBody KafkaTopic record) {
         return ResultUtils.wrapFail(() -> {
             KafkaCluster cluster = kafkaClusterService.find(record.getClusterId());
-            KafkaTopic topic = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
+            KafkaTopic topic = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(),
+                    record.getTopicName());
             if (cluster == null || topic == null) {
                 throw ExceptionUtils.create(PubError.NOT_EXISTS);
             }
@@ -217,7 +232,7 @@ public class KafkaTopicController {
         });
     }
 
-    @ApiOperation(value = "同步集群主题", notes = "注：同步集群所有主题(type1.增量同步)")
+    @Operation(summary = "同步集群主题", description = "注：同步集群所有主题(type1.增量同步)")
     @PostMapping("sync")
     public Result<Integer> syncTopics(@RequestBody KafkaTopic record) {
         return ResultUtils.wrap(() -> {
@@ -234,7 +249,7 @@ public class KafkaTopicController {
     }
 
 
-    @ApiOperation(value = "清空所有主题", notes = "注：（删除并重建）")
+    @Operation(summary = "清空所有主题", description = "注：（删除并重建）")
     @PostMapping("clean")
     public Result<Integer> cleanTopics(@RequestBody KafkaTopic topic) {
         return ResultUtils.wrap(() -> {
@@ -246,7 +261,9 @@ public class KafkaTopicController {
             p1.setClusterId(topic.getClusterId());
             p1.setStatus("1");
             List<KafkaTopic> topics = kafkaTopicService.find(p1);
-            if (topics.isEmpty()) return 0;
+            if (topics.isEmpty()) {
+                return 0;
+            }
             topics.parallelStream().forEach(r -> ZkTopicUtils.deleteTopic(cluster.getZookeeper(), r.getTopicName()));
             Thread.sleep(10000);
             topics.parallelStream().forEach(r -> createTopic(cluster, r));

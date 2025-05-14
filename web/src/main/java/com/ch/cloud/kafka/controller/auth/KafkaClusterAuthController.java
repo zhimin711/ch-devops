@@ -13,10 +13,14 @@ import com.ch.result.ResultUtils;
 import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -24,7 +28,7 @@ import java.util.List;
  * @author zhimin.ma
  * @since 2018/9/25 20:29
  */
-@Api(tags = "KAFKA集群配置模块")
+@Tag(name = "KAFKA集群配置模块")
 @RestController
 @RequestMapping("/kafka/cluster")
 public class KafkaClusterAuthController {
@@ -51,7 +55,7 @@ public class KafkaClusterAuthController {
         });
     }
 
-    @ApiOperation(value = "获取主题信息", notes = "")
+    @Operation(summary = "获取主题信息")
     @GetMapping({"{id:\\d+}/topic/{topicId:\\d+}"})
     public Result<TopicInfo> topicInfo(@PathVariable Long id, @PathVariable Long topicId) {
         return ResultUtils.wrapFail(() -> {

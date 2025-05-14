@@ -11,8 +11,8 @@ import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
-@Api(tags = "Nacos历史记录服务")
+@Tag(name = "Nacos历史记录服务")
 @RestController
 @RequestMapping("/nacos/history")
 public class NacosHistoryController {
@@ -34,7 +34,7 @@ public class NacosHistoryController {
     @Autowired
     private NacosConfigsClient      nacosConfigsClient;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询nacos配置历史")
+    @Operation(summary = "分页查询", description = "分页查询nacos配置历史")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<HistoryDTO> page(HistoryPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
@@ -44,8 +44,7 @@ public class NacosHistoryController {
         });
     }
 
-
-    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @Operation(summary = "查询", description = "查询配置详情")
     @GetMapping
     public Result<HistoryDTO> get(HistoryQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -55,7 +54,7 @@ public class NacosHistoryController {
         });
     }
 
-    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @Operation(summary = "回滚", description = "根据操作类型回滚配置")
     @PutMapping
     public Result<Boolean> rollback(@RequestParam String opType, @RequestBody HistoryRollbackClientVO record) {
         return ResultUtils.wrapFail(() -> {

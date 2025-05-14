@@ -1,6 +1,6 @@
 package com.ch.cloud.kafka.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -17,23 +17,23 @@ public class KafkaContentSearchDTO {
     /**
      * 集群名称
      */
-    @ApiModelProperty(name = "集群ID")
+    @Schema(description = "集群ID")
     private Long clusterId;
     /**
      * 集群主题
      */
-    @ApiModelProperty(name = "集群主题")
+    @Schema(description = "集群主题")
     private String topic;
 
     /**
      * 分区搜索最后位置
      */
-    @ApiModelProperty(name = "分区搜索最后位置")
+    @Schema(description = "分区搜索最后位置")
     private Map<Integer, Long> partitionOffset = new HashMap<>();
     /**
      * 分区搜索到的消息
      */
-    @ApiModelProperty(name = "分区消息")
+    @Schema(description = "分区消息")
     private Map<Integer, List<KafkaMessageDTO>> partitionMessages = new HashMap<>();
 
     public void putOffset(int partition, long offset) {

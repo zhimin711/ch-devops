@@ -7,7 +7,7 @@ import com.ch.pojo.VueRecord;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.VueRecordUtils;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +29,7 @@ public class NacosNamespaceAPIController {
     @Autowired
     private INamespaceService namespaceService;
 
-    @ApiOperation(value = "分页查询", notes = "nacos空间列表")
+    @Operation(summary = "分页查询", description = "nacos空间列表")
     @GetMapping(value = {"list"})
     public Result<VueRecord> list(@RequestParam Long clusterId) {
         return ResultUtils.wrapList(()->{

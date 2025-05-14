@@ -17,15 +17,17 @@
 
 package com.ch.cloud.rocketmq.controller;
 
-import com.google.common.base.Strings;
 import com.ch.cloud.rocketmq.service.DashboardService;
-import io.swagger.annotations.Api;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import com.google.common.base.Strings;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
-@Api(tags = "Rocket MQ 监控模块")
+@Tag(name = "Rocket MQ 监控模块")
 @RestController
 @RequestMapping("/rocketmq/dashboard")
 public class RocketMQDashboardController {

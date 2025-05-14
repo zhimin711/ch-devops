@@ -9,8 +9,8 @@ import com.ch.cloud.nacos.vo.*;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
-@Api(tags = "Nacos实例服务")
+@Tag(name = "Nacos实例服务")
 @RestController
 @RequestMapping("/nacos/services")
 public class NacosServicesController {
@@ -30,10 +30,9 @@ public class NacosServicesController {
     @Autowired
     private NacosServicesClient nacosServicesClient;
     @Autowired
-    private NacosClusterClient  nacosClusterClient;
+    private NacosClusterClient nacosClusterClient;
 
-
-    @ApiOperation(value = "查询分页", notes = "分页查询服务")
+    @Operation(summary = "查询分页", description = "分页查询服务")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ServiceDTO> page(ServicesPageClientVO record) {
         return ResultUtils.wrapPage(() -> {
@@ -42,7 +41,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "查询详情", notes = "查询服务详情")
+    @Operation(summary = "查询详情", description = "查询服务详情")
     @GetMapping
     public Result<ServiceDetailDTO> detail(ServicesQueryClientVO record) {
         return ResultUtils.wrap(() -> {
@@ -51,7 +50,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "添加", notes = "添加服务")
+    @Operation(summary = "添加", description = "添加服务")
     @PostMapping
     public Result<Boolean> add(@RequestBody ServiceClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -60,7 +59,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "修改", notes = "修改服务")
+    @Operation(summary = "修改", description = "修改服务")
     @PutMapping
     public Result<Boolean> edit(@RequestBody ServiceClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -69,7 +68,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "删除", notes = "删除服务")
+    @Operation(summary = "删除", description = "删除服务")
     @DeleteMapping
     public Result<Boolean> delete(ServicesQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -78,7 +77,7 @@ public class NacosServicesController {
         });
     }
 
-    @ApiOperation(value = "修改", notes = "修改服务")
+    @Operation(summary = "修改", description = "修改服务")
     @PutMapping("cluster")
     public Result<Boolean> editCluster(@RequestBody ServiceClusterClientVO record) {
         return ResultUtils.wrapFail(() -> {

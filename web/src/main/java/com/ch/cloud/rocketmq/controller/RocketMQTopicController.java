@@ -36,9 +36,9 @@ import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Api(tags = "Rocket MQ 主题管理模块")
+@Tag(name = "Rocket MQ 主题管理模块")
 @RestController
 @RequestMapping("/rocketmq/topic")
 public class RocketMQTopicController {

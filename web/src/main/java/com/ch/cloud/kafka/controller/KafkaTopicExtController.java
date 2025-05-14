@@ -1,19 +1,5 @@
 package com.ch.cloud.kafka.controller;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ch.StatusS;
 import com.ch.cloud.kafka.model.KafkaTopic;
 import com.ch.cloud.kafka.model.KafkaTopicExt;
@@ -32,16 +18,28 @@ import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.google.common.collect.Lists;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author zhimin.ma
  * @since 2018/9/25 20:29
  */
-@Api(tags = "KAFKA主题扩展信息配置模块")
+@Tag(name = "KAFKA主题扩展信息配置模块")
 @RestController
 @RequestMapping("kafka/topic/ext")
 @Slf4j
@@ -57,13 +55,13 @@ public class KafkaTopicExtController {
     @Value("${fs.path.libs}")
     private String libsDir;
 
-    @ApiOperation(value = "加载主题扩展信息加载主题扩展信息", notes = "加载主题扩展信息")
+    @Operation(summary = "加载主题扩展信息加载主题扩展信息", description = "加载主题扩展信息")
     @GetMapping
     public Result<KafkaTopicExt> configs(KafkaTopicExt record) {
         return ResultUtils.wrapList(() -> kafkaTopicExtService.findByClusterIdAndTopicNameAndCreateBy(record.getClusterId(), record.getTopicName(), ContextUtil.getUsername()));
     }
 
-    @ApiOperation(value = "加载主题扩展信息", notes = "加载主题扩展信息")
+    @Operation(summary = "加载主题扩展信息", description = "加载主题扩展信息")
     @GetMapping("{id:[0-9]+}")
     public Result<KafkaTopicExt> load(@PathVariable Long id,
                                       KafkaTopicExt record) {
@@ -121,7 +119,7 @@ public class KafkaTopicExtController {
         return props;
     }
 
-    @ApiOperation(value = "新增主题扩展信息", notes = "新增主题扩展信息")
+    @Operation(summary = "新增主题扩展信息", description = "新增主题扩展信息")
     @PostMapping
     public Result<Long> save(@RequestBody KafkaTopicExt record) {
 
@@ -150,7 +148,7 @@ public class KafkaTopicExtController {
         });
     }
 
-    @ApiOperation(value = "删除主题扩展信息", notes = "")
+    @Operation(summary = "删除主题扩展信息", description = "")
     @DeleteMapping({"{id:[0-9]+}"})
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.ch.cloud.web.annotation.OriginalReturn;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +48,7 @@ import com.ch.utils.CommonUtils;
 import com.google.common.collect.Lists;
 
 import cn.hutool.core.bean.BeanUtil;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation; // 替换 io.swagger.annotations.ApiOperation
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
-@Api(tags = "Nacos用户配置服务")
+@Tag(name = "Nacos用户配置服务")
 @RestController
 @RequestMapping("/nacos/user/{projectId:[0-9]+}/configs")
 @Slf4j
@@ -75,7 +75,7 @@ public class NacosUserConfigsController {
     @Autowired
     private INacosClusterService nacosClusterService;
     
-    @ApiOperation(value = "分页查询", notes = "分页查询用户项目配置")
+    @Operation(summary = "分页查询", description = "分页查询用户项目配置") // 替换 @ApiOperation
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ConfigDTO> configs(@PathVariable Long projectId, @PathVariable Integer pageNo,
             @PathVariable Integer pageSize, ConfigsPageClientVO record) {
@@ -96,7 +96,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "查询", notes = "查询用户项目配置详情")
+    @Operation(summary = "查询", description = "查询用户项目配置详情") // 替换 @ApiOperation
     @GetMapping
     public Result<ConfigDTO> get(@PathVariable Long projectId, ConfigQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -112,7 +112,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "查询比较配置列表", notes = "查询比较配置列表")
+    @Operation(summary = "查询比较配置列表", description = "查询比较配置列表") // 替换 @ApiOperation
     @GetMapping("listCompare")
     public Result<ConfigDTO> listCompare(@PathVariable Long projectId, ConfigQueryClientVO record) {
         return ResultUtils.wrap(() -> {
@@ -154,7 +154,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "添加", notes = "添加用户项目配置")
+    @Operation(summary = "添加", description = "添加用户项目配置") // 替换 @ApiOperation
     @PostMapping
     public Result<Boolean> add(@PathVariable Long projectId, @RequestBody ConfigClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -167,7 +167,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "修改", notes = "修改用户项目配置")
+    @Operation(summary = "修改", description = "修改用户项目配置") // 替换 @ApiOperation
     @PutMapping
     public Result<Boolean> edit(@PathVariable Long projectId, @RequestBody ConfigClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -179,7 +179,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "克隆", notes = "克隆用户项目配置")
+    @Operation(summary = "克隆", description = "克隆用户项目配置") // 替换 @ApiOperation
     @PostMapping("clone")
     public Result<?> clone(@PathVariable Long projectId, ConfigPolicyClientVO record,
             @RequestBody ConfigCloneVO[] records) {
@@ -195,7 +195,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "删除", notes = "删除用户项目配置")
+    @Operation(summary = "删除", description = "删除用户项目配置") // 替换 @ApiOperation
     @DeleteMapping
     public Result<Boolean> delete(@PathVariable Long projectId, ConfigDeleteClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -208,7 +208,7 @@ public class NacosUserConfigsController {
         });
     }
     
-    @ApiOperation(value = "导出项目配置", notes = "导出项目配置")
+    @Operation(summary = "导出项目配置", description = "导出项目配置") // 替换 @ApiOperation
     @GetMapping("export")
     @OriginalReturn
     public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportClientVO record) {
@@ -228,7 +228,7 @@ public class NacosUserConfigsController {
         return ResponseEntity.badRequest().build();
     }
     
-    @ApiOperation(value = "导入项目配置", notes = "导入项目配置")
+    @Operation(summary = "导入项目配置", description = "导入项目配置") // 替换 @ApiOperation
     @PostMapping("import")
     public Result<?> importZip(@PathVariable Long projectId, ConfigImportClientVO record,
             @RequestPart("file") MultipartFile file) {
@@ -240,7 +240,7 @@ public class NacosUserConfigsController {
         
     }
     
-    @ApiOperation(value = "查询", notes = "查询配置详情")
+    @Operation(summary = "查询", description = "查询配置详情") // 替换 @ApiOperation
     @PutMapping("rollback")
     public Result<Boolean> rollback(@PathVariable Long projectId, @RequestParam String opType,
             @RequestBody HistoryRollbackClientVO record) {

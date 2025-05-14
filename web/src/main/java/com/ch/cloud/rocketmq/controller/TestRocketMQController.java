@@ -26,7 +26,6 @@ import com.ch.utils.CommonUtils;
 import com.ch.e.ExceptionUtils;
 import com.ch.utils.StringUtilsV2;
 import com.google.common.collect.Sets;
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -41,6 +40,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-@Api(tags = "Rocket MQ 测试消息生产与消费模块")
+@Tag(name = "Rocket MQ 测试消息生产与消费模块")
 @RestController
 @RequestMapping("/test")
 @Slf4j

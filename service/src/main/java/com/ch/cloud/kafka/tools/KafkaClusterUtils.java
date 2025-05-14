@@ -105,6 +105,7 @@ public class KafkaClusterUtils {
     
     private static AdminClient createAdminClient(String servers, String securityProtocol, String saslMechanism,
             String authUsername, String authPassword) {
+        AssertUtils.isEmpty(servers, PubError.NOT_EXISTS, "server config");
         Properties properties = new Properties();
         properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         properties.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, "5000");
@@ -219,6 +220,9 @@ public class KafkaClusterUtils {
     
     public static int countConsumerGroup(KafkaCluster cluster) throws ExecutionException, InterruptedException {
         AdminClient adminClient = getAdminClient(cluster);
+        if(adminClient == null) {
+            return 0;
+        }
         return adminClient.listConsumerGroups().all().get().size();
     }
 }

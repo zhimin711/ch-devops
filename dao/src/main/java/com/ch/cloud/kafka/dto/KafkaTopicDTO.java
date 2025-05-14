@@ -1,42 +1,41 @@
 package com.ch.cloud.kafka.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@ApiModel("Kafka 主题配置信息")
+@Schema(description = "Kafka 主题配置信息")
 public class KafkaTopicDTO {
 
 
     /**
      * 集群名称
      */
-    @ApiModelProperty("集群ID")
+    @Schema(description = "集群ID")
     private Long clusterId;
 
     /**
      * 主题名称
      */
-    @ApiModelProperty("主题名称")
+    @Schema(description = "主题名称")
     private String topicName;
 
     /**
      * 存储类型：STRING, JSON, PROTO_STUFF
      */
-    @ApiModelProperty("存储类型")
+    @Schema(description = "存储类型")
     private String type;
 
     /**
      * 类文件
      */
-    @ApiModelProperty("类文件")
+    @Schema(description = "类文件")
     private String classFile;
 
     /**
      * 类名称
      */
-    @ApiModelProperty("类名称")
+    @Schema(description = "类名称")
     private String className;
 
     /**
@@ -53,7 +52,7 @@ public class KafkaTopicDTO {
     /**
      * 描述
      */
-    @ApiModelProperty("描述")
+    @Schema(description = "描述")
     private String description;
 
     /**

@@ -1,6 +1,6 @@
 package com.ch.cloud.nacos.service.impl;
 
-import com.ch.mybatis.service.ServiceImpl;;
+import com.ch.mybatis.service.ServiceImpl;
 import com.ch.utils.CommonUtils;
 import org.springframework.stereotype.Service;
 import com.ch.cloud.nacos.mapper.NacosClusterMapper;

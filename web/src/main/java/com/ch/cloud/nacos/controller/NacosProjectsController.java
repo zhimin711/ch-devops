@@ -21,8 +21,8 @@ import com.ch.utils.AssertUtils;
 import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
 import com.github.pagehelper.PageHelper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation; // 替换 io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @since 2022/4/29
  */
 @RestController
-@Api(tags = "Nacos项目服务")
+@Tag(name = "Nacos项目服务")
 @RequestMapping("/nacos/projects")
 public class NacosProjectsController {
 
@@ -50,7 +50,7 @@ public class NacosProjectsController {
     @Autowired
     private INacosClusterService          nacosClusterService;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询项目")
+    @Operation(summary = "分页查询", description = "分页查询项目") // 替换 @ApiOperation
     @GetMapping(value = {"{num:[0-9]+}/{size:[0-9]+}"})
     public PageResult<ProjectDto> page(ProjectDto record,
                                        @PathVariable(value = "num") int pageNum,
@@ -59,13 +59,14 @@ public class NacosProjectsController {
         return upmsProjectClientService.page(pageNum, pageSize, record.getCode(), record.getName(), record.getTenantName());
     }
 
-    @ApiOperation(value = "查询项目nacos集群空间列表", notes = "查询项目nacos集群空间列表")
+    @Operation(summary = "查询项目nacos集群空间列表", description = "查询项目nacos集群空间列表") // 替换 @ApiOperation
     @GetMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<ProjectNamespaceDTO> findNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
         return ResultUtils.wrapList(() -> nacosNamespaceProjectService.findByProjectIdAndClusterId(projectId, clusterId));
     }
 
 
+    @Operation(summary = "保存项目nacos集群空间", description = "保存项目nacos集群空间") // 替换 @ApiOperation
     @PostMapping({"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<Integer> saveProjectNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId, @RequestBody List<ProjectNamespaceVO> namespaceVOS) {
         return ResultUtils.wrap(() -> {
@@ -77,6 +78,7 @@ public class NacosProjectsController {
         });
     }
 
+    @Operation(summary = "列出集群", description = "列出集群") // 替换 @ApiOperation
     @GetMapping({"{id:[0-9]+}/clusters"})
     public Result<VueRecord> listCluster(@PathVariable Long id) {
         return ResultUtils.wrap(() -> {

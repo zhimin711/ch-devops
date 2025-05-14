@@ -6,7 +6,7 @@ import com.ch.pojo.VueRecord;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.VueRecordUtils;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +26,7 @@ public class NacosProjectAPIController {
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
 
-    @ApiOperation(value = "分页查询", notes = "分页查询nacos项目")
+    @Operation(summary = "分页查询", description = "分页查询nacos项目")
     @GetMapping(value = {"list"})
     public Result<VueRecord> list(@RequestParam(value = "name", required = false) String name,
                                   @RequestParam(value = "code", required = false) String code,

@@ -1,9 +1,24 @@
 package com.ch.cloud.kafka.controller;
 
-import java.util.Set;
-
+import com.ch.StatusS;
+import com.ch.cloud.kafka.dto.BrokerDTO;
+import com.ch.cloud.kafka.model.KafkaCluster;
+import com.ch.cloud.kafka.model.KafkaTopic;
+import com.ch.cloud.kafka.service.KafkaClusterService;
+import com.ch.cloud.kafka.service.KafkaTopicService;
+import com.ch.cloud.kafka.tools.KafkaClusterManager;
+import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.cloud.kafka.vo.KafkaClusterVO;
+import com.ch.e.PubError;
+import com.ch.result.PageResult;
+import com.ch.result.Result;
+import com.ch.result.ResultUtils;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.BeanUtilsV2;
+import com.ch.utils.DateUtils;
+import com.github.pagehelper.PageInfo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,30 +29,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ch.StatusS;
-import com.ch.cloud.kafka.dto.BrokerDTO;
-import com.ch.cloud.kafka.model.KafkaCluster;
-import com.ch.cloud.kafka.model.KafkaTopic;
-import com.ch.cloud.kafka.service.KafkaClusterService;
-import com.ch.cloud.kafka.service.KafkaTopicService;
-import com.ch.cloud.kafka.tools.KafkaClusterManager;
-import com.ch.cloud.kafka.tools.KafkaClusterUtils;
-import com.ch.e.PubError;
-import com.ch.result.PageResult;
-import com.ch.result.Result;
-import com.ch.result.ResultUtils;
-import com.ch.toolkit.ContextUtil;
-import com.ch.utils.DateUtils;
-import com.github.pagehelper.PageInfo;
-
-import io.swagger.annotations.Api;
-import io.swagger.v3.oas.annotations.Operation;
+import java.util.Set;
 
 /**
  * @author zhimin.ma
  * @since 2018/9/25 20:29
  */
-@Api(tags = "KAFKA集群配置")
+@Tag(name = "KAFKA集群配置")
 @RestController
 @RequestMapping("/kafka/cluster")
 public class KafkaClusterController {

@@ -3,8 +3,7 @@ package com.ch.cloud.devops.domain;
 import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.mybatis.context.BaseEntity;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -20,45 +19,45 @@ import javax.persistence.Transient;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value = "业务-命名空间", parent = BaseEntity.class)
+@Schema(description = "业务-命名空间", contains = BaseEntity.class)
 @Table(name = "bt_namespace")
 public class Namespace extends BaseEntity {
 
     /**
      * 集群ID
      */
-    @ApiModelProperty(name = "clusterId", value = "集群ID")
+    @Schema(description = "clusterId", title = "集群ID")
     private Long clusterId;
 
     /**
      * 命名空间唯一标识
      */
-    @ApiModelProperty(name = "命名空间唯一标识")
+    @Schema(description = "命名空间唯一标识")
     private String uid;
 
     /**
      * 命名空间类型：NACOS rocketMQ Kafka
      */
-    @ApiModelProperty(name = "命名空间类型")
+    @Schema(description = "命名空间类型")
     @Column
     private NamespaceType type;
 
     /**
      * 空间名称
      */
-    @ApiModelProperty(name = "空间名称")
+    @Schema(description = "空间名称")
     private String name;
 
     /**
      * 描述
      */
-    @ApiModelProperty(name = "空间描述")
+    @Schema(description = "空间描述")
     private String description;
 
     /**
      * 管理角色（数据权限-修改空间下数据）
      */
-    @ApiModelProperty(name = "管理角色")
+    @Schema(description = "管理角色")
     private String roles;
 
     @Transient

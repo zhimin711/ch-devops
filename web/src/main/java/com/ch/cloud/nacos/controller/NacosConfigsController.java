@@ -18,8 +18,9 @@ import com.ch.result.PageResult;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
 import com.ch.utils.CommonUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -41,24 +42,24 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Zhimin.Ma
  * @since 2022/4/29
  */
+@Tag(name = "Nacos配置服务")
 @RestController
-@Api(tags = "Nacos配置服务")
 @RequestMapping("/nacos/configs")
 public class NacosConfigsController {
-    
+
     @Autowired
     private NacosConfigsClient nacosConfigsClient;
-    
+
     @Autowired
     private NacosNamespaceValidator nacosNamespaceValidator;
-    
+
     @Autowired
     private UpmsProjectClientService upmsProjectClientService;
-    
-    @ApiOperation(value = "分页查询", notes = "分页查询nacos配置")
+
+    @Operation(summary = "分页查询", description = "分页查询nacos配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})
     public PageResult<ConfigDTO> page(ConfigsPageClientVO record) {
-        
+
         return ResultUtils.wrapPage(() -> {
             ClientEntity<ConfigsPageClientVO> entity = nacosNamespaceValidator.valid(record);
             record.setTenant(record.getNamespaceId());
@@ -66,8 +67,8 @@ public class NacosConfigsController {
             return nacosConfigsClient.fetchPage(entity);
         });
     }
-    
-    @ApiOperation(value = "查询", notes = "查询配置详情")
+
+    @Operation(summary = "查询", description = "查询配置详情")
     @GetMapping
     public Result<ConfigDTO> get(ConfigQueryClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -76,8 +77,8 @@ public class NacosConfigsController {
             return nacosConfigsClient.fetch(clientEntity);
         });
     }
-    
-    @ApiOperation(value = "添加", notes = "添加配置")
+
+    @Operation(summary = "添加", description = "添加配置")
     @PostMapping
     public Result<Boolean> add(@RequestBody ConfigClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -90,8 +91,8 @@ public class NacosConfigsController {
             return nacosConfigsClient.add(clientEntity);
         });
     }
-    
-    @ApiOperation(value = "修改", notes = "修改配置")
+
+    @Operation(summary = "修改", description = "修改配置")
     @PutMapping
     public Result<Boolean> edit(@RequestBody ConfigClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -99,8 +100,8 @@ public class NacosConfigsController {
             return nacosConfigsClient.edit(clientEntity);
         });
     }
-    
-    @ApiOperation(value = "克隆", notes = "克隆配置")
+
+    @Operation(summary = "克隆", description = "克隆配置")
     @PostMapping("clone")
     public Result<?> clone(ConfigPolicyClientVO record, @RequestBody ConfigCloneVO[] records) {
         return ResultUtils.wrapFail(() -> {
@@ -108,8 +109,8 @@ public class NacosConfigsController {
             return nacosConfigsClient.clone(clientEntity, records);
         });
     }
-    
-    @ApiOperation(value = "删除", notes = "删除配置")
+
+    @Operation(summary = "删除", description = "删除配置")
     @DeleteMapping
     public Result<Boolean> delete(ConfigDeleteClientVO record) {
         return ResultUtils.wrapFail(() -> {
@@ -117,14 +118,8 @@ public class NacosConfigsController {
             return nacosConfigsClient.delete(clientEntity);
         });
     }
-    
-    /**
-     * export=true&tenant=&group=&appName=&ids=61&namespaceId=2
-     *
-     * @param record
-     * @return
-     */
-    @ApiOperation(value = "导出配置", notes = "导出配置")
+
+    @Operation(summary = "导出配置", description = "导出配置")
     @GetMapping("export")
     @OriginalReturn
     public ResponseEntity<Resource> export(ConfigExportClientVO record) {
@@ -135,15 +130,14 @@ public class NacosConfigsController {
         }
         return ResponseEntity.badRequest().build();
     }
-    
-    
-    @ApiOperation(value = "导入配置", notes = "导入配置")
+
+    @Operation(summary = "导入配置", description = "导入配置")
     @PostMapping("import")
     public Result<?> importZip(ConfigImportClientVO record, @RequestPart("file") MultipartFile file) {
         return ResultUtils.wrapFail(() -> {
             ClientEntity<ConfigImportClientVO> clientEntity = nacosNamespaceValidator.valid(record);
             return nacosConfigsClient.importZip(clientEntity, file);
         });
-        
+
     }
 }

@@ -1,16 +1,12 @@
 package com.ch.cloud.devops.domain;
 
-import java.util.Date;
-
-import com.ch.mybatis.context.BaseEntity;
 import com.ch.mybatis.context.BaseEntityWithStatus;
-import com.ch.mybatis.context.BaseEntityWithStatusV2;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Table;
+import java.util.Date;
 
 /**
  * 申请空间记录对象 bt_apply_record
@@ -20,7 +16,7 @@ import javax.persistence.Table;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel("申请空间记录")
+@Schema(description = "申请空间记录")
 @Table(name = "bt_namespace_apply_record")
 public class NamespaceApplyRecord extends BaseEntityWithStatus {
 
@@ -29,31 +25,31 @@ public class NamespaceApplyRecord extends BaseEntityWithStatus {
     /**
      * 类型：1:nacos-namespace 2: 3:
      */
-    @ApiModelProperty(name = "类型：1")
+    @Schema(description = "类型：1")
     private Integer type;
 
     /**
      * 申请KEY:可以是数据ID
      */
-    @ApiModelProperty(name = "申请KEY")
+    @Schema(description = "申请KEY")
     private String dataKey;
 
     /**
      * 申请内容
      */
-    @ApiModelProperty(name = "申请内容")
+    @Schema(description = "申请内容")
     private String content;
 
     /**
      * 审核人
      */
-    @ApiModelProperty(name = "审核人")
+    @Schema(description = "审核人")
     private String approveBy;
 
     /**
      * 审核时间
      */
-    @ApiModelProperty(name = "审核时间")
+    @Schema(description = "审核时间")
     private Date approveAt;
 
 }
