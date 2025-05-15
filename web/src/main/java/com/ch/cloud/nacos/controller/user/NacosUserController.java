@@ -27,7 +27,7 @@ import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
@@ -200,7 +200,7 @@ public class NacosUserController {
             record.setStatus(ApproveStatus.STAY.getCode() + "");
             List<NamespaceApplyRecord> list = namespaceApplyRecordService.find(record);
             if (!list.isEmpty()) {
-                ExceptionUtils._throw(PubError.EXISTS, "已提交申请,请联系管理员审核！");
+                ExUtils.throwError(PubError.EXISTS, "已提交申请,请联系管理员审核！");
             }
             NacosCluster cluster = nacosClusterService.find(clusterId);
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);

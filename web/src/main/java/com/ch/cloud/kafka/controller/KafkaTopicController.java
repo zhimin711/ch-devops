@@ -17,7 +17,7 @@ import com.ch.cloud.kafka.tools.KafkaClusterUtils;
 import com.ch.cloud.kafka.tools.KafkaConsumerGroupManager;
 import com.ch.cloud.kafka.tools.KafkaTopicManager;
 import com.ch.cloud.kafka.tools.ZkTopicUtils;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
@@ -223,7 +223,7 @@ public class KafkaTopicController {
             KafkaTopic topic = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(),
                     record.getTopicName());
             if (cluster == null || topic == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS);
+                throw ExUtils.create(PubError.NOT_EXISTS);
             }
 
             ZkTopicUtils.deleteTopic(cluster.getZookeeper(), topic.getTopicName());
@@ -255,7 +255,7 @@ public class KafkaTopicController {
         return ResultUtils.wrap(() -> {
             KafkaCluster cluster = kafkaClusterService.find(topic.getClusterId());
             if (cluster == null) {
-                throw ExceptionUtils.create(PubError.NOT_EXISTS);
+                throw ExUtils.create(PubError.NOT_EXISTS);
             }
             KafkaTopic p1 = new KafkaTopic();
             p1.setClusterId(topic.getClusterId());

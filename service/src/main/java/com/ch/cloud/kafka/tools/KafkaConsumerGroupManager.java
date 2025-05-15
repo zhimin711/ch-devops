@@ -1,12 +1,11 @@
 package com.ch.cloud.kafka.tools;
 
-import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.dto.ConsumerGroupDTO;
 import com.ch.cloud.kafka.dto.ConsumerGroupDescribeDTO;
+import com.ch.cloud.kafka.model.KafkaCluster;
 import com.ch.cloud.kafka.pojo.ResetOffset;
 import com.ch.cloud.kafka.pojo.TopicOffset;
 import com.ch.cloud.kafka.service.KafkaClusterService;
-import com.ch.e.ExceptionUtils;
 import com.ch.e.PubError;
 import com.ch.utils.AssertUtils;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -19,7 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 

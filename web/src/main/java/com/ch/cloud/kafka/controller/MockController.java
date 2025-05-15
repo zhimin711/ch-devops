@@ -9,7 +9,7 @@ import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.utils.MapUtils;
 import com.ch.cloud.kafka.utils.MockUtil;
 import com.ch.cloud.mock.pojo.MockProp;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.pool.DefaultThreadPool;
 import com.ch.result.InvokerPage;
@@ -52,7 +52,7 @@ public class MockController {
 
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
-                ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
+                ExUtils.throwError(PubError.ARGS, "mock字段不能为空！");
             }
 
             List<MockProp> props = MockUtil.convertRules(record, record.getProps(), false);
@@ -149,7 +149,7 @@ public class MockController {
     public Result<?> gps(@RequestBody KafkaTopicExt record) {
         return ResultUtils.wrapPage(() -> {
             if (CommonUtils.isEmpty(record.getProps())) {
-                ExceptionUtils._throw(PubError.ARGS, "mock字段不能为空！");
+                ExUtils.throwError(PubError.ARGS, "mock字段不能为空！");
             }
             List<MockProp> props = MockUtil.convertGPSRules(record);
 

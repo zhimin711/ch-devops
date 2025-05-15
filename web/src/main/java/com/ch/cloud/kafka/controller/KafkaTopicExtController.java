@@ -8,7 +8,7 @@ import com.ch.cloud.kafka.service.KafkaClusterService;
 import com.ch.cloud.kafka.service.KafkaTopicExtService;
 import com.ch.cloud.kafka.service.KafkaTopicService;
 import com.ch.cloud.kafka.utils.KafkaSerializeUtils;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.result.Result;
 import com.ch.result.ResultUtils;
@@ -125,11 +125,11 @@ public class KafkaTopicExtController {
 
         return ResultUtils.wrapFail(() -> {
             if (CommonUtils.isEmptyOr(record.getId(), record.getTopicName())) {
-                ExceptionUtils._throw(PubError.NON_NULL, "集群或主题不能为空！");
+                ExUtils.throwError(PubError.NON_NULL, "集群或主题不能为空！");
             }
             KafkaTopic topicDto = kafkaTopicService.findByClusterIdAndTopicName(record.getClusterId(), record.getTopicName());
             if (topicDto == null) {
-                ExceptionUtils._throw(PubError.NOT_EXISTS, "集群+主题不存在！");
+                ExUtils.throwError(PubError.NOT_EXISTS, "集群+主题不存在！");
             }
 
             KafkaTopicExt r = kafkaTopicExtService.find(record.getId());

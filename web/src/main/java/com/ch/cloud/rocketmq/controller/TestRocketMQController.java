@@ -23,7 +23,7 @@ import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.utils.StringUtilsV2;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +70,7 @@ public class TestRocketMQController {
                        @RequestParam(required = false) Integer producerThreadSize) throws MQClientException {
 
         if (CommonUtils.isEmpty(topicStr)) {
-            ExceptionUtils._throw(PubError.NON_NULL, "topic must be not null!");
+            ExUtils.throwError(PubError.NON_NULL, "topic must be not null!");
         }
         if (CommonUtils.isEmpty(allTopics)) {
             TopicList list = topicService.fetchAllTopicList();

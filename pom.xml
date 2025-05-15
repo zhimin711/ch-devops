@@ -7,7 +7,6 @@
         <artifactId>ch-cloud</artifactId>
         <version>2.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>com.ch.cloud</groupId>
     <artifactId>ch-devops</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -24,11 +23,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.test.skip>true</maven.test.skip>
         <downloadSources>true</downloadSources>
-        <java_source_version>1.8</java_source_version>
-        <java_target_version>1.8</java_target_version>
+        <java_source_version>17</java_source_version>
+        <java_target_version>17</java_target_version>
         <file_encoding>UTF-8</file_encoding>
-        <ch.version>2.0.1-SNAPSHOT</ch.version>
-        <ch.cloud.version>2.0.1-SNAPSHOT</ch.cloud.version>
+        <ch.cloud.version>2.0.2.1-SNAPSHOT</ch.cloud.version>
     </properties>
 
     <dependencies>
@@ -72,7 +70,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>

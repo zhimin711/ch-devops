@@ -16,7 +16,7 @@ import com.ch.cloud.mock.Mock;
 import com.ch.cloud.mock.MockConfig;
 import com.ch.cloud.mock.MockRule;
 import com.ch.cloud.mock.pojo.MockProp;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.utils.BeanUtilsV2;
 import com.ch.utils.CommonUtils;
@@ -187,9 +187,9 @@ public class MockUtil {
         for (KafkaTopicExtProp prop : props) {
 
             if (CommonUtils.isEmpty(prop.getCode()) && (isChild || props.size() > 1)) {
-                ExceptionUtils._throw(PubError.ARGS, "mock字段代码不能为空！");
+                ExUtils.throwError(PubError.ARGS, "mock字段代码不能为空！");
             } else if (CommonUtils.isEmpty(prop.getRule())) {
-                ExceptionUtils._throw(PubError.ARGS, "mock字段规则不能为空！");
+                ExUtils.throwError(PubError.ARGS, "mock字段规则不能为空！");
             }
             MockProp prop2 = new MockProp();
             BeanUtils.copyProperties(prop, prop2);
@@ -198,7 +198,7 @@ public class MockUtil {
             BeanUtilsV2.BasicType type = BeanUtilsV2.BasicType.fromObject(prop.getType());
             if (!CommonUtils.isEquals(OBJ, prop.getType())) {
                 if (type == null && !CommonUtils.isEquals(Date.class.getName(), prop.getType())) {
-                    ExceptionUtils._throw(PubError.ARGS, "mock字段" + prop.getCode() + "类型错误！");
+                    ExUtils.throwError(PubError.ARGS, "mock字段" + prop.getCode() + "类型错误！");
                 }
                 Class<?> clazz = Class.forName(prop.getType());
                 prop2.setTargetClass(clazz);
@@ -227,9 +227,9 @@ public class MockUtil {
                     break;
                 case RANDOM_LENGTH:
                     if (type == null) {
-                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机类型错误！");
+                        ExUtils.throwError(PubError.INVALID, "mock字段" + prop.getCode() + "随机类型错误！");
                     } else if (!CommonUtils.isNumeric(prop.getValRegex())) {
-                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机长度错误，请输入为数字！");
+                        ExUtils.throwError(PubError.INVALID, "mock字段" + prop.getCode() + "随机长度错误，请输入为数字！");
                     }
                     prop2.setLen(Integer.parseInt(prop.getValRegex()));
                     break;
@@ -237,7 +237,7 @@ public class MockUtil {
                 case AUTO_INCR_RANGE:
                 case AUTO_DECR_RANGE:
                     if (CommonUtils.isEmpty(prop.getValRegex())) {
-                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
+                        ExUtils.throwError(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
                     }
                     String tmp = prop.getValRegex();
                     if (prop.getValRegex().startsWith("[")) {
@@ -255,7 +255,7 @@ public class MockUtil {
                         arr = tmp.split(Separator.S5);
                     }
                     if (arr.length < 2) {
-                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
+                        ExUtils.throwError(PubError.INVALID, "mock字段" + prop.getCode() + "随机不能为空！");
                     }
                     if (type == BeanUtilsV2.BasicType.STRING) {
                         prop2.setStrRange(arr);
@@ -263,7 +263,7 @@ public class MockUtil {
                         Date d1 = DateUtils.parse(arr[0]);
                         Date d2 = DateUtils.parse(arr[1]);
                         if (CommonUtils.isEmptyOr(d1, d2)) {
-                            ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "日期范围配置错误！");
+                            ExUtils.throwError(PubError.INVALID, "mock字段" + prop.getCode() + "日期范围配置错误！");
                         }
                         prop2.setPattern(parseDatePattern(prop.getValRegex()));
                         prop2.setMin(d1.getTime());
@@ -293,7 +293,7 @@ public class MockUtil {
                         break;
                     }
                     if (type == null || type == BeanUtilsV2.BasicType.STRING || type == BeanUtilsV2.BasicType.CHAR) {
-                        ExceptionUtils._throw(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
+                        ExUtils.throwError(PubError.INVALID, "mock字段" + prop.getCode() + "递增或减类型错误！");
                     }
                     String basic = parseNumberBasic(prop.getValRegex());
                     String offset = parseNumberOffset(prop.getValRegex());
@@ -362,10 +362,10 @@ public class MockUtil {
 
     public static List<MockProp> convertGPSRules(KafkaTopicExt record) throws Exception {
         if (CommonUtils.isEmptyOr(record.getCreateAt(), record.getUpdateAt())) {
-            ExceptionUtils._throw(PubError.ARGS, "GPS轨迹开始或结束时间为空！");
+            ExUtils.throwError(PubError.ARGS, "GPS轨迹开始或结束时间为空！");
         }
         if (CommonUtils.isEmpty(record.getPoints()) || record.getPoints().size() < 2) {
-            ExceptionUtils._throw(PubError.ARGS, "GPS轨迹点不足！");
+            ExUtils.throwError(PubError.ARGS, "GPS轨迹点不足！");
         }
         if (CommonUtils.isEmpty(record.getThreadSize())) {
             record.setThreadSize(1);
@@ -375,11 +375,11 @@ public class MockUtil {
         }
         int total = (int) DateUtils.calcOffsetMinutes(record.getCreateAt(), record.getUpdateAt());
         if (total / record.getBatchSize() < 2) {
-            ExceptionUtils._throw(PubError.ARGS, "GPS轨迹开始和结束时间范围过小，不能生成GPS！");
+            ExUtils.throwError(PubError.ARGS, "GPS轨迹开始和结束时间范围过小，不能生成GPS！");
         }
 
         if (record.getProps().size() < 4) {
-            ExceptionUtils._throw(PubError.ARGS, "mock字段代码不足！");
+            ExUtils.throwError(PubError.ARGS, "mock字段代码不足！");
         } else if (record.getProps().size() == 4) {
             return Lists.newArrayList();
         }
@@ -409,7 +409,7 @@ public class MockUtil {
                 Duration duration = Duration.parse(offset.toUpperCase());
                 return duration.getSeconds();
             } catch (Exception e) {
-//                ExceptionUtils._throw(PubError.ARGS, "mock字段递增量解析失败！");
+//                ExUtils.throwError(PubError.ARGS, "mock字段递增量解析失败！");
                 log.error("Duration.parse error!" + regex, e);
             }
 

@@ -1,7 +1,7 @@
 package com.ch.cloud.kafka.tools;
 
 import com.ch.cloud.kafka.model.KafkaCluster;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.utils.AssertUtils;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -87,7 +87,7 @@ public class KafkaClusterUtils {
                 }
             }
         } catch (ZkTimeoutException e) {
-            ExceptionUtils._throw(PubError.CONNECT, "连接错误，请稍后重试...", e);
+            ExUtils.throwError(PubError.CONNECT, "连接错误，请稍后重试...", e);
         } catch (Exception e) {
             logger.error("zk fetch brokers error!", e);
         } finally {
@@ -130,7 +130,7 @@ public class KafkaClusterUtils {
         try {
             return kafkaClientsCache.get(cluster);
         } catch (KafkaException e) {
-            ExceptionUtils._throw(PubError.CONNECT, e.getMessage(), e);
+            ExUtils.throwError(PubError.CONNECT, e.getMessage(), e);
         }
         return null;
     }

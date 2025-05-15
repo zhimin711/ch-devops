@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
 import com.ch.cloud.devops.service.INamespaceApplyRecordService;
 import com.ch.cloud.types.NamespaceType;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.result.InvokerPage;
 import com.ch.result.PageResult;
@@ -64,12 +64,12 @@ public class NacosApplyRecordController {
     public Result<Boolean> approveNacos(@RequestBody NamespaceApplyRecord record) {
         return ResultUtils.wrapFail(() -> {
             NamespaceApplyRecord orig = namespaceApplyRecordService.find(record.getId());
-            if (orig == null) ExceptionUtils._throw(PubError.NOT_EXISTS, record.getId());
+            if (orig == null) ExUtils.throwError(PubError.NOT_EXISTS, record.getId());
             if (NamespaceType.fromCode(orig.getType()) != NamespaceType.NACOS) {
-                ExceptionUtils._throw(PubError.NOT_ALLOWED, "approve type is not [nacos]!");
+                ExUtils.throwError(PubError.NOT_ALLOWED, "approve type is not [nacos]!");
             }
             if (ApproveStatus.fromValue(record.getStatus()).availableApprove()) {
-                ExceptionUtils._throw(PubError.NOT_ALLOWED, "approve status is not correct!");
+                ExUtils.throwError(PubError.NOT_ALLOWED, "approve status is not correct!");
             }
             orig.setStatus(record.getStatus());
             orig.setApproveBy(ContextUtil.getUsername());

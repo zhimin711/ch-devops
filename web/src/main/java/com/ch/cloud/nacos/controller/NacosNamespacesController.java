@@ -33,7 +33,7 @@ import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.client.UpmsTenantClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord2;
 import com.ch.result.InvokerPage;
@@ -126,7 +126,7 @@ public class NacosNamespacesController {
             }
             boolean syncOk = convertAndSave(record.getCluster(), clientEntity, record);;
             if (!syncOk) {
-                ExceptionUtils._throw(PubError.CONNECT, "create nacos namespace failed!");
+                ExUtils.throwError(PubError.CONNECT, "create nacos namespace failed!");
             }
             return namespaceService.save(record);
         });
@@ -145,7 +145,7 @@ public class NacosNamespacesController {
             nacosUserClient.login(clientEntity);
             boolean syncOk = nacosNamespacesClient.edit(clientEntity);
             if (!syncOk) {
-                ExceptionUtils._throw(PubError.CONNECT, "update nacos namespace failed!");
+                ExUtils.throwError(PubError.CONNECT, "update nacos namespace failed!");
             }
             return namespaceService.update(record);
         });

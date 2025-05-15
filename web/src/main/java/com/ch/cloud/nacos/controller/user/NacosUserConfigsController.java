@@ -38,7 +38,7 @@ import com.ch.cloud.nacos.vo.ConfigClientVO;
 import com.ch.cloud.nacos.vo.ConfigsPageClientVO;
 import com.ch.cloud.nacos.vo.HistoryRollbackClientVO;
 import com.ch.cloud.types.NamespaceType;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -252,7 +252,7 @@ public class NacosUserConfigsController {
                 case "U":
                     return save(projectId, record);
                 default:
-                    ExceptionUtils._throw(PubError.NOT_ALLOWED, "非法操作");
+                    ExUtils.throwError(PubError.NOT_ALLOWED, "非法操作");
             }
             return false;
         });

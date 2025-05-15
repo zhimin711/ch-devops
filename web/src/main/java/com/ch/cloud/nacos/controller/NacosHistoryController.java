@@ -6,7 +6,7 @@ import com.ch.cloud.nacos.client.NacosHistoryClient;
 import com.ch.cloud.nacos.dto.HistoryDTO;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
 import com.ch.cloud.nacos.vo.*;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -65,7 +65,7 @@ public class NacosHistoryController {
                 case "U":
                     return save(record);
                 default:
-                    ExceptionUtils._throw(PubError.NOT_ALLOWED, "非法操作");
+                    ExUtils.throwError(PubError.NOT_ALLOWED, "非法操作");
             }
             return false;
         });

@@ -18,7 +18,7 @@ package com.ch.cloud.rocketmq.service.client;
 
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.e.PubError;
-import com.ch.e.ExceptionUtils;
+import com.ch.e.ExUtils;
 import com.google.common.base.Throwables;
 import org.apache.rocketmq.client.QueryResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -386,7 +386,7 @@ public class MQAdminExtImpl implements MQAdminExt {
             Date msgDate = MessageClientIDSetter.getNearlyTimeFromID(msgId);
             logger.info("MessageClientIDSetter.getNearlyTimeFromID(msgId)={} msgId={}", msgDate, msgId);
         } catch (Exception ignored) {
-            ExceptionUtils._throw(PubError.INVALID, "Message ID parse error!");
+            ExUtils.throwError(PubError.INVALID, "Message ID parse error!");
         }
         try {
             return viewMessage(msgId);
@@ -400,7 +400,7 @@ public class MQAdminExtImpl implements MQAdminExt {
             qr = Reflect.on(mqAdminImpl).call("queryMessage", topic, msgId, 32,
                     MessageClientIDSetter.getNearlyTimeFromID(msgId).getTime() - 1000 * 60 * 60 * 13L, Long.MAX_VALUE, true).get();
         } catch (ReflectException e) {
-            ExceptionUtils._throw(PubError.NOT_EXISTS, "Message ID data not found!");
+            ExUtils.throwError(PubError.NOT_EXISTS, "Message ID data not found!");
         }
         if (qr != null && qr.getMessageList() != null && qr.getMessageList().size() > 0) {
             return qr.getMessageList().get(0);
