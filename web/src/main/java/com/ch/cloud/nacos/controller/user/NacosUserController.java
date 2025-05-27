@@ -15,6 +15,7 @@ import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.dto.HistoryDTO;
 import com.ch.cloud.nacos.dto.ServiceInstanceDTO;
 import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.devops.dto.NamespaceApplyDto;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
@@ -27,6 +28,7 @@ import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
 import com.ch.cloud.types.NamespaceType;
 import com.ch.cloud.upms.client.UpmsProjectClientService;
 import com.ch.cloud.upms.dto.ProjectDto;
+import com.ch.e.Assert;
 import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
@@ -190,8 +192,10 @@ public class NacosUserController {
     @Operation(summary = "申请命名空间", description = "申请命名空间") // 替换 @ApiOperation
     @PostMapping({"apply/{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<Boolean> apply(@PathVariable Long projectId, @PathVariable Long clusterId,
-        @RequestBody List<Long> namespaceIds) {
+            @RequestBody List<NamespaceApplyDto> applyList) {
         return ResultUtils.wrap(() -> {
+            List<Long> namespaceIds = applyList.stream().map(e -> Long.valueOf(e.getNamespaceId()))
+                    .collect(Collectors.toList());
             nacosNamespaceValidator.validProjectNamespace(projectId, namespaceIds);
             NamespaceApplyRecord record = new NamespaceApplyRecord();
             record.setCreateBy(ContextUtil.getUsername());
@@ -199,9 +203,7 @@ public class NacosUserController {
             record.setDataKey(projectId + "-" + clusterId);
             record.setStatus(ApproveStatus.STAY.getCode() + "");
             List<NamespaceApplyRecord> list = namespaceApplyRecordService.find(record);
-            if (!list.isEmpty()) {
-                ExUtils.throwError(PubError.EXISTS, "已提交申请,请联系管理员审核！");
-            }
+            Assert.isEmpty(list, PubError.EXISTS, "已提交申请,请联系管理员审核！");
             NacosCluster cluster = nacosClusterService.find(clusterId);
             Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
             
@@ -212,13 +214,13 @@ public class NacosUserController {
             object.put("clusterId", clusterId);
             object.put("clusterName", cluster.getName());
             object.put("namespaceIds", namespaceIds);
-            
+            object.put("namespaceList", applyList);
             List<String> names = Lists.newArrayList();
-            for (Long nid : namespaceIds) {
-                Namespace n = namespaceService.find(nid);
-                names.add(n.getName());
+            for (NamespaceApplyDto dto : applyList) {
+                Namespace n = namespaceService.find(dto.getNamespaceId());
+                names.add(n.getName() + "(" + dto.getPermission().getDesc() + ")");
             }
-            object.put("namespaceNames", String.join("|", names));
+            object.put("namespaceNames", String.join(" | ", names));
             
             record.setContent(object.toJSONString());
             

@@ -15,14 +15,9 @@ import java.util.List;
 @Mapper
 public interface UserProjectNamespaceMapper {
     
-    @Select("SELECT t1.* from bt_namespace t1" + " INNER JOIN rt_user_namespace t2 ON t1.id  = t2.NAMESPACE_ID"
-            + " WHERE EXISTS(SELECT * FROM rt_project_namespace WHERE PROJECT_ID = t2.PROJECT_ID and NAMESPACE_ID = t2.NAMESPACE_ID)"
-            + " and t2.project_id =#{projectId} and t2.USER_ID=#{userId} and t1.type = #{type}")
-    List<NamespaceDto> findNamespacesByUserIdAndProjectId(String userId, Long projectId, String type);
-    
-    @Insert("INSERT INTO rt_user_namespace (PROJECT_ID,USER_ID,NAMESPACE_ID) VALUES (#{projectId},#{userId},#{namespaceId})")
+    @Insert("INSERT INTO rt_user_namespace (PROJECT_ID,USER_ID,NAMESPACE_ID,permission) VALUES (#{projectId},#{userId},#{namespaceId},#{permission})")
     int insert(@Param("projectId") Long projectId, @Param("userId") String userId,
-            @Param("namespaceId") String namespaceId);
+            @Param("namespaceId") String namespaceId, @Param("permission") String permission);
     
     @Delete("DELETE FROM rt_user_namespace where PROJECT_ID=#{projectId} and USER_ID=#{userId} and NAMESPACE_ID=#{namespaceId}")
     int delete(Long projectId, String userId, String namespaceId);

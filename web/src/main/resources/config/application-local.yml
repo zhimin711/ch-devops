@@ -60,3 +60,13 @@ mybatis:
     map-underscore-to-camel-case: true #开启驼峰功能
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #sql控制台打印
 #  configuration-properties: { dbSchema: *.* } #配置数据库的模式
+
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  #    path: /swagger-ui/index.html  # 默认路径，可自定义
+  api-docs:
+    path: /v3/api-docs      # OpenAPI JSON 端点
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

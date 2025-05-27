@@ -7,7 +7,6 @@ scp -r web/target/ch-devops-1.0.0-SNAPSHOT.jar root@192.168.150.252:/root/ch/dev
 ### 打包
 ```
 docker build -t ch-devops:v2 .
-
 docker tag ch-devops:v2 registry.cn-hangzhou.aliyuncs.com/ch-cloud/ch-devops:2.0.2
 docker push registry.cn-hangzhou.aliyuncs.com/ch-cloud/ch-devops:2.0.2
 ```
