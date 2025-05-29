@@ -3,7 +3,9 @@ package com.ch.cloud.nacos.controller.user;
 import com.alibaba.fastjson2.JSONObject;
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.domain.NamespaceApplyRecord;
+import com.ch.cloud.devops.dto.NamespaceApplyDto;
 import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.dto.UserProjectNamespaceDto;
 import com.ch.cloud.devops.service.INamespaceApplyRecordService;
 import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.devops.service.IUserNamespaceService;
@@ -15,7 +17,6 @@ import com.ch.cloud.nacos.domain.NacosCluster;
 import com.ch.cloud.nacos.dto.HistoryDTO;
 import com.ch.cloud.nacos.dto.ServiceInstanceDTO;
 import com.ch.cloud.nacos.dto.SubscriberDTO;
-import com.ch.cloud.devops.dto.NamespaceApplyDto;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.nacos.validators.NacosNamespaceValidator;
@@ -26,10 +27,9 @@ import com.ch.cloud.nacos.vo.InstancesPageClientVO;
 import com.ch.cloud.nacos.vo.ServicesPageClientVO;
 import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
 import com.ch.cloud.types.NamespaceType;
-import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.client.UpmsProjectClient;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.e.Assert;
-import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord;
 import com.ch.pojo.VueRecord2;
@@ -96,22 +96,14 @@ public class NacosUserController {
     private NacosServicesClient nacosServicesClient;
     
     @Autowired
-    private UpmsProjectClientService upmsProjectClientService;
+    private UpmsProjectClient upmsProjectClient;
     
     @Operation(summary = "查询空间列表", description = "查询用户命名空间") // 替换 @ApiOperation
     @GetMapping(value = {"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
-    public Result<VueRecord2> namespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
-        return ResultUtils.wrap(() -> {
-            List<NamespaceDto> records = userNamespaceService.findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(
-                    ContextUtil.getUsername(), projectId, clusterId, NamespaceType.NACOS);
-            return records.stream().map(e -> {
-                VueRecord2 record = new VueRecord2();
-                record.setValue(e.getId().toString());
-                record.setLabel(e.getName());
-                record.setKey(e.getUid());
-                return record;
-            }).collect(Collectors.toList());
-        });
+    public Result<UserProjectNamespaceDto> namespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
+        return ResultUtils.wrap(
+                () -> userNamespaceService.listUserNamespacesByType(ContextUtil.getUsername(), projectId, clusterId,
+                        NamespaceType.NACOS));
     }
     
     @Operation(summary = "分页查询", description = "分页查询用户项目配置历史") // 替换 @ApiOperation
@@ -146,7 +138,7 @@ public class NacosUserController {
             ClientEntity<InstancesPageClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
                     record);
             
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            Result<ProjectDto> result = upmsProjectClient.infoByIdOrCode(projectId, null);
             record.setServiceName(result.get().getCode());
             
             ClientEntity<ServicesPageClientVO> clientEntity3 = new ClientEntity<>();
@@ -173,7 +165,7 @@ public class NacosUserController {
         return ResultUtils.wrapPage(() -> {
             ClientEntity<SubscribesPageClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
                     record);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            Result<ProjectDto> result = upmsProjectClient.infoByIdOrCode(projectId, null);
             record.setServiceName(result.get().getCode());
             return nacosSubscribesClient.fetchPage(clientEntity);
         });
@@ -205,7 +197,7 @@ public class NacosUserController {
             List<NamespaceApplyRecord> list = namespaceApplyRecordService.find(record);
             Assert.isEmpty(list, PubError.EXISTS, "已提交申请,请联系管理员审核！");
             NacosCluster cluster = nacosClusterService.find(clusterId);
-            Result<ProjectDto> result = upmsProjectClientService.infoByIdOrCode(projectId, null);
+            Result<ProjectDto> result = upmsProjectClient.infoByIdOrCode(projectId, null);
             
             JSONObject object = new JSONObject();
             object.put("userId", ContextUtil.getUsername());

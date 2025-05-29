@@ -2,11 +2,14 @@ package com.ch.cloud.nacos.client;
 
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
+import com.ch.cloud.nacos.NacosAPI;
 import com.ch.cloud.nacos.conf.NacosProperties;
 import com.ch.cloud.nacos.dto.NacosTokenDTO;
+import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.NamespaceClientVO;
+import com.ch.e.Assert;
 import com.ch.e.PubError;
-import com.ch.utils.AssertUtils;
+import com.ch.utils.CommonUtils;
 import com.ch.utils.DateUtils;
 import com.ch.utils.NumberUtils;
 import com.google.common.collect.Maps;
@@ -16,10 +19,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-
-import com.ch.cloud.nacos.NacosAPI;
-import com.ch.cloud.nacos.vo.ClientEntity;
-import com.ch.utils.CommonUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -65,7 +64,7 @@ public class NacosUserClient extends BaseClient {
         NacosTokenDTO tokenDTO = invoke(
                 clientEntity.getUrl() + (CommonUtils.isEmpty(nacosProperties.getLoginApi()) ? NacosAPI.OPEN_API_LOGIN
                         : nacosProperties.getLoginApi()), HttpMethod.POST, httpEntity, NacosTokenDTO.class);
-        AssertUtils.isNull(tokenDTO, PubError.USERNAME_OR_PASSWORD);
+        Assert.notNull(tokenDTO, PubError.USERNAME_OR_PASSWORD);
         clientEntity.getData().setAccessToken(tokenDTO.getAccessToken());
         TOKEN_MAP.put(clientEntity.getUrl(), tokenDTO.getAccessToken());
     }

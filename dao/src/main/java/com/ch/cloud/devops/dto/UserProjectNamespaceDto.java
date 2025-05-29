@@ -12,8 +12,20 @@ import lombok.Data;
  */
 @Data
 public class UserProjectNamespaceDto {
-
+    
+    private Long namespaceId;
+    
+    private String namespaceName;
+    
+    private String nacosNamespaceId;
+    
+    private String permission;
+    
     private String userId;
-    private Long   projectId;
-    private Long   namespaceId;
+    
+    private Long clusterId;
+    
+    private String clusterName;
+    
+    private Long projectId;
 }

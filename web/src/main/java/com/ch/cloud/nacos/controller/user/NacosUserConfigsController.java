@@ -3,6 +3,7 @@ package com.ch.cloud.nacos.controller.user;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.ch.cloud.devops.enums.Permission;
 import com.ch.cloud.web.annotation.OriginalReturn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,8 +84,8 @@ public class NacosUserConfigsController {
             String nid = record.getNamespaceId();
             record.setPageNo(pageNo);
             record.setPageSize(pageSize);
-            ClientEntity<ConfigsPageClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
-                    record);
+            ClientEntity<ConfigsPageClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(
+                    projectId, record, Permission.R);
             record.setTenant(record.getNamespaceId());
             
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
@@ -102,8 +103,8 @@ public class NacosUserConfigsController {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
             
-            ClientEntity<ConfigQueryClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
-                    record);
+            ClientEntity<ConfigQueryClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(
+                    projectId, record, Permission.R);
             record.setTenant(record.getNamespaceId());
             
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
@@ -159,8 +160,8 @@ public class NacosUserConfigsController {
     public Result<Boolean> add(@PathVariable Long projectId, @RequestBody ConfigClientVO record) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace2edit(projectId,
-                    record);
+            ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(projectId,
+                    record, Permission.W);
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             record.setGroup(groupId);
             return nacosConfigsClient.add(clientEntity);
@@ -172,7 +173,8 @@ public class NacosUserConfigsController {
     public Result<Boolean> edit(@PathVariable Long projectId, @RequestBody ConfigClientVO record) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, record);
+            ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(projectId,
+                    record, Permission.W);
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             record.setGroup(groupId);
             return nacosConfigsClient.edit(clientEntity);
@@ -185,8 +187,8 @@ public class NacosUserConfigsController {
             @RequestBody ConfigCloneVO[] records) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<ConfigPolicyClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
-                    record);
+            ClientEntity<ConfigPolicyClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(
+                    projectId, record, Permission.W);
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             for (ConfigCloneVO cloneVO : records) {
                 cloneVO.setGroup(groupId);
@@ -200,8 +202,8 @@ public class NacosUserConfigsController {
     public Result<Boolean> delete(@PathVariable Long projectId, ConfigDeleteClientVO record) {
         return ResultUtils.wrapFail(() -> {
             String nid = record.getNamespaceId();
-            ClientEntity<ConfigDeleteClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
-                    record);
+            ClientEntity<ConfigDeleteClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(
+                    projectId, record, Permission.W);
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
             record.setGroup(groupId);
             return nacosConfigsClient.delete(clientEntity);
@@ -214,8 +216,8 @@ public class NacosUserConfigsController {
     public ResponseEntity<Resource> export(@PathVariable Long projectId, ConfigExportClientVO record) {
         String nid = record.getNamespaceId();
         AtomicReference<ClientEntity<ConfigExportClientVO>> clientEntity = new AtomicReference<>();
-        Result<Object> result = ResultUtils.wrap(
-                () -> clientEntity.set(nacosNamespaceValidator.validUserNamespace(projectId, record)));
+        Result<Object> result = ResultUtils.wrap(() -> clientEntity.set(
+                nacosNamespaceValidator.validUserNamespacePermission(projectId, record, Permission.R)));
         if (result.isSuccess()) {
             record.setTenant(record.getNamespaceId());
             String groupId = nacosNamespaceValidator.fetchGroupId(projectId, nid);
@@ -233,8 +235,8 @@ public class NacosUserConfigsController {
     public Result<?> importZip(@PathVariable Long projectId, ConfigImportClientVO record,
             @RequestPart("file") MultipartFile file) {
         return ResultUtils.wrap(() -> {
-            ClientEntity<ConfigImportClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
-                    record);
+            ClientEntity<ConfigImportClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(
+                    projectId, record, Permission.W);
             return nacosConfigsClient.importZip(clientEntity, file);
         });
         
@@ -261,15 +263,16 @@ public class NacosUserConfigsController {
     private Boolean save(Long projectId, HistoryRollbackClientVO record) {
         ConfigClientVO configVO = new ConfigClientVO();
         BeanUtil.copyProperties(record, configVO);
-        ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId, configVO);
+        ClientEntity<ConfigClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(projectId,
+                configVO, Permission.W);
         return nacosConfigsClient.add(clientEntity);
     }
     
     private Boolean delete(Long projectId, HistoryRollbackClientVO record) {
         ConfigDeleteClientVO deleteVO = new ConfigDeleteClientVO();
         BeanUtil.copyProperties(record, deleteVO);
-        ClientEntity<ConfigDeleteClientVO> clientEntity = nacosNamespaceValidator.validUserNamespace(projectId,
-                deleteVO);
+        ClientEntity<ConfigDeleteClientVO> clientEntity = nacosNamespaceValidator.validUserNamespacePermission(
+                projectId, deleteVO, Permission.W);
         return nacosConfigsClient.delete(clientEntity);
     }
 }

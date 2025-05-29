@@ -12,7 +12,7 @@ import com.ch.cloud.nacos.vo.ConfigImportClientVO;
 import com.ch.cloud.nacos.vo.ConfigPolicyClientVO;
 import com.ch.cloud.nacos.vo.ConfigQueryClientVO;
 import com.ch.cloud.nacos.vo.ConfigsPageClientVO;
-import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.client.UpmsProjectClient;
 import com.ch.cloud.web.annotation.OriginalReturn;
 import com.ch.result.PageResult;
 import com.ch.result.Result;
@@ -54,7 +54,7 @@ public class NacosConfigsController {
     private NacosNamespaceValidator nacosNamespaceValidator;
 
     @Autowired
-    private UpmsProjectClientService upmsProjectClientService;
+    private UpmsProjectClient upmsProjectClient;
 
     @Operation(summary = "分页查询", description = "分页查询nacos配置")
     @GetMapping(value = {"{pageNo:[0-9]+}/{pageSize:[0-9]+}"})

@@ -1,6 +1,8 @@
 package com.ch.cloud.devops.service;
 
 import com.ch.cloud.devops.dto.NamespaceDto;
+import com.ch.cloud.devops.dto.UserProjectNamespaceDto;
+import com.ch.cloud.devops.enums.Permission;
 import com.ch.cloud.types.NamespaceType;
 
 import java.util.List;
@@ -15,7 +17,9 @@ public interface IUserNamespaceService {
 
     boolean exists(String userId, String namespaceId, Long projectId);
 
-    List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndClusterIdAndNamespaceType(String username, Long projectId, Long clusterId, NamespaceType namespaceType);
+    List<UserProjectNamespaceDto> listUserNamespacesByType(String username, Long projectId, Long clusterId, NamespaceType namespaceType);
     
     List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndNamespaceType(String user, Long projectId, NamespaceType namespaceType);
+    
+    boolean existsPermission(String username, String namespaceId, Long projectId, Permission permission);
 }

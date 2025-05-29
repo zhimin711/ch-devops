@@ -2,7 +2,11 @@ package com.ch.cloud.devops.mapper2;
 
 import com.ch.cloud.devops.dto.NamespaceDto;
 import com.ch.cloud.devops.dto.UserProjectNamespaceDto;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -30,13 +34,18 @@ public interface UserProjectNamespaceMapper {
     int countByUserIdAndNamespaceIdAndProjectId(@Param("userId") String userId,
             @Param("namespaceId") String namespaceId, @Param("projectId") Long projectId);
     
-    @Select("SELECT t1.id,t1.name,t1.cluster_id as clusterId,t1.uid from bt_namespace t1"
+    @Select("select count(1) from rt_user_namespace where USER_ID=#{userId} and NAMESPACE_ID=#{namespaceId} and PROJECT_ID=#{projectId} "
+            + "and permission like concat('%',#{permission},'%')")
+    int countByUserIdAndNamespaceIdAndProjectIdLikePermission(@Param("userId") String userId,
+            @Param("namespaceId") String namespaceId, @Param("projectId") Long projectId,  @Param("permission") String permission);
+    
+    @Select("SELECT t1.id as namespaceId,t1.name as namespaceName,t1.cluster_id as clusterId,t1.uid as nacosNamespaceId"
+            + ",t2.permission,t2.project_id as projectId,t2.user_id as userId from bt_namespace t1"
             + " INNER JOIN rt_user_namespace t2 ON t1.id  = t2.NAMESPACE_ID"
             + " WHERE EXISTS(SELECT * FROM rt_project_namespace WHERE PROJECT_ID = t2.PROJECT_ID and NAMESPACE_ID = t2.NAMESPACE_ID)"
             + " and t2.project_id =#{projectId} and t2.USER_ID=#{userId} and t1.cluster_id = #{clusterId}"
-            + " and t1.type = #{namespaceType} order by t1.sort,t1.id asc")
-    List<NamespaceDto> findNamespacesByUserIdAndProjectIdAndClusterIdAndNamespaceType(String userId, Long projectId,
-            Long clusterId, String namespaceType);
+            + " and t1.type = #{namespaceType} order by t1.cluster_id,t1.sort,t1.id asc")
+    List<UserProjectNamespaceDto> listUserNamespacesByType(String userId, Long projectId, Long clusterId, String namespaceType);
     
     @Select("SELECT t1.id,t1.name,t1.cluster_id as clusterId,t1.uid from bt_namespace t1"
             + " INNER JOIN rt_user_namespace t2 ON t1.id  = t2.NAMESPACE_ID"

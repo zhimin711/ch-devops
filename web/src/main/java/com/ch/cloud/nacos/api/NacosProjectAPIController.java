@@ -1,6 +1,6 @@
 package com.ch.cloud.nacos.api;
 
-import com.ch.cloud.upms.client.UpmsProjectClientService;
+import com.ch.cloud.upms.client.UpmsProjectClient;
 import com.ch.cloud.upms.dto.ProjectDto;
 import com.ch.pojo.VueRecord;
 import com.ch.result.Result;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class NacosProjectAPIController {
 
     @Autowired
-    private UpmsProjectClientService upmsProjectClientService;
+    private UpmsProjectClient upmsProjectClient;
 
     @Operation(summary = "分页查询", description = "分页查询nacos项目")
     @GetMapping(value = {"list"})
@@ -32,7 +32,7 @@ public class NacosProjectAPIController {
                                   @RequestParam(value = "code", required = false) String code,
                                   @RequestParam(value = "tenant", required = false) String tenant) {
         return ResultUtils.wrapList(() -> {
-            Result<ProjectDto> result = upmsProjectClientService.list(name, code, tenant);
+            Result<ProjectDto> result = upmsProjectClient.list(name, code, tenant);
             return VueRecordUtils.covertIdList(result.getRows());
         });
     }

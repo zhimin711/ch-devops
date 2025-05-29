@@ -1,5 +1,6 @@
 package com.ch.cloud.devops.dto;
 
+import com.ch.cloud.devops.enums.Permission;
 import lombok.Data;
 import lombok.Getter;
 
@@ -19,19 +20,4 @@ public class NamespaceApplyDto {
      */
     private Permission permission;
     
-    @Getter
-    public enum Permission {
-        R("r", "只读"),
-        W("w", "只写"),
-        RW("rw", "读写");
-        
-        private final String code;
-        
-        private final String desc;
-        
-        Permission(String code, String desc) {
-            this.code = code;
-            this.desc = desc;
-        }
-    }
 }

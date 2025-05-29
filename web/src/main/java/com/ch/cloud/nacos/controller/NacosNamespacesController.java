@@ -1,25 +1,10 @@
 package com.ch.cloud.nacos.controller;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.ch.cloud.devops.vo.NamespaceVO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ch.cloud.devops.domain.Namespace;
 import com.ch.cloud.devops.dto.NamespaceDto;
 import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
 import com.ch.cloud.devops.service.INamespaceService;
+import com.ch.cloud.devops.vo.NamespaceVO;
 import com.ch.cloud.nacos.client.NacosNamespacesClient;
 import com.ch.cloud.nacos.client.NacosUserClient;
 import com.ch.cloud.nacos.domain.NacosCluster;
@@ -30,9 +15,10 @@ import com.ch.cloud.nacos.vo.ClientEntity;
 import com.ch.cloud.nacos.vo.NacosNamespaceClientVO;
 import com.ch.cloud.nacos.vo.NamespaceClientVO;
 import com.ch.cloud.types.NamespaceType;
-import com.ch.cloud.upms.client.UpmsProjectClientService;
-import com.ch.cloud.upms.client.UpmsTenantClientService;
+import com.ch.cloud.upms.client.UpmsProjectClient;
+import com.ch.cloud.upms.client.UpmsTenantClient;
 import com.ch.cloud.upms.dto.ProjectDto;
+import com.ch.e.Assert;
 import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.pojo.VueRecord2;
@@ -47,9 +33,22 @@ import com.ch.utils.CommonUtils;
 import com.ch.utils.VueRecordUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -72,9 +71,9 @@ public class NacosNamespacesController {
     private INacosClusterService nacosClusterService;
 
     @Autowired
-    private UpmsProjectClientService projectClientService;
+    private UpmsProjectClient projectClient;
     @Autowired
-    private UpmsTenantClientService tenantClientService;
+    private UpmsTenantClient upmsTenantClient;
 
     @Autowired
     private NacosNamespacesClient nacosNamespacesClient;
@@ -122,7 +121,7 @@ public class NacosNamespacesController {
             } else {
                 clientEntity.getData().setNamespaceId(record.getUid());
                 NacosNamespaceDTO namespace = nacosNamespacesClient.fetch(clientEntity);
-                AssertUtils.notNull(namespace, PubError.EXISTS, "id" + record.getUid());
+                Assert.isNull(namespace, PubError.EXISTS, "id" + record.getUid());
             }
             boolean syncOk = convertAndSave(record.getCluster(), clientEntity, record);;
             if (!syncOk) {
@@ -153,7 +152,7 @@ public class NacosNamespacesController {
 
     private void checkSaveOrUpdate(Namespace record) {
         NacosCluster cluster = nacosClusterService.find(record.getClusterId());
-        AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster" + record.getClusterId());
+        Assert.notEmpty(cluster, PubError.CONFIG, "nacos cluster" + record.getClusterId());
         record.setCluster(cluster);
         record.setType(NamespaceType.NACOS);
         if (record.getId() != null) {
@@ -189,9 +188,9 @@ public class NacosNamespacesController {
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.wrapFail(() -> {
             List<Long> projectIds = nacosNamespaceProjectService.findProjectIdsByNamespaceId(id);
-            AssertUtils.isTrue(CommonUtils.isNotEmpty(projectIds), PubError.NOT_ALLOWED, "存在关联项目不允许删除");
+            Assert.isEmpty(projectIds, PubError.NOT_ALLOWED, "存在关联项目不允许删除");
             Namespace namespace = namespaceService.find(id);
-            AssertUtils.isTrue(CommonUtils.isEmpty(namespace.getUid()), PubError.NOT_ALLOWED, "保留空间不允许删除");
+            Assert.notEmpty(namespace.getUid(), PubError.NOT_ALLOWED, "保留空间不允许删除");
 
             NacosCluster cluster = nacosClusterService.find(namespace.getClusterId());
             ClientEntity<NamespaceClientVO> clientEntity =
@@ -207,7 +206,7 @@ public class NacosNamespacesController {
     public Result<Boolean> sync(@PathVariable Long clusterId) {
         return ResultUtils.wrapFail(() -> {
             NacosCluster cluster = nacosClusterService.find(clusterId);
-            AssertUtils.isEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
+            Assert.notEmpty(cluster, PubError.CONFIG, "nacos cluster" + clusterId);
             ClientEntity<NamespaceClientVO> clientEntity = new ClientEntity<>(cluster, new NamespaceClientVO());
             nacosUserClient.login(clientEntity);
             List<NacosNamespaceDTO> list = nacosNamespacesClient.fetchAll(clientEntity);
@@ -276,7 +275,7 @@ public class NacosNamespacesController {
                 return null;
             Map<Long, List<ProjectNamespaceDTO>> projectMap =
                 list.stream().collect(Collectors.groupingBy(ProjectNamespaceDTO::getProjectId));
-            Result<ProjectDto> result = projectClientService.infoByIds(Lists.newArrayList(projectMap.keySet()));
+            Result<ProjectDto> result = projectClient.infoByIds(Lists.newArrayList(projectMap.keySet()));
             if (result.isEmpty()) {
                 return null;
             }

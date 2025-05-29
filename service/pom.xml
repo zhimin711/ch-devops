@@ -37,13 +37,6 @@
         <dependency>
             <groupId>com.ch.cloud</groupId>
             <artifactId>ch-upms-client</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.ch</groupId>
-                    <artifactId>ch-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
