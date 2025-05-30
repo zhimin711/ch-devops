@@ -22,4 +22,13 @@ public enum Permission {
         this.code = code;
         this.desc = desc;
     }
+    
+    public static Permission fromCode(String code) {
+        for (Permission permission : Permission.values()) {
+            if (permission.code.equals(code)) {
+                return permission;
+            }
+        }
+        return null;
+    }
 }
