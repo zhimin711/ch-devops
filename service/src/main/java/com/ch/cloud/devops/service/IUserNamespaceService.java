@@ -17,9 +17,13 @@ public interface IUserNamespaceService {
 
     boolean exists(String userId, String namespaceId, Long projectId);
 
-    List<UserProjectNamespaceDto> listUserNamespacesByType(String username, Long projectId, Long clusterId, NamespaceType namespaceType);
+    List<UserProjectNamespaceDto> listUserNamespacesByType(NamespaceType namespaceType, String username, Long projectId, List<Long> clusterIds);
     
-    List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndNamespaceType(String user, Long projectId, NamespaceType namespaceType);
+    List<NamespaceDto> listByUsernameAndProjectIdAndNamespaceType(String user, Long projectId, NamespaceType namespaceType);
     
     boolean existsPermission(String username, String namespaceId, Long projectId, Permission permission);
+    
+    boolean remove(String userId, Long projectId, Long namespaceId);
+    
+    boolean updatePermission(String userId, Long projectId, Long namespaceId, Permission permission);
 }
