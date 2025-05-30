@@ -24,26 +24,37 @@ public class UserNamespaceServiceImpl implements IUserNamespaceService {
     private UserProjectNamespaceMapper userProjectNamespaceMapper;
     
     @Override
-    public boolean exists(String userId, String namespaceId, Long projectId) {
+    public boolean exists(String userId, Long namespaceId, Long projectId) {
         return userProjectNamespaceMapper.countByUserIdAndNamespaceIdAndProjectId(userId, namespaceId, projectId) > 0;
     }
     
     @Override
-    public List<UserProjectNamespaceDto> listUserNamespacesByType(String username,
-            Long projectId, Long clusterId, NamespaceType namespaceType) {
-        return userProjectNamespaceMapper.listUserNamespacesByType(username, projectId, clusterId, namespaceType.name());
+    public List<UserProjectNamespaceDto> listUserNamespacesByType(NamespaceType namespaceType, String username,
+            Long projectId, List<Long> clusterIds) {
+        return userProjectNamespaceMapper.listUserNamespacesByType(namespaceType.name(), username, projectId,
+                clusterIds);
     }
     
     @Override
-    public List<NamespaceDto> findNamespacesByUsernameAndProjectIdAndNamespaceType(String username, Long projectId,
+    public List<NamespaceDto> listByUsernameAndProjectIdAndNamespaceType(String username, Long projectId,
             NamespaceType namespaceType) {
         return userProjectNamespaceMapper.findNamespacesByUsernameAndProjectIdAndNamespaceType(username, projectId,
                 namespaceType.name());
     }
     
     @Override
-    public boolean existsPermission(String username, String namespaceId, Long projectId, Permission permission) {
+    public boolean existsPermission(String username, Long namespaceId, Long projectId, Permission permission) {
         return userProjectNamespaceMapper.countByUserIdAndNamespaceIdAndProjectIdLikePermission(username, namespaceId,
                 projectId, permission.getCode()) > 0;
+    }
+    
+    @Override
+    public boolean remove(String userId, Long projectId, Long namespaceId) {
+        return userProjectNamespaceMapper.delete(projectId, userId, namespaceId) > 0;
+    }
+    
+    @Override
+    public boolean updatePermission(String userId, Long projectId, Long namespaceId, Permission permission) {
+        return userProjectNamespaceMapper.updatePermission(projectId, userId, namespaceId, permission.getCode()) > 0;
     }
 }

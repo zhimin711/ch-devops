@@ -10,5 +10,4 @@ import com.ch.cloud.devops.domain.NamespaceApplyRecord;
  * @since 2022-05-21 11:52:27
  */
 public interface INamespaceApplyRecordService extends IService<NamespaceApplyRecord> {
-    int approveNacos(NamespaceApplyRecord record);
 }

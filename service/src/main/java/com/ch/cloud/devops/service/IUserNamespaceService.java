@@ -15,13 +15,13 @@ import java.util.List;
  */
 public interface IUserNamespaceService {
 
-    boolean exists(String userId, String namespaceId, Long projectId);
+    boolean exists(String userId, Long namespaceId, Long projectId);
 
     List<UserProjectNamespaceDto> listUserNamespacesByType(NamespaceType namespaceType, String username, Long projectId, List<Long> clusterIds);
     
-    List<NamespaceDto> listByUsernameAndProjectIdAndNamespaceType(String user, Long projectId, NamespaceType namespaceType);
+    List<NamespaceDto> listByUsernameAndProjectIdAndNamespaceType(String userId, Long projectId, NamespaceType namespaceType);
     
-    boolean existsPermission(String username, String namespaceId, Long projectId, Permission permission);
+    boolean existsPermission(String username, Long namespaceId, Long projectId, Permission permission);
     
     boolean remove(String userId, Long projectId, Long namespaceId);
     

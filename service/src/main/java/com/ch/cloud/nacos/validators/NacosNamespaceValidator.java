@@ -67,16 +67,16 @@ public class NacosNamespaceValidator {
     
     public <T extends NamespaceClientVO> ClientEntity<T> validUserNamespace(Long projectId, T record) {
         Assert.notEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
-        Assert.isTrue(userNamespaceService.exists(ContextUtil.getUsername(), record.getNamespaceId(), projectId),
-                PubError.NOT_AUTH, "项目" + projectId);
+        Assert.isTrue(userNamespaceService.exists(ContextUtil.getUsername(), Long.valueOf(record.getNamespaceId()),
+                projectId), PubError.NOT_AUTH, "项目" + projectId);
         return valid(record);
     }
     
     public <T extends NamespaceClientVO> ClientEntity<T> validUserNamespacePermission(Long projectId, T record,
             Permission permission) {
         Assert.notEmpty(record.getNamespaceId(), PubError.NON_NULL, "空间ID");
-        boolean expression = userNamespaceService.existsPermission(ContextUtil.getUsername(), record.getNamespaceId(),
-                projectId, permission);
+        boolean expression = userNamespaceService.existsPermission(ContextUtil.getUsername(),
+                Long.valueOf(record.getNamespaceId()), projectId, permission);
         Assert.isTrue(expression, PubError.NOT_AUTH, "项目" + projectId);
         
         return valid(record);

@@ -1,6 +1,7 @@
 package com.ch.cloud.nacos.controller;
 
 
+import com.ch.cloud.devops.manager.INamespaceApplyManager;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,18 +39,20 @@ import com.github.pagehelper.PageInfo;
 @RestController
 @RequestMapping("/nacos/apply")
 public class NacosApplyRecordController {
-
+    
     @Autowired
     private INamespaceApplyRecordService namespaceApplyRecordService;
-
+    
+    @Autowired
+    private INamespaceApplyManager namespaceApplyManager;
+    
     @Operation(summary = "Nacos申请分页查询", description = "分页查询命名空间")
     @GetMapping(value = {"/{num:[0-9]+}/{size:[0-9]+}"})
     public PageResult<NamespaceApplyRecord> nacosPage(NamespaceApplyRecord record,
-                                                      @PathVariable(value = "num") int pageNum,
-                                                      @PathVariable(value = "size") int pageSize) {
+            @PathVariable(value = "num") int pageNum, @PathVariable(value = "size") int pageSize) {
         return ResultUtils.wrapPage(() -> {
             record.setType(NamespaceType.NACOS.getCode());
-            if(CommonUtils.isEmpty(record.getStatus())){
+            if (CommonUtils.isEmpty(record.getStatus())) {
                 record.setStatus(null);
             }
             PageHelper.orderBy("CREATE_AT desc, ID ASC");
@@ -57,14 +60,16 @@ public class NacosApplyRecordController {
             return InvokerPage.build(page.getTotal(), page.getList());
         });
     }
-
-
+    
+    
     @Operation(summary = "审核空间", description = "审核申请命名空间")
     @PostMapping({"/{id:[0-9]+}/approve"})
     public Result<Boolean> approveNacos(@RequestBody NamespaceApplyRecord record) {
         return ResultUtils.wrapFail(() -> {
             NamespaceApplyRecord orig = namespaceApplyRecordService.find(record.getId());
-            if (orig == null) ExUtils.throwError(PubError.NOT_EXISTS, record.getId());
+            if (orig == null) {
+                ExUtils.throwError(PubError.NOT_EXISTS, record.getId());
+            }
             if (NamespaceType.fromCode(orig.getType()) != NamespaceType.NACOS) {
                 ExUtils.throwError(PubError.NOT_ALLOWED, "approve type is not [nacos]!");
             }
@@ -76,7 +81,7 @@ public class NacosApplyRecordController {
             orig.setApproveAt(DateUtils.current());
             orig.setUpdateBy(ContextUtil.getUsername());
             orig.setUpdateAt(DateUtils.current());
-            return namespaceApplyRecordService.approveNacos(orig) > 0;
+            return namespaceApplyManager.approveNacos(orig) > 0;
         });
     }
 }

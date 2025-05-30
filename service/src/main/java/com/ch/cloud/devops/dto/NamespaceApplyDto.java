@@ -13,7 +13,7 @@ import lombok.Getter;
 @Data
 public class NamespaceApplyDto {
     
-    private String namespaceId;
+    private Long namespaceId;
     
     /**
      * 权限： read or write

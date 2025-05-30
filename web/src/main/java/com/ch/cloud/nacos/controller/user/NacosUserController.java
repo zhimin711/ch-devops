@@ -203,7 +203,7 @@ public class NacosUserController {
     public Result<Boolean> apply(@PathVariable Long projectId, @PathVariable Long clusterId,
             @RequestBody List<NamespaceApplyDto> applyList) {
         return ResultUtils.wrap(() -> {
-            List<Long> namespaceIds = applyList.stream().map(e -> Long.valueOf(e.getNamespaceId()))
+            List<Long> namespaceIds = applyList.stream().map(e -> e.getNamespaceId())
                     .collect(Collectors.toList());
             nacosNamespaceValidator.validProjectNamespace(projectId, namespaceIds);
             NamespaceApplyRecord record = new NamespaceApplyRecord();
