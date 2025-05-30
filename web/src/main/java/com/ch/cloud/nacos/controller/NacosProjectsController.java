@@ -2,10 +2,10 @@ package com.ch.cloud.nacos.controller;
 
 import com.ch.cloud.devops.dto.ProjectNamespaceDTO;
 import com.ch.cloud.devops.dto.UserProjectNamespaceDto;
-import com.ch.cloud.devops.service.INamespaceService;
 import com.ch.cloud.devops.service.IUserNamespaceService;
 import com.ch.cloud.devops.vo.ProjectNamespaceVO;
 import com.ch.cloud.nacos.domain.NacosCluster;
+import com.ch.cloud.nacos.manager.NacosProjectManager;
 import com.ch.cloud.nacos.service.INacosClusterService;
 import com.ch.cloud.nacos.service.INacosNamespaceProjectService;
 import com.ch.cloud.types.NamespaceType;
@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 描述：Nacos项目服务
@@ -53,7 +55,7 @@ public class NacosProjectsController {
     private INacosNamespaceProjectService nacosNamespaceProjectService;
     
     @Autowired
-    private INamespaceService namespaceService;
+    private NacosProjectManager nacosProjectManager;
     
     @Autowired
     private INacosClusterService nacosClusterService;
@@ -116,16 +118,32 @@ public class NacosProjectsController {
                     NamespaceType.NACOS);
             Assert.notEmpty(clusterIds, PubError.NOT_EXISTS, "项目下没有命名空间");
             List<UserProjectNamespaceDto> all = Lists.newArrayList();
-            clusterIds.forEach(clusterId -> {
-                List<UserProjectNamespaceDto> list = userNamespaceService.listUserNamespacesByType(username, id,
-                        clusterId, NamespaceType.NACOS);
-                if (CommonUtils.isNotEmpty(list)) {
-                    NacosCluster nacosCluster = nacosClusterService.find(clusterId);
-                    list.forEach(e -> e.setClusterName(nacosCluster.getName()));
-                    all.addAll(list);
-                }
+            
+            List<UserProjectNamespaceDto> list = userNamespaceService.listUserNamespacesByType(NamespaceType.NACOS,
+                    username, id, clusterIds);
+            if (CommonUtils.isEmpty(list)) {
+                return all;
+            }
+            List<NacosCluster> clusters = nacosClusterService.findByPrimaryKeys(clusterIds);
+            list.forEach(e -> {
+                e.setClusterName(clusters.stream().filter(c -> c.getId().equals(e.getClusterId())).findFirst().get()
+                        .getName());
             });
-            return all;
+            return list;
+        });
+    }
+    
+    @Operation(summary = "修改项目下命名空间的用户及权限", description = "修改目下命名空间的用户及权限")
+    @PostMapping({"{id:[0-9]+}/user-permission"})
+    public Result<Boolean> editUserPermissions(@PathVariable Long id,
+            @RequestBody List<UserProjectNamespaceDto> param) {
+        return ResultUtils.wrap(() -> {
+            boolean check = param.stream().anyMatch(e -> !CommonUtils.isEquals(id, e.getProjectId()));
+            Assert.isFalse(check, PubError.NOT_ALLOWED, "配置参数");
+            Map<String, List<UserProjectNamespaceDto>> userMap = param.stream()
+                    .collect(Collectors.groupingBy(UserProjectNamespaceDto::getUserId));
+            Assert.isFalse(userMap.size() > 1, PubError.NOT_ALLOWED, "配置只能一个用户");
+            return nacosProjectManager.saveUserNamespacePermissions(param);
         });
     }
 }

@@ -52,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -102,8 +103,8 @@ public class NacosUserController {
     @GetMapping(value = {"{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
     public Result<UserProjectNamespaceDto> namespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
         return ResultUtils.wrap(
-                () -> userNamespaceService.listUserNamespacesByType(ContextUtil.getUsername(), projectId, clusterId,
-                        NamespaceType.NACOS));
+                () -> userNamespaceService.listUserNamespacesByType(NamespaceType.NACOS, ContextUtil.getUsername(),
+                        projectId, Lists.newArrayList(clusterId)));
     }
     
     @Operation(summary = "分页查询", description = "分页查询用户项目配置历史") // 替换 @ApiOperation
@@ -173,11 +174,27 @@ public class NacosUserController {
     
     @Operation(summary = "查询项目可申请空间列表", description = "查询项目可申请空间列表") // 替换 @ApiOperation
     @GetMapping({"apply/{projectId:[0-9]+}/{clusterId:[0-9]+}/namespaces"})
-    public Result<VueRecord> findApplyNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
-        return ResultUtils.wrapList(() -> {
+    public Result<UserProjectNamespaceDto> findApplyNamespaces(@PathVariable Long projectId, @PathVariable Long clusterId) {
+        return ResultUtils.wrap(() -> {
             List<NamespaceDto> records = nacosNamespaceProjectService.findNamespacesByProjectIdAndClusterId(projectId,
                     clusterId);
-            return VueRecordUtils.covertIdList(records);
+            List<UserProjectNamespaceDto> list = userNamespaceService.listUserNamespacesByType(NamespaceType.NACOS,
+                    ContextUtil.getUsername(), projectId, Lists.newArrayList(clusterId));
+            Map<Long, UserProjectNamespaceDto> namespaceMap = list.stream()
+                    .collect(Collectors.toMap(UserProjectNamespaceDto::getNamespaceId, e -> e));
+            return records.stream().map(e -> {
+                UserProjectNamespaceDto dto = new UserProjectNamespaceDto();
+                dto.setProjectId(projectId);
+                dto.setClusterId(clusterId);
+                dto.setNamespaceId(e.getId());
+                dto.setNamespaceName(e.getName());
+                dto.setNacosNamespaceId(e.getUid());
+                dto.setClusterId(e.getClusterId());
+                if(namespaceMap.containsKey(e.getId())){
+                    dto.setPermission(namespaceMap.get(e.getId()).getPermission());
+                }
+                return dto;
+            }).collect(Collectors.toList());
         });
     }
     

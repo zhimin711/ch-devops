@@ -118,7 +118,7 @@ public class NacosUserConfigsController {
     public Result<ConfigDTO> listCompare(@PathVariable Long projectId, ConfigQueryClientVO record) {
         return ResultUtils.wrap(() -> {
             List<ConfigDTO> configs = Lists.newArrayList();
-            List<NamespaceDto> namespaces = userNamespaceService.findNamespacesByUsernameAndProjectIdAndNamespaceType(
+            List<NamespaceDto> namespaces = userNamespaceService.listByUsernameAndProjectIdAndNamespaceType(
                     ContextUtil.getUsername(), projectId, NamespaceType.NACOS);
             if (namespaces.isEmpty()) {
                 return null;
