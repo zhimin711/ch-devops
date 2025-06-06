@@ -26,6 +26,8 @@ public interface OpsService {
     
     List<RMQConfigure.Client> listNameSvr();
     
+    RMQConfigure.Client getClient(String nameSvrAddr);
+    
     Map<String, Object> homePageInfo();
 
     void updateNameSvrAddrList(String nameSvrAddrList);

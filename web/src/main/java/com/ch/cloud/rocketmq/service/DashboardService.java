@@ -17,6 +17,7 @@
 
 package com.ch.cloud.rocketmq.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -45,5 +46,10 @@ public interface DashboardService {
      * @return
      */
     List<String> queryTopicCurrentData();
-
+    
+    List<String> listLastTopicCollect(String nameSvrAddr);
+    
+    List<String> listTopicCollectData(String nameSvrAddr, String topicName, Date date);
+    
+    Map<String, List<String>>  listBrokerCollectData(String nameSvrAddr, Date date);
 }

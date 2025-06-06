@@ -1,9 +1,8 @@
 package com.ch.cloud.rocketmq.manager.impl;
 
-import com.ch.cloud.rocketmq.util.RMQAdminUtil;
-import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.manager.RMQClusterManager;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import com.ch.cloud.rocketmq.util.RMQAdminUtil;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +11,6 @@ import org.apache.rocketmq.common.protocol.body.KVTable;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,9 +23,6 @@ import java.util.Properties;
 @Service
 @Slf4j
 public class RMQClusterManagerImpl implements RMQClusterManager {
-    
-    @Resource
-    private RMQConfigure configure;
     
     @SneakyThrows
     @Override

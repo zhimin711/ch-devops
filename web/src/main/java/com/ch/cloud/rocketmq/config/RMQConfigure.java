@@ -87,5 +87,7 @@ public class RMQConfigure {
         private String name;
         
         private String addr;
+        
+        private Boolean enableCollect;
     }
 }

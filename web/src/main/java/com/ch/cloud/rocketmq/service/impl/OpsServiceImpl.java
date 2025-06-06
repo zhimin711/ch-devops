@@ -14,27 +14,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package com.ch.cloud.rocketmq.service.impl;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.service.AbstractCommonService;
 import com.ch.cloud.rocketmq.service.OpsService;
 import com.ch.cloud.rocketmq.service.checker.CheckerType;
 import com.ch.cloud.rocketmq.service.checker.RocketMqChecker;
+import com.ch.e.Assert;
+import com.ch.e.PubError;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Maps;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class OpsServiceImpl extends AbstractCommonService implements OpsService {
-
+    
     @Resource
     private RMQConfigure configure;
-
+    
     @Resource
     private List<RocketMqChecker> rocketMqCheckerList;
     
@@ -44,22 +48,30 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     }
     
     @Override
+    public RMQConfigure.Client getClient(String nameSvrAddr) {
+        Assert.notEmpty(configure.getClients(), PubError.CONFIG, "nameSvr client");
+        Optional<RMQConfigure.Client> first = configure.getClients().stream()
+                .filter(client -> client.getAddr().equals(nameSvrAddr)).findFirst();
+        return first.orElseGet(() -> configure.getClients().get(0));
+    }
+    
+    @Override
     public Map<String, Object> homePageInfo() {
         Map<String, Object> homePageInfoMap = Maps.newHashMap();
         homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(configure.getAddr()));
         return homePageInfoMap;
     }
-
+    
     @Override
     public void updateNameSvrAddrList(String nameSvrAddrList) {
         configure.setAddr(nameSvrAddrList);
     }
-
+    
     @Override
     public String getNameSvrList() {
         return configure.getAddr();
     }
-
+    
     @Override
     public Map<CheckerType, Object> rocketMqStatusCheck() {
         Map<CheckerType, Object> checkResultMap = Maps.newHashMap();

@@ -1,7 +1,8 @@
 package com.ch.cloud.rocketmq.aspect;
 
+import com.ch.cloud.devops.utils.RequestUtil;
+import com.ch.cloud.rocketmq.service.OpsService;
 import com.ch.cloud.rocketmq.util.RMQAdminUtil;
-import com.ch.cloud.rocketmq.config.RMQConfigure;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -12,10 +13,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * 描述：
@@ -30,7 +29,7 @@ public class RMQAspect {
     
     
     @Resource
-    private RMQConfigure configure;
+    private OpsService opsService;
     
     @Pointcut("execution(* com.ch.cloud.rocketmq.manager.*..*(..))")
     public void mqAdminMethodPointCut() {
@@ -44,12 +43,12 @@ public class RMQAspect {
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
                 RequestContextHolder.getRequestAttributes())).getRequest();
         
-        // 从 Cookie 中获取 nameSvrAddr
-        String nameSvrAddr = getNameSvrAddrFromCookie(request);
+        // 从 Cookie 中获取 nameSrvAddr
+        String nameSrvAddr = RequestUtil.getFromCookie(request,"nameSrvAddr");
         
         
         try {
-            RMQAdminUtil.initMQAdminExt(getClient(nameSvrAddr));
+            RMQAdminUtil.initMQAdminExt(opsService.getClient(nameSrvAddr).getAddr());
             obj = joinPoint.proceed();
         } finally {
             RMQAdminUtil.destroyMQAdminExt();
@@ -59,26 +58,4 @@ public class RMQAspect {
         return obj;
     }
     
-    
-    public String getClient(String nameSvrAddr) {
-        Optional<RMQConfigure.Client> first = configure.getClients().stream()
-                .filter(client -> client.getAddr().equals(nameSvrAddr)).findFirst();
-        if (first.isPresent()) {
-            return first.get().getAddr();
-        }
-        return configure.getClients().get(0).getAddr();
-    }
-    
-    // 提取 Cookie 的辅助方法
-    private String getNameSvrAddrFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("nameSvrAddr".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
 }

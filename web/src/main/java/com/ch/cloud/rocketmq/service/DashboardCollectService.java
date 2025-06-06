@@ -16,9 +16,12 @@
  */
 package com.ch.cloud.rocketmq.service;
 
+import com.ch.cloud.rocketmq.dto.RMQBrokerCollect;
+import com.ch.cloud.rocketmq.dto.RMQTopicCollect;
 import com.google.common.cache.LoadingCache;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -34,4 +37,14 @@ public interface DashboardCollectService {
     Map<String, List<String>> getBrokerCache(String date);
 
     Map<String, List<String>> getTopicCache(String date);
+    
+    boolean saveBatchTopicData(List<RMQTopicCollect> list);
+    
+    List<RMQTopicCollect> listLastTopicCollect(String clientAddr);
+    
+    List<RMQTopicCollect> listTopicCollectData(String nameSvrAddr, String topicName, Date date);
+    
+    List<RMQBrokerCollect> listBrokerCollectData(String nameSvrAddr, Date date);
+    
+    boolean saveBatchBrokerData(List<RMQBrokerCollect> data);
 }

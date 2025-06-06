@@ -6,6 +6,7 @@ import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 
@@ -19,6 +20,7 @@ import java.util.Set;
  * @author zhimi
  * @since 2025/5/15
  */
+@Slf4j
 public class RMQAdminUtil {
     
     private static final ThreadLocal<Pair<String, MQAdminExt>> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<>();
@@ -28,10 +30,12 @@ public class RMQAdminUtil {
         if (pair == null || !nameSrvAddr.equals(pair.getKey())) {
             DefaultMQAdminExt mqAdminExt = new DefaultMQAdminExt();
             mqAdminExt.setNamesrvAddr(nameSrvAddr);
+            mqAdminExt.setAdminExtGroup("admin_ext_group" + System.currentTimeMillis());
             try {
                 mqAdminExt.start();
                 MQ_ADMIN_EXT_THREAD_LOCAL.set(Pair.of(nameSrvAddr, mqAdminExt));
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.error("{} init MQAdminExt error", nameSrvAddr, e);
             }
         }
     }
@@ -64,8 +68,7 @@ public class RMQAdminUtil {
                 for (String clusterName : clusterNameList) {
                     finalBrokerNameList.addAll(clusterAddrTable.get(clusterName));
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
         }
@@ -74,4 +77,5 @@ public class RMQAdminUtil {
         }
         return finalBrokerNameList;
     }
+    
 }

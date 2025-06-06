@@ -17,23 +17,30 @@
 
 package com.ch.cloud.rocketmq.service.impl;
 
+import com.ch.cloud.rocketmq.dto.RMQBrokerCollect;
+import com.ch.cloud.rocketmq.dto.RMQTopicCollect;
+import com.ch.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import com.ch.cloud.rocketmq.service.DashboardCollectService;
 import com.ch.cloud.rocketmq.service.DashboardService;
+import com.google.common.collect.Maps;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardServiceImpl implements DashboardService {
-
+    
     @Resource
     private DashboardCollectService dashboardCollectService;
+    
     /**
      * @param date format yyyy-MM-dd
      * @return
@@ -42,14 +49,14 @@ public class DashboardServiceImpl implements DashboardService {
     public Map<String, List<String>> queryBrokerData(String date) {
         return dashboardCollectService.getBrokerCache(date);
     }
-
+    
     @Override
     public Map<String, List<String>> queryTopicData(String date) {
         return dashboardCollectService.getTopicCache(date);
     }
-
+    
     /**
-     * @param date format yyyy-MM-dd
+     * @param date      format yyyy-MM-dd
      * @param topicName
      * @return
      */
@@ -60,11 +67,12 @@ public class DashboardServiceImpl implements DashboardService {
         }
         return null;
     }
-
+    
     /**
      * @return
      */
-    @Override public List<String> queryTopicCurrentData() {
+    @Override
+    public List<String> queryTopicCurrentData() {
         Date date = new Date();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         Map<String, List<String>> topicCache = dashboardCollectService.getTopicCache(format.format(date));
@@ -74,5 +82,39 @@ public class DashboardServiceImpl implements DashboardService {
             result.add(entry.getKey() + "," + value.get(value.size() - 1).split(",")[4]);
         }
         return result;
+    }
+    
+    @Override
+    public List<String> listLastTopicCollect(String nameSvrAddr) {
+        List<RMQTopicCollect> list = dashboardCollectService.listLastTopicCollect(nameSvrAddr);
+        if (CommonUtils.isNotEmpty(list)) {
+            return Lists.transform(list, input -> input.getTopic() + "," + input.getOutMsgCntToday());
+        }
+        return Collections.emptyList();
+    }
+    
+    @Override
+    public List<String> listTopicCollectData(String nameSvrAddr, String topicName, Date date) {
+        List<RMQTopicCollect> list = dashboardCollectService.listTopicCollectData(nameSvrAddr, topicName, date);
+        
+        if (CommonUtils.isNotEmpty(list)) {
+            return Lists.transform(list,
+                    input -> input.getCollectTime().getTime() + "," + input.getInTps() + "," + input.getInMsgCntToday()
+                            + "," + input.getOutTps() + "," + input.getOutMsgCntToday());
+        }
+        return Collections.emptyList();
+    }
+    
+    @Override
+    public Map<String, List<String>> listBrokerCollectData(String nameSvrAddr, Date date) {
+        List<RMQBrokerCollect> list = dashboardCollectService.listBrokerCollectData(nameSvrAddr, date);
+        if (CommonUtils.isNotEmpty(list)) {
+            Map<String, List<String>> result = Maps.newHashMap();
+            list.stream().collect(Collectors.groupingBy(RMQBrokerCollect::getBroker)).forEach((k, v) -> {
+                result.put(k, Lists.transform(v, input -> input.getCollectTime().getTime() + "," + input.getAverageTps()));
+            });
+            return result;
+        }
+        return Collections.emptyMap();
     }
 }

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -16,11 +18,19 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TopicCollectDTO {
+@Table(name = "rmq_topic_collect")
+public class RMQTopicCollect {
+    
+    @Id
+    private Long id;
+    
+    private String nameSrvAddr;
 
     private String topic;
 
-    private Date timestamp;
+    private Date collectDate;
+    
+    private Date collectTime;
 
     private BigDecimal inTps;
 

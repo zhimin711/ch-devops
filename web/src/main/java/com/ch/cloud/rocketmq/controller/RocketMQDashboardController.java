@@ -17,9 +17,13 @@
 
 package com.ch.cloud.rocketmq.controller;
 
+import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.service.DashboardService;
+import com.ch.cloud.rocketmq.service.OpsService;
+import com.ch.utils.DateUtils;
 import com.google.common.base.Strings;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,26 +35,33 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/rocketmq/dashboard")
 public class RocketMQDashboardController {
-
+    
     @Resource
     DashboardService dashboardService;
-
+    
+    @Resource
+    private OpsService opsService;
+    
     @GetMapping(value = "/broker")
-    public Object broker(@RequestParam String date) {
-        return dashboardService.queryBrokerData(date);
+    public Object broker(@RequestParam String date, @CookieValue String nameSvrAddr) {
+        
+        RMQConfigure.Client client = opsService.getClient(nameSvrAddr);
+        return dashboardService.listBrokerCollectData(client.getAddr(), DateUtils.parse(date));
     }
-
+    
     @GetMapping(value = "/topic")
-    public Object topic(@RequestParam String date, String topicName) {
+    public Object topic(@RequestParam String date, @RequestParam String topicName, @CookieValue String nameSvrAddr) {
         if (Strings.isNullOrEmpty(topicName)) {
-            return dashboardService.queryTopicData(date);
+            return null;
         }
-        return dashboardService.queryTopicData(date, topicName);
+        RMQConfigure.Client client = opsService.getClient(nameSvrAddr);
+        return dashboardService.listTopicCollectData(client.getAddr(), topicName, DateUtils.parse(date));
     }
-
+    
     @GetMapping(value = "/topicCurrent")
-    public Object topicCurrent() {
-        return dashboardService.queryTopicCurrentData();
+    public Object topicCurrent(@CookieValue String nameSvrAddr) {
+        RMQConfigure.Client client = opsService.getClient(nameSvrAddr);
+        return dashboardService.listLastTopicCollect(client.getAddr());
     }
-
+    
 }
