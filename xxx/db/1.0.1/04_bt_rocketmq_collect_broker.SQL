@@ -1,15 +1,13 @@
 DROP TABLE IF EXISTS `bt_rocketmq_collect_topic`;
-CREATE TABLE `bt_rocketmq_collect_topic`
-(
-    `id`             BIGINT(20)     NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `cluster_id`     bigint(20)     NOT NULL DEFAULT 0 COMMENT '集群ID',
-    `topic`          VARCHAR(50)    NULL COMMENT '主题',
-    `inTps`          decimal(18, 5)          DEFAULT NULL COMMENT '生产TPS',
-    `inMsgCntToday`  bigint(20)     NOT NULL DEFAULT '0' COMMENT '今日生产数',
-    `outTps`         decimal(18, 5) NULL COMMENT '消费TPS',
-    `outMsgCntToday` bigint(20)     NULL COMMENT '今日消费数',
-    `timestamp`      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`ID`),
-    KEY `IDX_BT_RCT_cid_topic` (`cluster_id`, `topic`)
-) ENGINE = INNODB
-  DEFAULT CHARSET = UTF8 COMMENT '模板表';
+
+-- 创建 broker_collect 表
+CREATE TABLE IF NOT EXISTS `rmq_broker_collect` (
+                                                `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                                                `name_srv_addr` VARCHAR(255) NOT NULL,
+    `broker` VARCHAR(255) NOT NULL,
+    `collect_date` DATE NOT null,
+    `collect_time` DATETIME NOT NULL,
+    `average_tps` DECIMAL(18,5) NOT NULL,
+    INDEX idx_broker_name (broker),
+    INDEX idx_collect_date (collect_date)
+    );
