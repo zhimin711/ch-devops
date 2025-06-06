@@ -16,11 +16,16 @@
  */
 package com.ch.cloud.rocketmq.service;
 
+import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.service.checker.CheckerType;
 
+import java.util.List;
 import java.util.Map;
 
 public interface OpsService {
+    
+    List<RMQConfigure.Client> listNameSvr();
+    
     Map<String, Object> homePageInfo();
 
     void updateNameSvrAddrList(String nameSvrAddrList);

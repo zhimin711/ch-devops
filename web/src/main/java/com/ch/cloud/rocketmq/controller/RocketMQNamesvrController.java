@@ -14,9 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package com.ch.cloud.rocketmq.controller;
 
-import com.ch.cloud.rocketmq.admin.annotation.OriginalControllerReturnValue;
 import com.ch.cloud.rocketmq.service.OpsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +25,21 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("/rocketmq")
+@RequestMapping("/rocketmq/name-svr")
 public class RocketMQNamesvrController {
+    
+    
     @Resource
     private OpsService opsService;
-
-    @GetMapping(value = "/nsaddr")
-    @OriginalControllerReturnValue
-    public Object getNameSvrList() {
+    
+    @GetMapping(value = "/addr")
+    public Object getNameSvrAddr() {
         return opsService.getNameSvrList();
+    }
+    
+    
+    @GetMapping(value = "/list")
+    public Object listNameSvr() {
+        return opsService.listNameSvr();
     }
 }

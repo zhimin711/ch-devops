@@ -33,26 +33,31 @@ import java.util.Map;
 public class OpsServiceImpl extends AbstractCommonService implements OpsService {
 
     @Resource
-    private RMQConfigure rMQConfigure;
+    private RMQConfigure configure;
 
     @Resource
     private List<RocketMqChecker> rocketMqCheckerList;
-
+    
+    @Override
+    public List<RMQConfigure.Client> listNameSvr() {
+        return configure.getClients();
+    }
+    
     @Override
     public Map<String, Object> homePageInfo() {
         Map<String, Object> homePageInfoMap = Maps.newHashMap();
-        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(rMQConfigure.getAddr()));
+        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(configure.getAddr()));
         return homePageInfoMap;
     }
 
     @Override
     public void updateNameSvrAddrList(String nameSvrAddrList) {
-        rMQConfigure.setAddr(nameSvrAddrList);
+        configure.setAddr(nameSvrAddrList);
     }
 
     @Override
     public String getNameSvrList() {
-        return rMQConfigure.getAddr();
+        return configure.getAddr();
     }
 
     @Override

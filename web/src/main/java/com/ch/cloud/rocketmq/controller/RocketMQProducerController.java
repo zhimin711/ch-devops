@@ -14,8 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package com.ch.cloud.rocketmq.controller;
 
+import com.ch.cloud.rocketmq.manager.RMQProducerManager;
 import com.ch.cloud.rocketmq.model.ConnectionInfo;
 import com.ch.cloud.rocketmq.service.ProducerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,13 +30,16 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/rocketmq/producer")
 public class RocketMQProducerController {
-
+    
     @Resource
     private ProducerService producerService;
-
+    
+    @Resource
+    private RMQProducerManager producerManager;
+    
     @GetMapping(value = "/connection")
     public Object producerConnection(@RequestParam String producerGroup, @RequestParam String topic) throws Exception {
-        ProducerConnection producerConnection = producerService.getProducerConnection(producerGroup, topic);
+        ProducerConnection producerConnection = producerManager.getProducerConnection(producerGroup, topic);
         return ConnectionInfo.buildConnectionInfoHashSet(producerConnection.getConnectionSet());
     }
 }

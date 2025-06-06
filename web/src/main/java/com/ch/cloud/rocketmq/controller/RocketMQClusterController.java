@@ -16,30 +16,29 @@
  */
 package com.ch.cloud.rocketmq.controller;
 
-import com.ch.cloud.rocketmq.service.ClusterService;
+import com.ch.cloud.rocketmq.manager.RMQClusterManager;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Resource;
 
 @Tag(name = "Rocket MQ 集群管理模块")
 @RestController
 @RequestMapping("/rocketmq/cluster")
 public class RocketMQClusterController {
 
-    @Resource
-    private ClusterService clusterService;
-
+    @Autowired
+    private RMQClusterManager rmqClusterManager;
+    
     @GetMapping
     public Object list() {
-        return clusterService.list();
+        return rmqClusterManager.list();
     }
 
     @GetMapping(value = "/brokerConfig")
     public Object brokerConfig(@RequestParam String brokerAddr) {
-        return clusterService.getBrokerConfig(brokerAddr);
+        return rmqClusterManager.getBrokerConfig(brokerAddr);
     }
 }

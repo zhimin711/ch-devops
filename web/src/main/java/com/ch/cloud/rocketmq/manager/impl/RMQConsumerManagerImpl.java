@@ -1,23 +1,6 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+package com.ch.cloud.rocketmq.manager.impl;
 
-package com.ch.cloud.rocketmq.service.impl;
-
-import com.ch.cloud.rocketmq.admin.annotation.MultiMQAdminCmdMethod;
+import com.ch.cloud.rocketmq.manager.RMQConsumerManager;
 import com.ch.cloud.rocketmq.model.ConsumerGroupRollBackStat;
 import com.ch.cloud.rocketmq.model.GroupConsumeInfo;
 import com.ch.cloud.rocketmq.model.QueueStatInfo;
@@ -25,15 +8,14 @@ import com.ch.cloud.rocketmq.model.TopicConsumerInfo;
 import com.ch.cloud.rocketmq.model.request.ConsumerConfigInfo;
 import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
-import com.ch.cloud.rocketmq.service.AbstractCommonService;
-import com.ch.cloud.rocketmq.service.ConsumerService;
 import com.ch.cloud.rocketmq.util.RMQAdminUtil;
 import com.ch.utils.CommonUtils;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.MQVersion;
@@ -49,8 +31,6 @@ import org.apache.rocketmq.common.protocol.body.GroupList;
 import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -58,25 +38,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.base.Throwables.propagate;
-
+/**
+ * 描述：
+ *
+ * @author zhimi
+ * @since 2025/5/16
+ */
 @Service
-public class ConsumerServiceImpl extends AbstractCommonService implements ConsumerService {
-    private Logger logger = LoggerFactory.getLogger(ConsumerServiceImpl.class);
-
+@Slf4j
+public class RMQConsumerManagerImpl implements RMQConsumerManager {
+    
     @Override
-    @MultiMQAdminCmdMethod
+    @SneakyThrows
     public List<GroupConsumeInfo> queryGroupList() {
         Set<String> consumerGroupSet = Sets.newHashSet();
-        try {
-            ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (BrokerData brokerData : clusterInfo.getBrokerAddrTable().values()) {
-                SubscriptionGroupWrapper subscriptionGroupWrapper = mqAdminExt.getAllSubscriptionGroup(brokerData.selectBrokerAddr(), 3000L);
-                consumerGroupSet.addAll(subscriptionGroupWrapper.getSubscriptionGroupTable().keySet());
-            }
-        }
-        catch (Exception err) {
-            throw Throwables.propagate(err);
+        ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
+        for (BrokerData brokerData : clusterInfo.getBrokerAddrTable().values()) {
+            SubscriptionGroupWrapper subscriptionGroupWrapper = RMQAdminUtil.getClient()
+                    .getAllSubscriptionGroup(brokerData.selectBrokerAddr(), 3000L);
+            consumerGroupSet.addAll(subscriptionGroupWrapper.getSubscriptionGroupTable().keySet());
         }
         List<GroupConsumeInfo> groupConsumeInfoList = Lists.newArrayList();
         for (String consumerGroup : consumerGroupSet) {
@@ -85,64 +65,53 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
         Collections.sort(groupConsumeInfoList);
         return groupConsumeInfoList;
     }
-
+    
     @Override
-    @MultiMQAdminCmdMethod
     public GroupConsumeInfo queryGroup(String consumerGroup) {
         GroupConsumeInfo groupConsumeInfo = new GroupConsumeInfo();
         try {
             ConsumeStats consumeStats = null;
             try {
-                consumeStats = mqAdminExt.examineConsumeStats(consumerGroup);
+                consumeStats = RMQAdminUtil.getClient().examineConsumeStats(consumerGroup);
+            } catch (Exception e) {
+                log.warn("examineConsumeStats exception, " + consumerGroup, e);
             }
-            catch (Exception e) {
-                logger.warn("examineConsumeStats exception, " + consumerGroup, e);
-            }
-
+            
             ConsumerConnection consumerConnection = null;
             try {
-                consumerConnection = mqAdminExt.examineConsumerConnectionInfo(consumerGroup);
+                consumerConnection = RMQAdminUtil.getClient().examineConsumerConnectionInfo(consumerGroup);
+            } catch (Exception e) {
+                log.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
             }
-            catch (Exception e) {
-                logger.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
-            }
-
+            
             groupConsumeInfo.setGroup(consumerGroup);
-
+            
             if (consumeStats != null) {
-                groupConsumeInfo.setConsumeTps((int)consumeStats.getConsumeTps());
+                groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
                 groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
             }
-
+            
             if (consumerConnection != null) {
                 groupConsumeInfo.setCount(consumerConnection.getConnectionSet().size());
                 groupConsumeInfo.setMessageModel(consumerConnection.getMessageModel());
                 groupConsumeInfo.setConsumeType(consumerConnection.getConsumeType());
                 groupConsumeInfo.setVersion(MQVersion.getVersionDesc(consumerConnection.computeMinVersion()));
             }
-        }
-        catch (Exception e) {
-            logger.warn("examineConsumeStats or examineConsumerConnectionInfo exception, "
-                + consumerGroup, e);
+        } catch (Exception e) {
+            log.warn("examineConsumeStats or examineConsumerConnectionInfo exception, {}", consumerGroup, e);
         }
         return groupConsumeInfo;
     }
-
+    
     @Override
     public List<TopicConsumerInfo> queryConsumeStatsListByGroupName(String groupName) {
         return queryConsumeStatsList(null, groupName);
     }
-
+    
+    @SneakyThrows
     @Override
-    @MultiMQAdminCmdMethod
     public List<TopicConsumerInfo> queryConsumeStatsList(final String topic, String groupName) {
-        ConsumeStats consumeStats = null;
-        try {
-            consumeStats = mqAdminExt.examineConsumeStats(groupName);
-        }
-        catch (Exception e) {
-            throw propagate(e);
-        }
+        ConsumeStats consumeStats = RMQAdminUtil.getClient().examineConsumeStats(groupName);
         List<MessageQueue> mqList = Lists.newArrayList(Iterables.filter(consumeStats.getOffsetTable().keySet(),
                 o -> StringUtils.isBlank(topic) || o.getTopic().equals(topic)));
         Collections.sort(mqList);
@@ -160,51 +129,47 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
         }
         return topicConsumerInfoList;
     }
-
+    
     private Map<MessageQueue, String> getClientConnection(String groupName) {
         Map<MessageQueue, String> results = Maps.newHashMap();
         try {
-            ConsumerConnection consumerConnection = mqAdminExt.examineConsumerConnectionInfo(groupName);
+            ConsumerConnection consumerConnection = RMQAdminUtil.getClient().examineConsumerConnectionInfo(groupName);
             for (Connection connection : consumerConnection.getConnectionSet()) {
                 String clinetId = connection.getClientId();
-                ConsumerRunningInfo consumerRunningInfo = mqAdminExt.getConsumerRunningInfo(groupName, clinetId, false);
+                ConsumerRunningInfo consumerRunningInfo = RMQAdminUtil.getClient()
+                        .getConsumerRunningInfo(groupName, clinetId, false);
                 for (MessageQueue messageQueue : consumerRunningInfo.getMqTable().keySet()) {
-//                    results.put(messageQueue, clinetId + " " + connection.getClientAddr());
+                    //                    results.put(messageQueue, clinetId + " " + connection.getClientAddr());
                     results.put(messageQueue, clinetId);
                 }
             }
-        }
-        catch (Exception err) {
-            logger.error("op=getClientConnection_error", err);
+        } catch (Exception err) {
+            log.error("op=getClientConnection_error", err);
         }
         return results;
     }
-
+    
+    @SneakyThrows
     @Override
-    @MultiMQAdminCmdMethod
     public Map<String /*groupName*/, TopicConsumerInfo> queryConsumeStatsListByTopicName(String topic) {
         Map<String, TopicConsumerInfo> group2ConsumerInfoMap = Maps.newHashMap();
-        try {
-            GroupList groupList = mqAdminExt.queryTopicConsumeByWho(topic);
-            for (String group : groupList.getGroupList()) {
-                List<TopicConsumerInfo> topicConsumerInfoList = queryConsumeStatsList(topic, group);
-                group2ConsumerInfoMap.put(group, CommonUtils.isEmpty(topicConsumerInfoList) ? new TopicConsumerInfo(topic) : topicConsumerInfoList.get(0));
-            }
-            return group2ConsumerInfoMap;
+        GroupList groupList = RMQAdminUtil.getClient().queryTopicConsumeByWho(topic);
+        for (String group : groupList.getGroupList()) {
+            List<TopicConsumerInfo> topicConsumerInfoList = queryConsumeStatsList(topic, group);
+            group2ConsumerInfoMap.put(group, CommonUtils.isEmpty(topicConsumerInfoList) ? new TopicConsumerInfo(topic)
+                    : topicConsumerInfoList.get(0));
         }
-        catch (Exception e) {
-            throw propagate(e);
-        }
+        return group2ConsumerInfoMap;
     }
-
+    
     @Override
-    @MultiMQAdminCmdMethod
     public Map<String, ConsumerGroupRollBackStat> resetOffset(ResetOffsetRequest resetOffsetRequest) {
         Map<String, ConsumerGroupRollBackStat> groupRollbackStats = Maps.newHashMap();
         for (String consumerGroup : resetOffsetRequest.getConsumerGroupList()) {
             try {
-                Map<MessageQueue, Long> rollbackStatsMap =
-                    mqAdminExt.resetOffsetByTimestamp(resetOffsetRequest.getTopic(), consumerGroup, resetOffsetRequest.getResetTime(), resetOffsetRequest.isForce());
+                Map<MessageQueue, Long> rollbackStatsMap = RMQAdminUtil.getClient()
+                        .resetOffsetByTimestamp(resetOffsetRequest.getTopic(), consumerGroup,
+                                resetOffsetRequest.getResetTime(), resetOffsetRequest.isForce());
                 ConsumerGroupRollBackStat consumerGroupRollBackStat = new ConsumerGroupRollBackStat(true);
                 List<RollbackStats> rollbackStatsList = consumerGroupRollBackStat.getRollbackStatsList();
                 for (Map.Entry<MessageQueue, Long> rollbackStatsEntty : rollbackStatsMap.entrySet()) {
@@ -215,119 +180,98 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
                     rollbackStatsList.add(rollbackStats);
                 }
                 groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
-            }
-            catch (MQClientException e) {
+            } catch (MQClientException e) {
                 if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) {
                     try {
                         ConsumerGroupRollBackStat consumerGroupRollBackStat = new ConsumerGroupRollBackStat(true);
-                        List<RollbackStats> rollbackStatsList = mqAdminExt.resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(), resetOffsetRequest.getResetTime(), true);
+                        List<RollbackStats> rollbackStatsList = RMQAdminUtil.getClient()
+                                .resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(),
+                                        resetOffsetRequest.getResetTime(), true);
                         consumerGroupRollBackStat.setRollbackStatsList(rollbackStatsList);
                         groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
                         continue;
+                    } catch (Exception err) {
+                        log.error("op=resetOffset_which_not_online_error", err);
                     }
-                    catch (Exception err) {
-                        logger.error("op=resetOffset_which_not_online_error", err);
-                    }
-                }
-                else {
-                    logger.error("op=resetOffset_error", e);
+                } else {
+                    log.error("op=resetOffset_error", e);
                 }
                 groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(false, e.getMessage()));
-            }
-            catch (Exception e) {
-                logger.error("op=resetOffset_error", e);
+            } catch (Exception e) {
+                log.error("op=resetOffset_error", e);
                 groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(false, e.getMessage()));
             }
         }
         return groupRollbackStats;
     }
-
+    
     @Override
-    @MultiMQAdminCmdMethod
+    @SneakyThrows
     public List<ConsumerConfigInfo> examineSubscriptionGroupConfig(String group) {
         List<ConsumerConfigInfo> consumerConfigInfoList = Lists.newArrayList();
-        try {
-            ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : clusterInfo.getBrokerAddrTable().keySet()) { //foreach brokerName
-                String brokerAddress = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
-                SubscriptionGroupConfig subscriptionGroupConfig = mqAdminExt.examineSubscriptionGroupConfig(brokerAddress, group);
-                if (subscriptionGroupConfig == null) {
-                    continue;
-                }
-                consumerConfigInfoList.add(new ConsumerConfigInfo(Lists.newArrayList(brokerName), subscriptionGroupConfig));
+        ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
+        for (String brokerName : clusterInfo.getBrokerAddrTable().keySet()) { //foreach brokerName
+            String brokerAddress = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
+            SubscriptionGroupConfig subscriptionGroupConfig = RMQAdminUtil.getClient()
+                    .examineSubscriptionGroupConfig(brokerAddress, group);
+            if (subscriptionGroupConfig == null) {
+                continue;
             }
-        }
-        catch (Exception e) {
-            throw propagate(e);
+            consumerConfigInfoList.add(new ConsumerConfigInfo(Lists.newArrayList(brokerName), subscriptionGroupConfig));
         }
         return consumerConfigInfoList;
     }
-
+    
+    
+    @SneakyThrows
     @Override
-    @MultiMQAdminCmdMethod
     public boolean deleteSubGroup(DeleteSubGroupRequest deleteSubGroupRequest) {
-        try {
-            ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : deleteSubGroupRequest.getBrokerNameList()) {
-                logger.info("addr={} groupName={}", clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), deleteSubGroupRequest.getGroupName());
-                mqAdminExt.deleteSubscriptionGroup(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), deleteSubGroupRequest.getGroupName());
-            }
-        }
-        catch (Exception e) {
-            throw propagate(e);
+        ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
+        for (String brokerName : deleteSubGroupRequest.getBrokerNameList()) {
+            log.info("addr={} groupName={}", clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(),
+                    deleteSubGroupRequest.getGroupName());
+            RMQAdminUtil.getClient()
+                    .deleteSubscriptionGroup(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(),
+                            deleteSubGroupRequest.getGroupName());
         }
         return true;
     }
-
+    
+    @SneakyThrows
     @Override
     public boolean createAndUpdateSubscriptionGroupConfig(ConsumerConfigInfo consumerConfigInfo) {
-        try {
-            ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : RMQAdminUtil.changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
+        ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
+        for (String brokerName : RMQAdminUtil.changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
                 consumerConfigInfo.getClusterNameList(), consumerConfigInfo.getBrokerNameList())) {
-                mqAdminExt.createAndUpdateSubscriptionGroupConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), consumerConfigInfo.getSubscriptionGroupConfig());
-            }
-        }
-        catch (Exception err) {
-            throw Throwables.propagate(err);
+            RMQAdminUtil.getClient().createAndUpdateSubscriptionGroupConfig(
+                    clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(),
+                    consumerConfigInfo.getSubscriptionGroupConfig());
         }
         return true;
     }
-
+    
+    
+    @SneakyThrows
     @Override
-    @MultiMQAdminCmdMethod
     public Set<String> fetchBrokerNameSetBySubscriptionGroup(String group) {
         Set<String> brokerNameSet = Sets.newHashSet();
-        try {
-            List<ConsumerConfigInfo> consumerConfigInfoList = examineSubscriptionGroupConfig(group);
-            for (ConsumerConfigInfo consumerConfigInfo : consumerConfigInfoList) {
-                brokerNameSet.addAll(consumerConfigInfo.getBrokerNameList());
-            }
-        }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
+        List<ConsumerConfigInfo> consumerConfigInfoList = examineSubscriptionGroupConfig(group);
+        for (ConsumerConfigInfo consumerConfigInfo : consumerConfigInfoList) {
+            brokerNameSet.addAll(consumerConfigInfo.getBrokerNameList());
         }
         return brokerNameSet;
-
+        
     }
-
+    
+    @SneakyThrows
     @Override
     public ConsumerConnection getConsumerConnection(String consumerGroup) {
-        try {
-            return mqAdminExt.examineConsumerConnectionInfo(consumerGroup);
-        }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return RMQAdminUtil.getClient().examineConsumerConnectionInfo(consumerGroup);
     }
-
+    
+    @SneakyThrows
     @Override
     public ConsumerRunningInfo getConsumerRunningInfo(String consumerGroup, String clientId, boolean jstack) {
-        try {
-            return mqAdminExt.getConsumerRunningInfo(consumerGroup, clientId, jstack);
-        }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return RMQAdminUtil.getClient().getConsumerRunningInfo(consumerGroup, clientId, jstack);
     }
 }

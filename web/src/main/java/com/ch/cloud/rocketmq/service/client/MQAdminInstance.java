@@ -14,8 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package com.ch.cloud.rocketmq.service.client;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
@@ -26,9 +28,11 @@ import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.joor.Reflect;
 
 public class MQAdminInstance {
-    private static final ThreadLocal<DefaultMQAdminExt> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<DefaultMQAdminExt>();
-    private static final ThreadLocal<Integer> INIT_COUNTER = new ThreadLocal<Integer>();
-
+    
+    private static final ThreadLocal<DefaultMQAdminExt> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<>();
+    
+    private static final ThreadLocal<Integer> INIT_COUNTER = new ThreadLocal<>();
+    
     public static MQAdminExt threadLocalMQAdminExt() {
         DefaultMQAdminExt defaultMQAdminExt = MQ_ADMIN_EXT_THREAD_LOCAL.get();
         if (defaultMQAdminExt == null) {
@@ -36,39 +40,38 @@ public class MQAdminInstance {
         }
         return defaultMQAdminExt;
     }
-
+    
     public static RemotingClient threadLocalRemotingClient() {
         MQClientInstance mqClientInstance = threadLocalMqClientInstance();
         MQClientAPIImpl mQClientAPIImpl = Reflect.on(mqClientInstance).get("mQClientAPIImpl");
         return Reflect.on(mQClientAPIImpl).get("remotingClient");
     }
-
+    
     public static MQClientInstance threadLocalMqClientInstance() {
-        DefaultMQAdminExtImpl defaultMQAdminExtImpl = Reflect.on(MQAdminInstance.threadLocalMQAdminExt()).get("defaultMQAdminExtImpl");
+        DefaultMQAdminExtImpl defaultMQAdminExtImpl = Reflect.on(MQAdminInstance.threadLocalMQAdminExt())
+                .get("defaultMQAdminExtImpl");
         return Reflect.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
-
+    
     public static void initMQAdminInstance(long timeoutMillis) throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
         if (nowCount == null) {
             DefaultMQAdminExt defaultMQAdminExt;
             if (timeoutMillis > 0) {
                 defaultMQAdminExt = new DefaultMQAdminExt(timeoutMillis);
-            }
-            else {
+            } else {
                 defaultMQAdminExt = new DefaultMQAdminExt();
             }
             defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
             defaultMQAdminExt.start();
             MQ_ADMIN_EXT_THREAD_LOCAL.set(defaultMQAdminExt);
             INIT_COUNTER.set(1);
-        }
-        else {
+        } else {
             INIT_COUNTER.set(nowCount + 1);
         }
-
+        
     }
-
+    
     public static void destroyMQAdminInstance() {
         Integer nowCount = INIT_COUNTER.get() - 1;
         if (nowCount > 0) {

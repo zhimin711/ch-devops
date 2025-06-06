@@ -17,6 +17,7 @@
 
 package com.ch.cloud.rocketmq.service.impl;
 
+import com.ch.cloud.rocketmq.util.RMQAdminUtil;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -95,7 +96,7 @@ public class RocketMQTopicServiceImpl extends AbstractCommonService implements T
         BeanUtils.copyProperties(topicCreateOrUpdateRequest, topicConfig);
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
+            for (String brokerName : RMQAdminUtil.changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
                     topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
                 mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }

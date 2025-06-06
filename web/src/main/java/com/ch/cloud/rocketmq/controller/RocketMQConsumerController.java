@@ -25,6 +25,7 @@ import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +36,9 @@ import javax.annotation.Resource;
 @Tag(name = "Rocket MQ 消费者管理模块")
 @RestController
 @RequestMapping("/rocketmq/consumer")
+@Slf4j
 public class RocketMQConsumerController {
-    private Logger logger = LoggerFactory.getLogger(RocketMQConsumerController.class);
-
+    
     @Resource
     private ConsumerService consumerService;
 
@@ -53,7 +54,7 @@ public class RocketMQConsumerController {
 
     @PostMapping(value = "/resetOffset")
     public Object resetOffset(@RequestBody ResetOffsetRequest resetOffsetRequest) {
-        logger.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
+        log.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
         return consumerService.resetOffset(resetOffsetRequest);
     }
 
