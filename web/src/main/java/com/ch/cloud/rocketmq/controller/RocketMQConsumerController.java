@@ -16,19 +16,17 @@
  */
 package com.ch.cloud.rocketmq.controller;
 
+import com.ch.cloud.rocketmq.manager.RMQConsumerManager;
 import com.ch.cloud.rocketmq.model.ConnectionInfo;
 import com.ch.cloud.rocketmq.model.request.ConsumerConfigInfo;
 import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
-import com.ch.cloud.rocketmq.service.ConsumerService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,54 +38,54 @@ import javax.annotation.Resource;
 public class RocketMQConsumerController {
     
     @Resource
-    private ConsumerService consumerService;
+    private RMQConsumerManager consumerManager;
 
     @GetMapping(value = "/groups")
     public Object list() {
-        return consumerService.queryGroupList();
+        return consumerManager.queryGroupList();
     }
 
     @GetMapping(value = "/group")
     public Object groupQuery(@RequestParam String consumerGroup) {
-        return consumerService.queryGroup(consumerGroup);
+        return consumerManager.queryGroup(consumerGroup);
     }
 
     @PostMapping(value = "/resetOffset")
     public Object resetOffset(@RequestBody ResetOffsetRequest resetOffsetRequest) {
         log.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
-        return consumerService.resetOffset(resetOffsetRequest);
+        return consumerManager.resetOffset(resetOffsetRequest);
     }
 
     @GetMapping(value = "/examineSubscriptionGroupConfig")
     public Object examineSubscriptionGroupConfig(@RequestParam String consumerGroup) {
-        return consumerService.examineSubscriptionGroupConfig(consumerGroup);
+        return consumerManager.examineSubscriptionGroupConfig(consumerGroup);
     }
 
     @PostMapping(value = "/deleteSubGroup")
     public Object deleteSubGroup(@RequestBody DeleteSubGroupRequest deleteSubGroupRequest) {
-        return consumerService.deleteSubGroup(deleteSubGroupRequest);
+        return consumerManager.deleteSubGroup(deleteSubGroupRequest);
     }
 
     @PostMapping
     public Object consumerCreateOrUpdateRequest(@RequestBody ConsumerConfigInfo consumerConfigInfo) {
         Preconditions.checkArgument(CommonUtils.isNotEmpty(consumerConfigInfo.getBrokerNameList()) || CommonUtils.isNotEmpty(consumerConfigInfo.getClusterNameList()),
                 "clusterName or brokerName can not be all blank");
-        return consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
+        return consumerManager.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
     }
 
     @GetMapping(value = "/fetchBrokerNameList")
     public Object fetchBrokerNameList(@RequestParam String consumerGroup) {
-        return consumerService.fetchBrokerNameSetBySubscriptionGroup(consumerGroup);
+        return consumerManager.fetchBrokerNameSetBySubscriptionGroup(consumerGroup);
     }
 
     @GetMapping(value = "/queryTopic")
     public Object queryConsumerByTopic(@RequestParam String consumerGroup) {
-        return consumerService.queryConsumeStatsListByGroupName(consumerGroup);
+        return consumerManager.queryConsumeStatsListByGroupName(consumerGroup);
     }
 
     @GetMapping(value = "/connection")
     public Object consumerConnection(@RequestParam(required = false) String consumerGroup) {
-        ConsumerConnection consumerConnection = consumerService.getConsumerConnection(consumerGroup);
+        ConsumerConnection consumerConnection = consumerManager.getConsumerConnection(consumerGroup);
         consumerConnection.setConnectionSet(ConnectionInfo.buildConnectionInfoHashSet(consumerConnection.getConnectionSet()));
         return consumerConnection;
     }
@@ -95,6 +93,6 @@ public class RocketMQConsumerController {
     @GetMapping(value = "/runningInfo")
     public Object getConsumerRunningInfo(@RequestParam String consumerGroup, @RequestParam String clientId,
                                          @RequestParam boolean jstack) {
-        return consumerService.getConsumerRunningInfo(consumerGroup, clientId, jstack);
+        return consumerManager.getConsumerRunningInfo(consumerGroup, clientId, jstack);
     }
 }

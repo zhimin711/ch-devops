@@ -81,6 +81,9 @@ public class DashboardCollectTask {
         }
         rmqConfigure.getClients().forEach(client -> {
             try {
+                if(!client.getEnableCollect()){
+                    return;
+                }
                 RMQAdminUtil.initMQAdminExt(client.getAddr());
                 MQAdminExt mqAdminExt = RMQAdminUtil.getClient();
                 Stopwatch stopwatch = Stopwatch.createStarted();
@@ -173,6 +176,9 @@ public class DashboardCollectTask {
         }
         rmqConfigure.getClients().forEach(client -> {
             try {
+                if(!client.getEnableCollect()){
+                    return;
+                }
                 Date date = new Date();
                 
                 RMQAdminUtil.initMQAdminExt(client.getAddr());

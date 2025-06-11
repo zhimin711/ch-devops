@@ -44,15 +44,14 @@ public class RMQAspect {
                 RequestContextHolder.getRequestAttributes())).getRequest();
         
         // 从 Cookie 中获取 nameSrvAddr
-        String nameSrvAddr = RequestUtil.getFromCookie(request,"nameSrvAddr");
-        
+        String nameSrvAddr = RequestUtil.getFromCookie(request, "nameSrvAddr");
         
         try {
             RMQAdminUtil.initMQAdminExt(opsService.getClient(nameSrvAddr).getAddr());
             obj = joinPoint.proceed();
         } finally {
             RMQAdminUtil.destroyMQAdminExt();
-            log.debug("op=look method={} cost={}", joinPoint.getSignature().getName(),
+            log.debug("op=look adrr={} method={} cost={}", nameSrvAddr, joinPoint.getSignature().getName(),
                     System.currentTimeMillis() - start);
         }
         return obj;

@@ -20,6 +20,7 @@ package com.ch.cloud.rocketmq.controller;
 import javax.annotation.Resource;
 
 import com.ch.cloud.rocketmq.manager.RMQConsumerManager;
+import com.ch.cloud.rocketmq.manager.RMQTopicManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ch.cloud.rocketmq.model.request.SendTopicMessageRequest;
 import com.ch.cloud.rocketmq.model.request.TopicConfigInfo;
-import com.ch.cloud.rocketmq.service.TopicService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
@@ -50,7 +50,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class RocketMQTopicController {
     
     @Resource
-    private TopicService topicService;
+    private RMQTopicManager rmqTopicManager;
     
     @Resource
     private RMQConsumerManager rmqConsumerManager;
@@ -58,7 +58,7 @@ public class RocketMQTopicController {
     @Operation(summary = "查询所有主题", description = "获取当前 NameServer 下的所有主题列表", tags = {"Topic"})
     @GetMapping
     public Object list() {
-        return topicService.fetchAllTopicList();
+        return rmqTopicManager.fetchAllTopicList();
     }
     
     @Operation(summary = "获取主题统计信息", description = "获取指定主题的消息统计信息", tags = {
@@ -66,7 +66,7 @@ public class RocketMQTopicController {
             @Parameter(name = "topic", description = "主题名称", required = true, example = "TestTopic")})
     @GetMapping(value = "/stats")
     public Object stats(@RequestParam String topic) {
-        return topicService.stats(topic);
+        return rmqTopicManager.stats(topic);
     }
     
     @Operation(summary = "获取主题路由信息", description = "获取指定主题的路由信息（Broker、Queue等）", tags = {
@@ -74,7 +74,7 @@ public class RocketMQTopicController {
             @Parameter(name = "topic", description = "主题名称", required = true, example = "TestTopic")})
     @GetMapping(value = "/route")
     public Object route(@RequestParam String topic) {
-        return topicService.route(topic);
+        return rmqTopicManager.route(topic);
     }
     
     @Operation(summary = "查询消费者的消费统计", description = "根据主题查询消费者的消费统计详情", tags = {
@@ -90,7 +90,7 @@ public class RocketMQTopicController {
             @Parameter(name = "topic", description = "主题名称", required = true, example = "TestTopic")})
     @GetMapping(value = "/consumerInfo")
     public Object queryTopicConsumerInfo(@RequestParam String topic) {
-        return topicService.queryTopicConsumerInfo(topic);
+        return rmqTopicManager.queryTopicConsumerInfo(topic);
     }
     
     @Operation(summary = "创建或更新主题配置", description = "根据传入的主题配置信息创建或更新主题", tags = {
@@ -103,7 +103,7 @@ public class RocketMQTopicController {
                         topicCreateOrUpdateRequest.getClusterNameList()),
                 "clusterName or brokerName can not be all blank");
         log.info("op=look topicCreateOrUpdateRequest={}", JsonUtil.obj2String(topicCreateOrUpdateRequest));
-        topicService.createOrUpdate(topicCreateOrUpdateRequest);
+        rmqTopicManager.createOrUpdate(topicCreateOrUpdateRequest);
         return true;
     }
     
@@ -113,7 +113,7 @@ public class RocketMQTopicController {
             @Parameter(name = "brokerName", description = "Broker 名称", required = false, example = "BrokerA")})
     @GetMapping(value = "/config")
     public Object examineTopicConfig(@RequestParam String topic, @RequestParam(required = false) String brokerName) {
-        return topicService.examineTopicConfig(topic);
+        return rmqTopicManager.examineTopicConfig(topic);
     }
     
     @Operation(summary = "发送消息到主题", description = "向指定主题发送测试消息", tags = {
@@ -121,7 +121,7 @@ public class RocketMQTopicController {
     @ApiResponse(responseCode = "200", description = "消息发送成功")
     @PostMapping(value = "/sendMessage")
     public Object sendTopicMessage(@RequestBody SendTopicMessageRequest sendTopicMessageRequest) {
-        return topicService.sendTopicMessageRequest(sendTopicMessageRequest);
+        return rmqTopicManager.sendTopicMessageRequest(sendTopicMessageRequest);
     }
     
     
@@ -130,7 +130,7 @@ public class RocketMQTopicController {
             @Parameter(name = "topic", description = "主题名称", required = true, example = "TestTopic")})
     @DeleteMapping
     public Object delete(@RequestParam(required = false) String clusterName, @RequestParam String topic) {
-        return topicService.deleteTopic(topic, clusterName);
+        return rmqTopicManager.deleteTopic(topic, clusterName);
     }
     
     @Operation(summary = "从指定 Broker 删除主题", description = "在指定 Broker 上删除某个主题", tags = {
@@ -139,7 +139,7 @@ public class RocketMQTopicController {
             @Parameter(name = "topic", description = "主题名称", required = true, example = "TestTopic")})
     @PostMapping("/deleteTopicByBroker")
     public Object deleteTopicByBroker(@RequestParam String brokerName, @RequestParam String topic) {
-        return topicService.deleteTopicInBroker(brokerName, topic);
+        return rmqTopicManager.deleteTopicInBroker(brokerName, topic);
     }
     
 }

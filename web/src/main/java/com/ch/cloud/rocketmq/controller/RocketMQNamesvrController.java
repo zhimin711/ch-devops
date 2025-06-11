@@ -28,7 +28,6 @@ import javax.annotation.Resource;
 @RequestMapping("/rocketmq/name-svr")
 public class RocketMQNamesvrController {
     
-    
     @Resource
     private OpsService opsService;
     

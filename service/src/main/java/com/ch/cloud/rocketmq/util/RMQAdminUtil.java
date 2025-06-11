@@ -25,12 +25,12 @@ public class RMQAdminUtil {
     
     private static final ThreadLocal<Pair<String, MQAdminExt>> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<>();
     
-    public static void initMQAdminExt(String nameSrvAddr) {
+    public static synchronized void initMQAdminExt(String nameSrvAddr) {
         Pair<String, MQAdminExt> pair = MQ_ADMIN_EXT_THREAD_LOCAL.get();
         if (pair == null || !nameSrvAddr.equals(pair.getKey())) {
             DefaultMQAdminExt mqAdminExt = new DefaultMQAdminExt();
             mqAdminExt.setNamesrvAddr(nameSrvAddr);
-            mqAdminExt.setAdminExtGroup("admin_ext_group" + System.currentTimeMillis());
+            mqAdminExt.setAdminExtGroup("admin_ext_group_" + System.currentTimeMillis());
             try {
                 mqAdminExt.start();
                 MQ_ADMIN_EXT_THREAD_LOCAL.set(Pair.of(nameSrvAddr, mqAdminExt));
