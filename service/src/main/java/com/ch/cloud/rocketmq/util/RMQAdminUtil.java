@@ -31,6 +31,7 @@ public class RMQAdminUtil {
             DefaultMQAdminExt mqAdminExt = new DefaultMQAdminExt();
             mqAdminExt.setNamesrvAddr(nameSrvAddr);
             mqAdminExt.setAdminExtGroup("admin_ext_group_" + System.currentTimeMillis());
+            mqAdminExt.setInstanceName("rmq_admin_util");
             try {
                 mqAdminExt.start();
                 MQ_ADMIN_EXT_THREAD_LOCAL.set(Pair.of(nameSrvAddr, mqAdminExt));

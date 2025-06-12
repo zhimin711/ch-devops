@@ -25,20 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("/rocketmq/name-svr")
-public class RocketMQNamesvrController {
+@RequestMapping("/rocketmq/name-srv")
+public class RocketMQNameSrvController {
     
     @Resource
     private OpsService opsService;
     
     @GetMapping(value = "/addr")
-    public Object getNameSvrAddr() {
-        return opsService.getNameSvrList();
+    public Object getNameSrvAddr() {
+        return opsService.getNameSrvList();
     }
     
     
     @GetMapping(value = "/list")
-    public Object listNameSvr() {
-        return opsService.listNameSvr();
+    public Object listNameSrv() {
+        return opsService.listNameSrv();
     }
 }

@@ -51,7 +51,7 @@ public class RMQAspect {
             obj = joinPoint.proceed();
         } finally {
             RMQAdminUtil.destroyMQAdminExt();
-            log.debug("op=look adrr={} method={} cost={}", nameSrvAddr, joinPoint.getSignature().getName(),
+            log.debug("op=look addr={} method={} cost={}", nameSrvAddr, joinPoint.getSignature().getName(),
                     System.currentTimeMillis() - start);
         }
         return obj;

@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/test")
 @Slf4j
 public class TestRocketMQController {
-    private String testTopic = "test1";
 
     @Resource
     private RMQConfigure rMQConfigure;

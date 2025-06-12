@@ -85,8 +85,8 @@ public class DashboardServiceImpl implements DashboardService {
     }
     
     @Override
-    public List<String> listLastTopicCollect(String nameSvrAddr) {
-        List<RMQTopicCollect> list = dashboardCollectService.listLastTopicCollect(nameSvrAddr);
+    public List<String> listLastTopicCollect(String nameSrvAddr) {
+        List<RMQTopicCollect> list = dashboardCollectService.listLastTopicCollect(nameSrvAddr);
         if (CommonUtils.isNotEmpty(list)) {
             return Lists.transform(list, input -> input.getTopic() + "," + input.getOutMsgCntToday());
         }
@@ -94,8 +94,8 @@ public class DashboardServiceImpl implements DashboardService {
     }
     
     @Override
-    public List<String> listTopicCollectData(String nameSvrAddr, String topicName, Date date) {
-        List<RMQTopicCollect> list = dashboardCollectService.listTopicCollectData(nameSvrAddr, topicName, date);
+    public List<String> listTopicCollectData(String nameSrvAddr, String topicName, Date date) {
+        List<RMQTopicCollect> list = dashboardCollectService.listTopicCollectData(nameSrvAddr, topicName, date);
         
         if (CommonUtils.isNotEmpty(list)) {
             return Lists.transform(list,
@@ -106,8 +106,8 @@ public class DashboardServiceImpl implements DashboardService {
     }
     
     @Override
-    public Map<String, List<String>> listBrokerCollectData(String nameSvrAddr, Date date) {
-        List<RMQBrokerCollect> list = dashboardCollectService.listBrokerCollectData(nameSvrAddr, date);
+    public Map<String, List<String>> listBrokerCollectData(String nameSrvAddr, Date date) {
+        List<RMQBrokerCollect> list = dashboardCollectService.listBrokerCollectData(nameSrvAddr, date);
         if (CommonUtils.isNotEmpty(list)) {
             Map<String, List<String>> result = Maps.newHashMap();
             list.stream().collect(Collectors.groupingBy(RMQBrokerCollect::getBroker)).forEach((k, v) -> {

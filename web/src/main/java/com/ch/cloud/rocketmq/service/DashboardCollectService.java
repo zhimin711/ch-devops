@@ -42,9 +42,9 @@ public interface DashboardCollectService {
     
     List<RMQTopicCollect> listLastTopicCollect(String clientAddr);
     
-    List<RMQTopicCollect> listTopicCollectData(String nameSvrAddr, String topicName, Date date);
+    List<RMQTopicCollect> listTopicCollectData(String nameSrvAddr, String topicName, Date date);
     
-    List<RMQBrokerCollect> listBrokerCollectData(String nameSvrAddr, Date date);
+    List<RMQBrokerCollect> listBrokerCollectData(String nameSrvAddr, Date date);
     
     boolean saveBatchBrokerData(List<RMQBrokerCollect> data);
 }

@@ -28,14 +28,9 @@ public class RocketMQOpsController {
     @Resource
     private OpsService opsService;
 
-    @GetMapping(value = "/homePage.query")
-    public Object homePage() {
-        return opsService.homePageInfo();
-    }
-
     @PostMapping(value = "/updateNameSvrAddr")
-    public Object updateNameSvrAddr(@RequestParam String nameSvrAddrList) {
-        opsService.updateNameSvrAddrList(nameSvrAddrList);
+    public Object updateNameSvrAddr(@RequestParam String nameSrvAddrList) {
+        opsService.updateNameSrvAddrList(nameSrvAddrList);
         return true;
     }
 

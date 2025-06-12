@@ -24,15 +24,15 @@ import java.util.Map;
 
 public interface OpsService {
     
-    List<RMQConfigure.Client> listNameSvr();
+    List<RMQConfigure.Client> listNameSrv();
     
-    RMQConfigure.Client getClient(String nameSvrAddr);
+    RMQConfigure.Client getClient(String nameSrvAddr);
     
     Map<String, Object> homePageInfo();
 
-    void updateNameSvrAddrList(String nameSvrAddrList);
+    void updateNameSrvAddrList(String nameSrvAddrList);
 
-    String getNameSvrList();
+    String getNameSrvList();
 
     Map<CheckerType,Object> rocketMqStatusCheck();
 }

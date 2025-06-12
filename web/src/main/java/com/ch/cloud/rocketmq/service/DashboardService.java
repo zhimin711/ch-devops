@@ -47,9 +47,9 @@ public interface DashboardService {
      */
     List<String> queryTopicCurrentData();
     
-    List<String> listLastTopicCollect(String nameSvrAddr);
+    List<String> listLastTopicCollect(String nameSrvAddr);
     
-    List<String> listTopicCollectData(String nameSvrAddr, String topicName, Date date);
+    List<String> listTopicCollectData(String nameSrvAddr, String topicName, Date date);
     
-    Map<String, List<String>>  listBrokerCollectData(String nameSvrAddr, Date date);
+    Map<String, List<String>>  listBrokerCollectData(String nameSrvAddr, Date date);
 }

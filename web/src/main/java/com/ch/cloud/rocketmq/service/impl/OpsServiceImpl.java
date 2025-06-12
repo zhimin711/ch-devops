@@ -43,32 +43,32 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     private List<RocketMqChecker> rocketMqCheckerList;
     
     @Override
-    public List<RMQConfigure.Client> listNameSvr() {
+    public List<RMQConfigure.Client> listNameSrv() {
         return configure.getClients();
     }
     
     @Override
-    public RMQConfigure.Client getClient(String nameSvrAddr) {
-        Assert.notEmpty(configure.getClients(), PubError.CONFIG, "nameSvr client");
+    public RMQConfigure.Client getClient(String nameSrvAddr) {
+        Assert.notEmpty(configure.getClients(), PubError.CONFIG, "nameSrv client");
         Optional<RMQConfigure.Client> first = configure.getClients().stream()
-                .filter(client -> client.getAddr().equals(nameSvrAddr)).findFirst();
+                .filter(client -> client.getAddr().equals(nameSrvAddr)).findFirst();
         return first.orElseGet(() -> configure.getClients().get(0));
     }
     
     @Override
     public Map<String, Object> homePageInfo() {
         Map<String, Object> homePageInfoMap = Maps.newHashMap();
-        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(configure.getAddr()));
+        homePageInfoMap.put("namesrvAddrList", Splitter.on(";").splitToList(configure.getAddr()));
         return homePageInfoMap;
     }
     
     @Override
-    public void updateNameSvrAddrList(String nameSvrAddrList) {
-        configure.setAddr(nameSvrAddrList);
+    public void updateNameSrvAddrList(String nameSrvAddrList) {
+        configure.setAddr(nameSrvAddrList);
     }
     
     @Override
-    public String getNameSvrList() {
+    public String getNameSrvList() {
         return configure.getAddr();
     }
     

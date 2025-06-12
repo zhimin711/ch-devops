@@ -43,24 +43,24 @@ public class RocketMQDashboardController {
     private OpsService opsService;
     
     @GetMapping(value = "/broker")
-    public Object broker(@RequestParam String date, @CookieValue String nameSvrAddr) {
+    public Object broker(@RequestParam String date, @CookieValue String nameSrvAddr) {
         
-        RMQConfigure.Client client = opsService.getClient(nameSvrAddr);
+        RMQConfigure.Client client = opsService.getClient(nameSrvAddr);
         return dashboardService.listBrokerCollectData(client.getAddr(), DateUtils.parse(date));
     }
     
     @GetMapping(value = "/topic")
-    public Object topic(@RequestParam String date, @RequestParam String topicName, @CookieValue String nameSvrAddr) {
+    public Object topic(@RequestParam String date, @RequestParam String topicName, @CookieValue String nameSrvAddr) {
         if (Strings.isNullOrEmpty(topicName)) {
             return null;
         }
-        RMQConfigure.Client client = opsService.getClient(nameSvrAddr);
+        RMQConfigure.Client client = opsService.getClient(nameSrvAddr);
         return dashboardService.listTopicCollectData(client.getAddr(), topicName, DateUtils.parse(date));
     }
     
     @GetMapping(value = "/topicCurrent")
-    public Object topicCurrent(@CookieValue String nameSvrAddr) {
-        RMQConfigure.Client client = opsService.getClient(nameSvrAddr);
+    public Object topicCurrent(@CookieValue String nameSrvAddr) {
+        RMQConfigure.Client client = opsService.getClient(nameSrvAddr);
         return dashboardService.listLastTopicCollect(client.getAddr());
     }
     

@@ -161,18 +161,18 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     }
     
     @Override
-    public List<RMQTopicCollect> listTopicCollectData(String nameSvrAddr, String topicName, Date date) {
+    public List<RMQTopicCollect> listTopicCollectData(String nameSrvAddr, String topicName, Date date) {
         Example ex = Example.builder(RMQTopicCollect.class).andWhere(
-                Sqls.custom().andEqualTo("nameSrvAddr", nameSvrAddr).andEqualTo("topic", topicName)
+                Sqls.custom().andEqualTo("nameSrvAddr", nameSrvAddr).andEqualTo("topic", topicName)
                         .andEqualTo("collectDate", date)).orderByAsc("collectTime").build();
         
         return topicCollectMapper.selectByExample(ex);
     }
     
     @Override
-    public List<RMQBrokerCollect> listBrokerCollectData(String nameSvrAddr, Date date) {
+    public List<RMQBrokerCollect> listBrokerCollectData(String nameSrvAddr, Date date) {
         Example ex = Example.builder(RMQBrokerCollect.class)
-                .andWhere(Sqls.custom().andEqualTo("nameSrvAddr", nameSvrAddr).andEqualTo("collectDate", date))
+                .andWhere(Sqls.custom().andEqualTo("nameSrvAddr", nameSrvAddr).andEqualTo("collectDate", date))
                 .orderByAsc("collectTime").build();
         return brokerCollectMapper.selectByExample(ex);
     }
