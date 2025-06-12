@@ -3,6 +3,7 @@ package com.ch.cloud.rocketmq.util;
 import cn.hutool.core.lang.Pair;
 import com.ch.e.Assert;
 import com.ch.e.PubError;
+import com.ch.toolkit.ContextUtil;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -30,8 +31,13 @@ public class RMQAdminUtil {
         if (pair == null || !nameSrvAddr.equals(pair.getKey())) {
             DefaultMQAdminExt mqAdminExt = new DefaultMQAdminExt();
             mqAdminExt.setNamesrvAddr(nameSrvAddr);
-            mqAdminExt.setAdminExtGroup("admin_ext_group_" + System.currentTimeMillis());
-            mqAdminExt.setInstanceName("rmq_admin_util");
+            if (CommonUtils.isNotEmpty(ContextUtil.getUsername())) {
+                mqAdminExt.setAdminExtGroup("admin_ext_group_" + ContextUtil.getUsername());
+                mqAdminExt.setInstanceName("rmq_admin_user_" + ContextUtil.getUsername());
+            } else {
+                mqAdminExt.setAdminExtGroup("admin_ext_group_" + System.currentTimeMillis());
+                mqAdminExt.setInstanceName("rmq_admin_util");
+            }
             try {
                 mqAdminExt.start();
                 MQ_ADMIN_EXT_THREAD_LOCAL.set(Pair.of(nameSrvAddr, mqAdminExt));

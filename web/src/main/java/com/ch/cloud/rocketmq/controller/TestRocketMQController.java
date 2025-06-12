@@ -14,18 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package com.ch.cloud.rocketmq.controller;
 
-import com.ch.Constants;
 import com.ch.Separator;
 import com.ch.cloud.rocketmq.config.RMQConfigure;
-import com.ch.cloud.rocketmq.service.TopicService;
+import com.ch.cloud.rocketmq.manager.RMQTopicManager;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
-import com.ch.e.ExUtils;
 import com.ch.utils.StringUtilsV2;
 import com.google.common.collect.Sets;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -53,31 +53,34 @@ import java.util.stream.Collectors;
 @RequestMapping("/test")
 @Slf4j
 public class TestRocketMQController {
-
+    
     @Resource
     private RMQConfigure rMQConfigure;
-
+    
     @Resource
-    private TopicService topicService;
-
+    private RMQTopicManager rmqTopicManager;
+    
     private Set<String> allTopics = Sets.newHashSet();
+    
     private Set<String> existsTopics = Sets.newHashSet();
-
+    
     @GetMapping(value = "/runTask")
-    public Object list(@RequestParam String topicStr,
-                       @RequestParam(required = false) Integer consumerThreadSize,
-                       @RequestParam(required = false) Integer producerThreadSize) throws MQClientException {
-
+    public Object list(@RequestParam String topicStr, @RequestParam(required = false) Integer consumerThreadSize,
+            @RequestParam(required = false) Integer producerThreadSize) throws MQClientException {
+        
         if (CommonUtils.isEmpty(topicStr)) {
             ExUtils.throwError(PubError.NON_NULL, "topic must be not null!");
         }
         if (CommonUtils.isEmpty(allTopics)) {
-            TopicList list = topicService.fetchAllTopicList();
+            TopicList list = rmqTopicManager.fetchAllTopicList();
             allTopics = list.getTopicList();
         }
         List<String> topics = StringUtilsV2.splitStr(Separator.S2, topicStr);
-        Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e)).collect(Collectors.toSet());
-        if (list.isEmpty()) return null;
+        Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e))
+                .collect(Collectors.toSet());
+        if (list.isEmpty()) {
+            return null;
+        }
         int consumerThreadSize2 = CommonUtils.isEmpty(consumerThreadSize) ? 1 : consumerThreadSize;
         int producerThreadSize2 = CommonUtils.isEmpty(producerThreadSize) ? 1 : producerThreadSize;
         for (String topic : list) {
@@ -92,7 +95,7 @@ public class TestRocketMQController {
                 });
                 consumer.start();
             }
-
+            
             for (int j = 0; j < producerThreadSize2; j++) {
                 final DefaultMQProducer producer = new DefaultMQProducer(topic + "_" + (j + 1) + "Group");
                 producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
@@ -102,11 +105,8 @@ public class TestRocketMQController {
                     int i = 0;
                     while (true) {
                         try {
-                            Message msg = new Message(topic,
-                                    "TagA" + i,
-                                    "KEYS" + i,
-                                    ("Hello RocketMQ " + i).getBytes()
-                            );
+                            Message msg = new Message(topic, "TagA" + i, "KEYS" + i,
+                                    ("Hello RocketMQ " + i).getBytes());
                             Thread.sleep(1000L);
                             SendResult sendResult = producer.send(msg);
                             log.info("{} sendMessage={}", topic, JsonUtil.obj2String(sendResult));
@@ -122,7 +122,7 @@ public class TestRocketMQController {
             }
             existsTopics.add(topic);
         }
-
+        
         return true;
     }
 }
