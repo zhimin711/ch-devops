@@ -212,8 +212,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
         for (String brokerName : clusterInfo.getBrokerAddrTable().keySet()) { //foreach brokerName
             String brokerAddress = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
-            SubscriptionGroupConfig subscriptionGroupConfig = RMQAdminUtil.getClient()
-                    .examineSubscriptionGroupConfig(brokerAddress, group);
+            SubscriptionGroupConfig subscriptionGroupConfig = RMQAdminUtil.examineSubscriptionGroupConfig(brokerAddress, group);
             if (subscriptionGroupConfig == null) {
                 continue;
             }

@@ -88,6 +88,6 @@ public class RMQConfigure {
         
         private String addr;
         
-        private Boolean enableCollect;
+        private Boolean enableCollect = false;
     }
 }

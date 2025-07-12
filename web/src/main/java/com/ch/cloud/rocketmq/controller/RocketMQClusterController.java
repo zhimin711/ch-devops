@@ -17,6 +17,7 @@
 package com.ch.cloud.rocketmq.controller;
 
 import com.ch.cloud.rocketmq.manager.RMQClusterManager;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class RocketMQClusterController {
         return rmqClusterManager.list();
     }
 
+    @Operation(summary = "获取broker配置信息", description = "获取broker配置信息",tags = {"Rocket MQ 集群管理模块"})
     @GetMapping(value = "/brokerConfig")
     public Object brokerConfig(@RequestParam String brokerAddr) {
         return rmqClusterManager.getBrokerConfig(brokerAddr);

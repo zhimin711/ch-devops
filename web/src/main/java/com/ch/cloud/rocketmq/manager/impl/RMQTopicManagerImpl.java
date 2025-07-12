@@ -4,6 +4,8 @@ import com.ch.cloud.rocketmq.manager.RMQTopicManager;
 import com.ch.cloud.rocketmq.model.request.SendTopicMessageRequest;
 import com.ch.cloud.rocketmq.model.request.TopicConfigInfo;
 import com.ch.cloud.rocketmq.util.RMQAdminUtil;
+import com.ch.e.Assert;
+import com.ch.e.PubError;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -81,10 +83,9 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
     @SneakyThrows
     @Override
     public TopicConfig examineTopicConfig(String topic, String brokerName) {
-        ClusterInfo clusterInfo = null;
-        clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
-        return RMQAdminUtil.getClient()
-                .examineTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topic);
+        ClusterInfo clusterInfo  = RMQAdminUtil.getClient().examineBrokerClusterInfo();
+        String addr = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
+        return RMQAdminUtil.examineTopicConfig(addr, topic);
     }
     
     @Override
@@ -94,6 +95,7 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
         for (BrokerData brokerData : topicRouteData.getBrokerDatas()) {
             TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
             TopicConfig topicConfig = examineTopicConfig(topic, brokerData.getBrokerName());
+            Assert.notNull(topicConfig, PubError.NOT_EXISTS, "TopicConfig ");
             BeanUtils.copyProperties(topicConfig, topicConfigInfo);
             topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
             topicConfigInfoList.add(topicConfigInfo);

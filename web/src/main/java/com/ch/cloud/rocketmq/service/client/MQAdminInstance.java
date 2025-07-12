@@ -17,7 +17,6 @@
 
 package com.ch.cloud.rocketmq.service.client;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;

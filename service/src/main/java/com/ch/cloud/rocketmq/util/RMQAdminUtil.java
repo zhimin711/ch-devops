@@ -8,12 +8,27 @@ import com.ch.utils.CommonUtils;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.protocol.RequestCode;
+import org.apache.rocketmq.common.protocol.ResponseCode;
+import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
+import org.apache.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
+import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
+import org.apache.rocketmq.remoting.RemotingClient;
+import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
+import org.joor.Reflect;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+
+import static org.apache.rocketmq.remoting.protocol.RemotingSerializable.decode;
 
 /**
  * 描述：
@@ -85,4 +100,56 @@ public class RMQAdminUtil {
         return finalBrokerNameList;
     }
     
+    
+    public static TopicConfig examineTopicConfig(String addr, String topic) {
+        RemotingClient remotingClient = getRemotingClient();
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_TOPIC_CONFIG, null);
+        RemotingCommand response = null;
+        try {
+            response = remotingClient.invokeSync(addr, request, 3000);
+        } catch (Exception err) {
+            throw Throwables.propagate(err);
+        }
+        switch (response.getCode()) {
+            case ResponseCode.SUCCESS: {
+                TopicConfigSerializeWrapper topicConfigSerializeWrapper = decode(response.getBody(), TopicConfigSerializeWrapper.class);
+                return topicConfigSerializeWrapper.getTopicConfigTable().get(topic);
+            }
+            default:
+                throw Throwables.propagate(new MQBrokerException(response.getCode(), response.getRemark()));
+        }
+    }
+    
+    private static RemotingClient getRemotingClient() {
+        MQClientInstance mqClientInstance = getMqClientInstance();
+        MQClientAPIImpl mQClientAPIImpl = Reflect.on(mqClientInstance).get("mQClientAPIImpl");
+        return Reflect.on(mQClientAPIImpl).get("remotingClient");
+    }
+    
+    private static MQClientInstance getMqClientInstance() {
+        MQAdminExt client = getClient();
+        DefaultMQAdminExtImpl defaultMQAdminExtImpl = Reflect.on(client)
+                .get("defaultMQAdminExtImpl");
+        return Reflect.on(defaultMQAdminExtImpl).get("mqClientInstance");
+    }
+    
+    public  static SubscriptionGroupConfig examineSubscriptionGroupConfig(String addr, String group) {
+        RemotingClient remotingClient = getRemotingClient();
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG, null);
+        RemotingCommand response = null;
+        try {
+            response = remotingClient.invokeSync(addr, request, 3000);
+        } catch (Exception err) {
+            throw Throwables.propagate(err);
+        }
+        assert response != null;
+        switch (response.getCode()) {
+            case ResponseCode.SUCCESS: {
+                SubscriptionGroupWrapper subscriptionGroupWrapper = decode(response.getBody(), SubscriptionGroupWrapper.class);
+                return subscriptionGroupWrapper.getSubscriptionGroupTable().get(group);
+            }
+            default:
+                throw Throwables.propagate(new MQBrokerException(response.getCode(), response.getRemark()));
+        }
+    }
 }
