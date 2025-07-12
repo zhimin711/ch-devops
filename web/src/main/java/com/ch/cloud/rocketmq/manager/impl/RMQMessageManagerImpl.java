@@ -72,7 +72,7 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
     
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
+        DefaultMQPullConsumer consumer = RMQAdminUtil.createConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
         List<MessageView> messageViewList = Lists.newArrayList();
         try {
             String subExpression = "*";

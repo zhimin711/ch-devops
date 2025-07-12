@@ -8,8 +8,10 @@ import com.ch.utils.CommonUtils;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+import org.apache.rocketmq.client.impl.MQClientManager;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.protocol.RequestCode;
@@ -17,6 +19,7 @@ import org.apache.rocketmq.common.protocol.ResponseCode;
 import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
 import org.apache.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
@@ -151,5 +154,17 @@ public class RMQAdminUtil {
             default:
                 throw Throwables.propagate(new MQBrokerException(response.getCode(), response.getRemark()));
         }
+    }
+    
+    public static void initManager(){
+        DefaultMQAdminExt mqAdminExt = (DefaultMQAdminExt)getClient();
+        MQClientManager.getInstance().getAndCreateMQClientInstance(mqAdminExt);
+    }
+    
+    public static DefaultMQPullConsumer createConsumer(String toolsConsumerGroup, RPCHook rpcHook) {
+        RMQAdminUtil.initManager();
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(toolsConsumerGroup, rpcHook);
+        consumer.resetClientConfig((DefaultMQAdminExt)RMQAdminUtil.getClient());
+        return consumer;
     }
 }
