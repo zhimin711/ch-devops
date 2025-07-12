@@ -50,7 +50,7 @@ public class RMQAdminUtil {
             DefaultMQAdminExt mqAdminExt = new DefaultMQAdminExt();
             mqAdminExt.setNamesrvAddr(nameSrvAddr);
             if (CommonUtils.isNotEmpty(ContextUtil.getUsername())) {
-                mqAdminExt.setAdminExtGroup("admin_ext_group_" + ContextUtil.getUsername());
+                mqAdminExt.setAdminExtGroup("admin_ext_group_" + ContextUtil.getUsername()+"_" + System.currentTimeMillis());
                 mqAdminExt.setInstanceName("rmq_admin_user_" + ContextUtil.getUsername());
             } else {
                 mqAdminExt.setAdminExtGroup("admin_ext_group_" + System.currentTimeMillis());
