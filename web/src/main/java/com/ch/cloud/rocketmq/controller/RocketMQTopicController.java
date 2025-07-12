@@ -80,7 +80,7 @@ public class RocketMQTopicController {
     @Operation(summary = "查询消费者的消费统计", description = "根据主题查询消费者的消费统计详情", tags = {
             "Topic"}, parameters = {
             @Parameter(name = "topic", description = "主题名称", required = true, example = "TestTopic")})
-    @RequestMapping(value = "/consumer")
+    @GetMapping(value = "/consumer")
     public Object queryConsumerByTopic(@RequestParam String topic) {
         return rmqConsumerManager.queryConsumeStatsListByTopicName(topic);
     }
