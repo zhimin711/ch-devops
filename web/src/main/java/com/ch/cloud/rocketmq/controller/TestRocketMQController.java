@@ -21,10 +21,10 @@ import com.ch.Separator;
 import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.manager.RMQTopicManager;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import com.ch.core.utils.StrUtil;
 import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.StringUtilsV2;
 import com.google.common.collect.Sets;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +75,7 @@ public class TestRocketMQController {
             TopicList list = rmqTopicManager.fetchAllTopicList();
             allTopics = list.getTopicList();
         }
-        List<String> topics = StringUtilsV2.splitStr(Separator.S2, topicStr);
+        List<String> topics = StrUtil.splitStr(Separator.S2, topicStr);
         Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e))
                 .collect(Collectors.toSet());
         if (list.isEmpty()) {

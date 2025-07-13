@@ -23,6 +23,7 @@ import com.ch.cloud.rocketmq.model.TopicConsumerInfo;
 import com.ch.cloud.rocketmq.model.request.ConsumerConfigInfo;
 import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
+import com.ch.core.data.model.Page;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
 
@@ -32,7 +33,7 @@ import java.util.Set;
 
 public interface RMQConsumerManager {
     
-    List<GroupConsumeInfo> queryGroupList();
+    Page<GroupConsumeInfo> queryGroupList(Integer page, Integer pageSize, String name);
     
     GroupConsumeInfo queryGroup(String consumerGroup);
     

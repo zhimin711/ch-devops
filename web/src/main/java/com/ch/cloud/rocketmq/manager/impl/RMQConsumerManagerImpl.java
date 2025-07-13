@@ -9,6 +9,7 @@ import com.ch.cloud.rocketmq.model.request.ConsumerConfigInfo;
 import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
 import com.ch.cloud.rocketmq.util.RMQAdminUtil;
+import com.ch.core.data.model.Page;
 import com.ch.utils.CommonUtils;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -50,7 +52,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
     
     @Override
     @SneakyThrows
-    public List<GroupConsumeInfo> queryGroupList() {
+    public Page<GroupConsumeInfo> queryGroupList(Integer page, Integer pageSize, String name) {
         Set<String> consumerGroupSet = Sets.newHashSet();
         ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
         for (BrokerData brokerData : clusterInfo.getBrokerAddrTable().values()) {
@@ -59,11 +61,21 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
             consumerGroupSet.addAll(subscriptionGroupWrapper.getSubscriptionGroupTable().keySet());
         }
         List<GroupConsumeInfo> groupConsumeInfoList = Lists.newArrayList();
-        for (String consumerGroup : consumerGroupSet) {
-            groupConsumeInfoList.add(queryGroup(consumerGroup));
+        if (CommonUtils.isEmpty(consumerGroupSet)) {
+            return new Page<>(0L, groupConsumeInfoList);
+        }
+        List<String> consumerGroupList = Lists.newArrayList(consumerGroupSet);
+        int start = (page - 1) * pageSize;
+        if (CommonUtils.isNotEmpty(name)) {
+            consumerGroupList = consumerGroupList.stream().filter(o -> o.contains(name)).collect(Collectors.toList());
+        }
+        for (int i = start; i < page * pageSize && i < consumerGroupList.size(); i++) {
+            
+            GroupConsumeInfo e = queryGroup(consumerGroupList.get(i));
+            groupConsumeInfoList.add(e);
         }
         Collections.sort(groupConsumeInfoList);
-        return groupConsumeInfoList;
+        return new Page<>(consumerGroupSet.size(), groupConsumeInfoList);
     }
     
     @Override
@@ -74,14 +86,14 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
             try {
                 consumeStats = RMQAdminUtil.getClient().examineConsumeStats(consumerGroup);
             } catch (Exception e) {
-                log.warn("examineConsumeStats exception, " + consumerGroup, e);
+                log.warn("examineConsumeStats exception, {}", consumerGroup, e);
             }
             
             ConsumerConnection consumerConnection = null;
             try {
                 consumerConnection = RMQAdminUtil.getClient().examineConsumerConnectionInfo(consumerGroup);
             } catch (Exception e) {
-                log.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
+                log.warn("examineConsumerConnectionInfo exception, {}", consumerGroup, e);
             }
             
             groupConsumeInfo.setGroup(consumerGroup);
@@ -212,7 +224,8 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
         for (String brokerName : clusterInfo.getBrokerAddrTable().keySet()) { //foreach brokerName
             String brokerAddress = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
-            SubscriptionGroupConfig subscriptionGroupConfig = RMQAdminUtil.examineSubscriptionGroupConfig(brokerAddress, group);
+            SubscriptionGroupConfig subscriptionGroupConfig = RMQAdminUtil.examineSubscriptionGroupConfig(brokerAddress,
+                    group);
             if (subscriptionGroupConfig == null) {
                 continue;
             }

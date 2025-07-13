@@ -8,7 +8,7 @@ import com.ch.cloud.devops.enums.Permission;
 import com.ch.cloud.devops.manager.INamespaceApplyManager;
 import com.ch.cloud.devops.mapper2.UserProjectNamespaceMapper;
 import com.ch.cloud.devops.service.INamespaceApplyRecordService;
-import com.ch.s.ApproveStatus;
+import com.ch.core.data.status.ApproveStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

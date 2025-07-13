@@ -18,10 +18,14 @@ package com.ch.cloud.rocketmq.controller;
 
 import com.ch.cloud.rocketmq.manager.RMQConsumerManager;
 import com.ch.cloud.rocketmq.model.ConnectionInfo;
+import com.ch.cloud.rocketmq.model.GroupConsumeInfo;
 import com.ch.cloud.rocketmq.model.request.ConsumerConfigInfo;
 import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import com.ch.core.data.model.Page;
+import com.ch.core.result.Result;
+import com.ch.result.InvokerPage;
 import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,8 +45,8 @@ public class RocketMQConsumerController {
     private RMQConsumerManager consumerManager;
 
     @GetMapping(value = "/groups")
-    public Object list() {
-        return consumerManager.queryGroupList();
+    public Result<Page<GroupConsumeInfo>> list(@RequestParam Integer page, @RequestParam Integer pageSize, @RequestParam(required = false) String name) {
+        return Result.from(() -> consumerManager.queryGroupList(page, pageSize, name));
     }
 
     @GetMapping(value = "/group")
