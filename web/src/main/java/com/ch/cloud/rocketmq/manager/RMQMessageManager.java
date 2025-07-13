@@ -20,7 +20,7 @@ package com.ch.cloud.rocketmq.manager;
 import com.ch.cloud.rocketmq.model.MessageView;
 import org.apache.rocketmq.common.Pair;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
+import org.apache.rocketmq.remoting.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
 
 import java.util.List;

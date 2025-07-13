@@ -21,10 +21,10 @@ import com.ch.Separator;
 import com.ch.cloud.rocketmq.config.RMQConfigure;
 import com.ch.cloud.rocketmq.manager.RMQTopicManager;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import com.ch.core.utils.StrUtil;
 import com.ch.e.ExUtils;
 import com.ch.e.PubError;
 import com.ch.utils.CommonUtils;
-import com.ch.utils.StringUtilsV2;
 import com.google.common.collect.Sets;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.protocol.body.TopicList;
+import org.apache.rocketmq.remoting.protocol.body.TopicList;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,21 +53,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/test")
 @Slf4j
 public class TestRocketMQController {
-    
+
     @Resource
     private RMQConfigure rMQConfigure;
-    
+
     @Resource
     private RMQTopicManager rmqTopicManager;
-    
+
     private Set<String> allTopics = Sets.newHashSet();
-    
+
     private Set<String> existsTopics = Sets.newHashSet();
-    
+
     @GetMapping(value = "/runTask")
     public Object list(@RequestParam String topicStr, @RequestParam(required = false) Integer consumerThreadSize,
             @RequestParam(required = false) Integer producerThreadSize) throws MQClientException {
-        
+
         if (CommonUtils.isEmpty(topicStr)) {
             ExUtils.throwError(PubError.NON_NULL, "topic must be not null!");
         }
@@ -75,7 +75,7 @@ public class TestRocketMQController {
             TopicList list = rmqTopicManager.fetchAllTopicList();
             allTopics = list.getTopicList();
         }
-        List<String> topics = StringUtilsV2.splitStr(Separator.S2, topicStr);
+        List<String> topics = StrUtil.splitStr(Separator.S2, topicStr);
         Set<String> list = topics.stream().filter(e -> !existsTopics.contains(e) && allTopics.contains(e))
                 .collect(Collectors.toSet());
         if (list.isEmpty()) {
@@ -95,7 +95,7 @@ public class TestRocketMQController {
                 });
                 consumer.start();
             }
-            
+
             for (int j = 0; j < producerThreadSize2; j++) {
                 final DefaultMQProducer producer = new DefaultMQProducer(topic + "_" + (j + 1) + "Group");
                 producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
@@ -122,7 +122,7 @@ public class TestRocketMQController {
             }
             existsTopics.add(topic);
         }
-        
+
         return true;
     }
 }

@@ -1,6 +1,6 @@
 package com.ch.cloud.rocketmq.manager;
 
-import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.remoting.protocol.body.ProducerConnection;
 
 /**
  * 描述：
@@ -9,8 +9,7 @@ import org.apache.rocketmq.common.protocol.body.ProducerConnection;
  * @since 2025/5/16
  */
 public interface RMQProducerManager {
-    
-    
+
     ProducerConnection getProducerConnection(String producerGroup, String topic) throws Exception;
-    
+
 }

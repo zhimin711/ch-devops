@@ -6,9 +6,9 @@ import com.ch.cloud.rocketmq.util.RMQAdminUtil;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
-import org.apache.rocketmq.common.protocol.body.KVTable;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
+import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
+import org.apache.rocketmq.remoting.protocol.body.KVTable;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -23,7 +23,7 @@ import java.util.Properties;
 @Service
 @Slf4j
 public class RMQClusterManagerImpl implements RMQClusterManager {
-    
+
     @SneakyThrows
     @Override
     public Map<String, Object> list() {
@@ -45,7 +45,7 @@ public class RMQClusterManagerImpl implements RMQClusterManager {
         resultMap.put("brokerServer", brokerServer);
         return resultMap;
     }
-    
+
     @SneakyThrows
     @Override
     public Properties getBrokerConfig(String brokerAddr) {

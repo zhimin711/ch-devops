@@ -21,35 +21,35 @@ import com.ch.cloud.rocketmq.model.request.SendTopicMessageRequest;
 import com.ch.cloud.rocketmq.model.request.TopicConfigInfo;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.common.admin.TopicStatsTable;
-import org.apache.rocketmq.common.protocol.body.GroupList;
-import org.apache.rocketmq.common.protocol.body.TopicList;
-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.remoting.protocol.admin.TopicStatsTable;
+import org.apache.rocketmq.remoting.protocol.body.GroupList;
+import org.apache.rocketmq.remoting.protocol.body.TopicList;
+import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 
 import java.util.List;
 
 public interface RMQTopicManager {
-    
+
     TopicList fetchAllTopicList();
-    
+
     TopicStatsTable stats(String topic);
-    
+
     TopicRouteData route(String topic);
-    
+
     GroupList queryTopicConsumerInfo(String topic);
-    
+
     void createOrUpdate(TopicConfigInfo topicCreateOrUpdateRequest);
-    
+
     TopicConfig examineTopicConfig(String topic, String brokerName);
-    
+
     List<TopicConfigInfo> examineTopicConfig(String topic);
-    
+
     boolean deleteTopic(String topic, String clusterName);
-    
+
     boolean deleteTopic(String topic);
-    
+
     boolean deleteTopicInBroker(String brokerName, String topic);
-    
+
     SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest);
-    
+
 }

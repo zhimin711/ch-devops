@@ -14,9 +14,9 @@ import org.apache.rocketmq.common.Pair;
 import org.apache.rocketmq.common.message.MessageDecoder;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.common.protocol.body.Connection;
-import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.remoting.protocol.body.Connection;
+import org.apache.rocketmq.remoting.protocol.body.ConsumeMessageDirectlyResult;
+import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.rocketmq.common.message.MessageDecoder.MSG_ID_LENGTH;
 
 /**
  * <p>
@@ -42,14 +41,14 @@ import static org.apache.rocketmq.common.message.MessageDecoder.MSG_ID_LENGTH;
 @Service
 @Slf4j
 public class RMQMessageManagerImpl implements RMQMessageManager {
-    
+
     /**
      * @see org.apache.rocketmq.store.config.MessageStoreConfig maxMsgsNumBatch = 64;
      * @see org.apache.rocketmq.store.index.IndexService maxNum = Math.min(maxNum,
      * this.defaultMessageStore.getMessageStoreConfig().getMaxMsgsNumBatch());
      */
     private final static int QUERY_MESSAGE_MAX_NUM = 64;
-    
+
     public Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId) throws Exception {
         MessageExt messageExt = RMQAdminUtil.getClient().viewMessage(subject, msgId);
         if (messageExt == null) {
@@ -58,7 +57,7 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
         List<MessageTrack> messageTrackList = messageTrackDetail(messageExt);
         return new Pair<>(MessageView.fromMessageExt(messageExt), messageTrackList);
     }
-    
+
     @Override
     public List<MessageView> queryMessageByTopicAndKey(String topic, String key) {
         try {
@@ -69,7 +68,7 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
             throw Throwables.propagate(err);
         }
     }
-    
+
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
         DefaultMQPullConsumer consumer = RMQAdminUtil.createConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
@@ -133,7 +132,7 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
             consumer.shutdown();
         }
     }
-    
+
     @Override
     public List<MessageTrack> messageTrackDetail(MessageExt msg) {
         try {
@@ -143,11 +142,11 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
             return Collections.emptyList();
         }
     }
-    
-    
+
+
     @Override
     public ConsumeMessageDirectlyResult consumeMessageDirectly(String topic, String msgId, String consumerGroup,
-            String clientId) {
+                                                               String clientId) {
         if (StringUtils.isNotBlank(clientId)) {
             try {
                 return RMQAdminUtil.getClient().consumeMessageDirectly(consumerGroup, clientId, topic, msgId);
@@ -155,7 +154,7 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
                 throw Throwables.propagate(e);
             }
         }
-        
+
         try {
             ConsumerConnection consumerConnection = RMQAdminUtil.getClient().examineConsumerConnectionInfo(consumerGroup);
             for (Connection connection : consumerConnection.getConnectionSet()) {
@@ -169,9 +168,9 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
             throw Throwables.propagate(e);
         }
         throw new IllegalStateException("NO CONSUMER");
-        
+
     }
-    
+
     @Override
     public Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset)
             throws Exception {
@@ -181,5 +180,5 @@ public class RMQMessageManagerImpl implements RMQMessageManager {
                 MessageExt.socketAddress2ByteBuffer(brokerHostAddress), offset);
         return viewMessage(null, msgId);
     }
-    
+
 }

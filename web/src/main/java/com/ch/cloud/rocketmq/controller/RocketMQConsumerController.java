@@ -26,7 +26,7 @@ import com.ch.utils.CommonUtils;
 import com.google.common.base.Preconditions;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -36,13 +36,13 @@ import javax.annotation.Resource;
 @RequestMapping("/rocketmq/consumer")
 @Slf4j
 public class RocketMQConsumerController {
-    
+
     @Resource
     private RMQConsumerManager consumerManager;
 
     @GetMapping(value = "/groups")
-    public Object list() {
-        return consumerManager.queryGroupList();
+    public Object list(@RequestParam(value = "skipSysGroup", required = false) boolean skipSysGroup, String address) {
+        return consumerManager.queryGroupList(skipSysGroup, address);
     }
 
     @GetMapping(value = "/group")

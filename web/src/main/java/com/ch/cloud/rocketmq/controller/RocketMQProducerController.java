@@ -20,7 +20,7 @@ package com.ch.cloud.rocketmq.controller;
 import com.ch.cloud.rocketmq.manager.RMQProducerManager;
 import com.ch.cloud.rocketmq.model.ConnectionInfo;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.remoting.protocol.body.ProducerConnection;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,10 +32,10 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/rocketmq/producer")
 public class RocketMQProducerController {
-    
+
     @Resource
     private RMQProducerManager producerManager;
-    
+
     @GetMapping(value = "/connection")
     public Object producerConnection(@RequestParam String producerGroup, @RequestParam String topic) throws Exception {
         ProducerConnection producerConnection = producerManager.getProducerConnection(producerGroup, topic);

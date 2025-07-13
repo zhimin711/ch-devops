@@ -19,11 +19,11 @@ package com.ch.cloud.rocketmq.service.impl;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
-import org.apache.rocketmq.common.protocol.body.KVTable;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
 import com.ch.cloud.rocketmq.service.ClusterService;
 import com.ch.cloud.rocketmq.util.JsonUtil;
+import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
+import org.apache.rocketmq.remoting.protocol.body.KVTable;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

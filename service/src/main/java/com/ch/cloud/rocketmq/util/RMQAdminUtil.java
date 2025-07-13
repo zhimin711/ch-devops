@@ -14,14 +14,14 @@ import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.MQClientManager;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.common.protocol.RequestCode;
-import org.apache.rocketmq.common.protocol.ResponseCode;
-import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
-import org.apache.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
-import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+import org.apache.rocketmq.remoting.protocol.RequestCode;
+import org.apache.rocketmq.remoting.protocol.ResponseCode;
+import org.apache.rocketmq.remoting.protocol.body.SubscriptionGroupWrapper;
+import org.apache.rocketmq.remoting.protocol.body.TopicConfigSerializeWrapper;
+import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
@@ -29,6 +29,7 @@ import org.joor.Reflect;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.rocketmq.remoting.protocol.RemotingSerializable.decode;
@@ -41,9 +42,9 @@ import static org.apache.rocketmq.remoting.protocol.RemotingSerializable.decode;
  */
 @Slf4j
 public class RMQAdminUtil {
-    
+
     private static final ThreadLocal<Pair<String, MQAdminExt>> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<>();
-    
+
     public static synchronized void initMQAdminExt(String nameSrvAddr) {
         Pair<String, MQAdminExt> pair = MQ_ADMIN_EXT_THREAD_LOCAL.get();
         if (pair == null || !nameSrvAddr.equals(pair.getKey())) {
@@ -64,19 +65,19 @@ public class RMQAdminUtil {
             }
         }
     }
-    
+
     public static MQAdminExt getClient() {
         Pair<String, MQAdminExt> pair = MQ_ADMIN_EXT_THREAD_LOCAL.get();
         Assert.notNull(pair, PubError.NOT_EXISTS, "MQAdminExt should be init before you get this");
         return pair.getValue();
     }
-    
+
     public static String getClientAddr() {
         Pair<String, MQAdminExt> pair = MQ_ADMIN_EXT_THREAD_LOCAL.get();
         Assert.notNull(pair, PubError.NOT_EXISTS, "MQAdminExt should be init before you get this");
         return pair.getKey();
     }
-    
+
     public static void destroyMQAdminExt() {
         Pair<String, MQAdminExt> pair = MQ_ADMIN_EXT_THREAD_LOCAL.get();
         if (pair != null) {
@@ -84,9 +85,9 @@ public class RMQAdminUtil {
             MQ_ADMIN_EXT_THREAD_LOCAL.remove();
         }
     }
-    
-    public static Set<String> changeToBrokerNameSet(HashMap<String, Set<String>> clusterAddrTable,
-            List<String> clusterNameList, List<String> brokerNameList) {
+
+    public static Set<String> changeToBrokerNameSet(Map<String, Set<String>> clusterAddrTable,
+                                                    List<String> clusterNameList, List<String> brokerNameList) {
         Set<String> finalBrokerNameList = Sets.newHashSet();
         if (CommonUtils.isNotEmpty(clusterNameList)) {
             try {
@@ -102,8 +103,8 @@ public class RMQAdminUtil {
         }
         return finalBrokerNameList;
     }
-    
-    
+
+
     public static TopicConfig examineTopicConfig(String addr, String topic) {
         RemotingClient remotingClient = getRemotingClient();
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_TOPIC_CONFIG, null);
@@ -122,20 +123,20 @@ public class RMQAdminUtil {
                 throw Throwables.propagate(new MQBrokerException(response.getCode(), response.getRemark()));
         }
     }
-    
+
     private static RemotingClient getRemotingClient() {
         MQClientInstance mqClientInstance = getMqClientInstance();
         MQClientAPIImpl mQClientAPIImpl = Reflect.on(mqClientInstance).get("mQClientAPIImpl");
         return Reflect.on(mQClientAPIImpl).get("remotingClient");
     }
-    
+
     private static MQClientInstance getMqClientInstance() {
         MQAdminExt client = getClient();
         DefaultMQAdminExtImpl defaultMQAdminExtImpl = Reflect.on(client)
                 .get("defaultMQAdminExtImpl");
         return Reflect.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
-    
+
     public  static SubscriptionGroupConfig examineSubscriptionGroupConfig(String addr, String group) {
         RemotingClient remotingClient = getRemotingClient();
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG, null);
@@ -155,12 +156,12 @@ public class RMQAdminUtil {
                 throw Throwables.propagate(new MQBrokerException(response.getCode(), response.getRemark()));
         }
     }
-    
+
     public static void initManager(){
         DefaultMQAdminExt mqAdminExt = (DefaultMQAdminExt)getClient();
-        MQClientManager.getInstance().getAndCreateMQClientInstance(mqAdminExt);
+        MQClientManager.getInstance().getOrCreateMQClientInstance(mqAdminExt);
     }
-    
+
     public static DefaultMQPullConsumer createConsumer(String toolsConsumerGroup, RPCHook rpcHook) {
         RMQAdminUtil.initManager();
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(toolsConsumerGroup, rpcHook);

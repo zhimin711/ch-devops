@@ -10,6 +10,7 @@ import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
 import com.ch.cloud.rocketmq.util.RMQAdminUtil;
 import com.ch.utils.CommonUtils;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,24 +20,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.MQVersion;
-import org.apache.rocketmq.common.admin.ConsumeStats;
-import org.apache.rocketmq.common.admin.RollbackStats;
+import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.common.protocol.ResponseCode;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
-import org.apache.rocketmq.common.protocol.body.Connection;
-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
-import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
-import org.apache.rocketmq.common.protocol.body.GroupList;
-import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
-import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
+import org.apache.rocketmq.common.utils.ThreadUtils;
+import org.apache.rocketmq.remoting.protocol.ResponseCode;
+import org.apache.rocketmq.remoting.protocol.admin.ConsumeStats;
+import org.apache.rocketmq.remoting.protocol.admin.RollbackStats;
+import org.apache.rocketmq.remoting.protocol.body.*;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -46,26 +45,158 @@ import java.util.Set;
  */
 @Service
 @Slf4j
-public class RMQConsumerManagerImpl implements RMQConsumerManager {
-    
+public class RMQConsumerManagerImpl implements RMQConsumerManager, InitializingBean, AutoCloseable {
+
+    private volatile boolean isCacheBeingBuilt = false;
+
+    private  static final Set<String> SYSTEM_GROUP_SET = new HashSet<>();
+
+    private ExecutorService executorService;
+
+    private final List<GroupConsumeInfo> cacheConsumeInfoList = Collections.synchronizedList(new ArrayList<>());
+
+    private final HashMap<String, List<String>> consumerGroupMap = Maps.newHashMap();
+
+
+    static {
+        SYSTEM_GROUP_SET.add(MixAll.TOOLS_CONSUMER_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.FILTERSRV_CONSUMER_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.SELF_TEST_CONSUMER_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.ONS_HTTP_PROXY_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.CID_ONSAPI_PULL_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.CID_ONSAPI_PERMISSION_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.CID_ONSAPI_OWNER_GROUP);
+        SYSTEM_GROUP_SET.add(MixAll.CID_SYS_RMQ_TRANS);
+    }
+    @Override
+    public void afterPropertiesSet() {
+        Runtime runtime = Runtime.getRuntime();
+        int corePoolSize = Math.max(10, runtime.availableProcessors() * 2);
+        int maximumPoolSize = Math.max(20, runtime.availableProcessors() * 2);
+        ThreadFactory threadFactory = new ThreadFactory() {
+            private final AtomicLong threadIndex = new AtomicLong(0);
+
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(r, "QueryGroup_" + this.threadIndex.incrementAndGet());
+            }
+        };
+        RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardOldestPolicy();
+        this.executorService = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(5000), threadFactory, handler);
+    }
+
+    @Override
+    public void close() {
+        ThreadUtils.shutdownGracefully(executorService, 10L, TimeUnit.SECONDS);
+    }
+
     @Override
     @SneakyThrows
-    public List<GroupConsumeInfo> queryGroupList() {
-        Set<String> consumerGroupSet = Sets.newHashSet();
-        ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
-        for (BrokerData brokerData : clusterInfo.getBrokerAddrTable().values()) {
-            SubscriptionGroupWrapper subscriptionGroupWrapper = RMQAdminUtil.getClient()
-                    .getAllSubscriptionGroup(brokerData.selectBrokerAddr(), 3000L);
-            consumerGroupSet.addAll(subscriptionGroupWrapper.getSubscriptionGroupTable().keySet());
+    public List<GroupConsumeInfo> queryGroupList(boolean skipSysGroup, String address) {
+        if (isCacheBeingBuilt) {
+            throw new RuntimeException("Cache is being built, please try again later");
         }
-        List<GroupConsumeInfo> groupConsumeInfoList = Lists.newArrayList();
-        for (String consumerGroup : consumerGroupSet) {
-            groupConsumeInfoList.add(queryGroup(consumerGroup));
+
+        synchronized (this) {
+            if (cacheConsumeInfoList.isEmpty() && !isCacheBeingBuilt) {
+                isCacheBeingBuilt = true;
+                try {
+                    makeGroupListCache();
+                } finally {
+                    isCacheBeingBuilt = false;
+                }
+            }
+        }
+
+        if (cacheConsumeInfoList.isEmpty()) {
+            throw new RuntimeException("No consumer group information available");
+        }
+
+        List<GroupConsumeInfo> groupConsumeInfoList = new ArrayList<>(cacheConsumeInfoList);
+
+        if (!skipSysGroup) {
+            groupConsumeInfoList.stream().map(group -> {
+                if (SYSTEM_GROUP_SET.contains(group.getGroup())) {
+                    group.setGroup(String.format("%s%s", "%SYS%", group.getGroup()));
+                }
+                return group;
+            }).collect(Collectors.toList());
         }
         Collections.sort(groupConsumeInfoList);
         return groupConsumeInfoList;
     }
-    
+
+
+    public void makeGroupListCache() {
+        SubscriptionGroupWrapper subscriptionGroupWrapper = null;
+        try {
+            ClusterInfo clusterInfo = clusterInfoService.get();
+            for (BrokerData brokerData : clusterInfo.getBrokerAddrTable().values()) {
+                subscriptionGroupWrapper = RMQAdminUtil.getClient().getAllSubscriptionGroup(brokerData.selectBrokerAddr(), 30000L);
+                for (String groupName : subscriptionGroupWrapper.getSubscriptionGroupTable().keySet()) {
+                    if (!consumerGroupMap.containsKey(groupName)) {
+                        consumerGroupMap.putIfAbsent(groupName, new ArrayList<>());
+                    }
+                    List<String> addresses = consumerGroupMap.get(groupName);
+                    addresses.add(brokerData.selectBrokerAddr());
+                    consumerGroupMap.put(groupName, addresses);
+                }
+            }
+        } catch (Exception err) {
+            Throwables.throwIfUnchecked(err);
+            throw new RuntimeException(err);
+        }
+
+        if (subscriptionGroupWrapper != null && subscriptionGroupWrapper.getSubscriptionGroupTable().isEmpty()) {
+            log.warn("No subscription group information available");
+            isCacheBeingBuilt = false;
+            return;
+        }
+        final ConcurrentMap<String, SubscriptionGroupConfig> subscriptionGroupTable = subscriptionGroupWrapper.getSubscriptionGroupTable();
+        List<GroupConsumeInfo> groupConsumeInfoList = Collections.synchronizedList(Lists.newArrayList());
+        CountDownLatch countDownLatch = new CountDownLatch(consumerGroupMap.size());
+        for (Map.Entry<String, List<String>> entry : consumerGroupMap.entrySet()) {
+            String consumerGroup = entry.getKey();
+            executorService.submit(() -> {
+                try {
+                    GroupConsumeInfo consumeInfo = queryGroup(consumerGroup, "");
+                    consumeInfo.setAddress(entry.getValue());
+                    if (SYSTEM_GROUP_SET.contains(consumerGroup)) {
+                        consumeInfo.setSubGroupType("SYSTEM");
+                    } else {
+                        try {
+                            consumeInfo.setSubGroupType(subscriptionGroupTable.get(consumerGroup).isConsumeMessageOrderly() ? "FIFO" : "NORMAL");
+                        } catch (NullPointerException e) {
+                            log.warn("SubscriptionGroupConfig not found for consumer group: {}", consumerGroup);
+                            boolean isFifoType = examineSubscriptionGroupConfig(consumerGroup)
+                                    .stream().map(ConsumerConfigInfo::getSubscriptionGroupConfig)
+                                    .allMatch(SubscriptionGroupConfig::isConsumeMessageOrderly);
+                            consumeInfo.setSubGroupType(isFifoType ? "FIFO" : "NORMAL");
+                        }
+                    }
+                    consumeInfo.setUpdateTime(new Date());
+                    groupConsumeInfoList.add(consumeInfo);
+                } catch (Exception e) {
+                    log.error("queryGroup exception, consumerGroup: {}", consumerGroup, e);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Interruption occurred while waiting for task completion", e);
+        }
+        log.info("All consumer group query tasks have been completed");
+        isCacheBeingBuilt = false;
+        Collections.sort(groupConsumeInfoList);
+
+        cacheConsumeInfoList.clear();
+        cacheConsumeInfoList.addAll(groupConsumeInfoList);
+    }
     @Override
     public GroupConsumeInfo queryGroup(String consumerGroup) {
         GroupConsumeInfo groupConsumeInfo = new GroupConsumeInfo();
@@ -76,21 +207,21 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
             } catch (Exception e) {
                 log.warn("examineConsumeStats exception, " + consumerGroup, e);
             }
-            
+
             ConsumerConnection consumerConnection = null;
             try {
                 consumerConnection = RMQAdminUtil.getClient().examineConsumerConnectionInfo(consumerGroup);
             } catch (Exception e) {
                 log.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
             }
-            
+
             groupConsumeInfo.setGroup(consumerGroup);
-            
+
             if (consumeStats != null) {
                 groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
                 groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
             }
-            
+
             if (consumerConnection != null) {
                 groupConsumeInfo.setCount(consumerConnection.getConnectionSet().size());
                 groupConsumeInfo.setMessageModel(consumerConnection.getMessageModel());
@@ -102,12 +233,12 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return groupConsumeInfo;
     }
-    
+
     @Override
     public List<TopicConsumerInfo> queryConsumeStatsListByGroupName(String groupName) {
         return queryConsumeStatsList(null, groupName);
     }
-    
+
     @SneakyThrows
     @Override
     public List<TopicConsumerInfo> queryConsumeStatsList(final String topic, String groupName) {
@@ -129,7 +260,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return topicConsumerInfoList;
     }
-    
+
     private Map<MessageQueue, String> getClientConnection(String groupName) {
         Map<MessageQueue, String> results = Maps.newHashMap();
         try {
@@ -148,7 +279,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return results;
     }
-    
+
     @SneakyThrows
     @Override
     public Map<String /*groupName*/, TopicConsumerInfo> queryConsumeStatsListByTopicName(String topic) {
@@ -161,7 +292,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return group2ConsumerInfoMap;
     }
-    
+
     @Override
     public Map<String, ConsumerGroupRollBackStat> resetOffset(ResetOffsetRequest resetOffsetRequest) {
         Map<String, ConsumerGroupRollBackStat> groupRollbackStats = Maps.newHashMap();
@@ -204,7 +335,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return groupRollbackStats;
     }
-    
+
     @Override
     @SneakyThrows
     public List<ConsumerConfigInfo> examineSubscriptionGroupConfig(String group) {
@@ -220,8 +351,8 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return consumerConfigInfoList;
     }
-    
-    
+
+
     @SneakyThrows
     @Override
     public boolean deleteSubGroup(DeleteSubGroupRequest deleteSubGroupRequest) {
@@ -235,7 +366,7 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return true;
     }
-    
+
     @SneakyThrows
     @Override
     public boolean createAndUpdateSubscriptionGroupConfig(ConsumerConfigInfo consumerConfigInfo) {
@@ -248,8 +379,8 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
         }
         return true;
     }
-    
-    
+
+
     @SneakyThrows
     @Override
     public Set<String> fetchBrokerNameSetBySubscriptionGroup(String group) {
@@ -259,15 +390,15 @@ public class RMQConsumerManagerImpl implements RMQConsumerManager {
             brokerNameSet.addAll(consumerConfigInfo.getBrokerNameList());
         }
         return brokerNameSet;
-        
+
     }
-    
+
     @SneakyThrows
     @Override
     public ConsumerConnection getConsumerConnection(String consumerGroup) {
         return RMQAdminUtil.getClient().examineConsumerConnectionInfo(consumerGroup);
     }
-    
+
     @SneakyThrows
     @Override
     public ConsumerRunningInfo getConsumerRunningInfo(String consumerGroup, String clientId, boolean jstack) {

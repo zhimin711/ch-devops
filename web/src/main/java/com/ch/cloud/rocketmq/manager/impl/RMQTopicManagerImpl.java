@@ -16,13 +16,13 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
-import org.apache.rocketmq.common.protocol.body.GroupList;
-import org.apache.rocketmq.common.protocol.body.TopicList;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.remoting.protocol.admin.TopicStatsTable;
+import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
+import org.apache.rocketmq.remoting.protocol.body.GroupList;
+import org.apache.rocketmq.remoting.protocol.body.TopicList;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
 import org.apache.rocketmq.tools.command.CommandUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -41,31 +41,31 @@ import java.util.Set;
 @Service
 @Slf4j
 public class RMQTopicManagerImpl implements RMQTopicManager {
-    
+
     @SneakyThrows
     @Override
     public TopicList fetchAllTopicList() {
         return RMQAdminUtil.getClient().fetchAllTopicList();
     }
-    
+
     @SneakyThrows
     @Override
     public TopicStatsTable stats(String topic) {
         return RMQAdminUtil.getClient().examineTopicStats(topic);
     }
-    
+
     @SneakyThrows
     @Override
     public TopicRouteData route(String topic) {
         return RMQAdminUtil.getClient().examineTopicRouteInfo(topic);
     }
-    
+
     @SneakyThrows
     @Override
     public GroupList queryTopicConsumerInfo(String topic) {
         return RMQAdminUtil.getClient().queryTopicConsumeByWho(topic);
     }
-    
+
     @SneakyThrows
     @Override
     public void createOrUpdate(TopicConfigInfo topicCreateOrUpdateRequest) {
@@ -79,7 +79,7 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
                             topicConfig);
         }
     }
-    
+
     @SneakyThrows
     @Override
     public TopicConfig examineTopicConfig(String topic, String brokerName) {
@@ -87,7 +87,7 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
         String addr = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
         return RMQAdminUtil.examineTopicConfig(addr, topic);
     }
-    
+
     @Override
     public List<TopicConfigInfo> examineTopicConfig(String topic) {
         List<TopicConfigInfo> topicConfigInfoList = Lists.newArrayList();
@@ -102,7 +102,7 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
         }
         return topicConfigInfoList;
     }
-    
+
     @SneakyThrows
     @Override
     public boolean deleteTopic(String topic, String clusterName) {
@@ -119,7 +119,7 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
         RMQAdminUtil.getClient().deleteTopicInNameServer(nameServerSet, topic);
         return true;
     }
-    
+
     @SneakyThrows
     @Override
     public boolean deleteTopic(String topic) {
@@ -130,17 +130,17 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
         }
         return true;
     }
-    
+
     @SneakyThrows
     @Override
     public boolean deleteTopicInBroker(String brokerName, String topic) {
-        
+
         ClusterInfo clusterInfo = RMQAdminUtil.getClient().examineBrokerClusterInfo();
         RMQAdminUtil.getClient().deleteTopicInBroker(
                 Sets.newHashSet(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr()), topic);
         return true;
     }
-    
+
     @Override
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
@@ -157,5 +157,5 @@ public class RMQTopicManagerImpl implements RMQTopicManager {
             producer.shutdown();
         }
     }
-    
+
 }

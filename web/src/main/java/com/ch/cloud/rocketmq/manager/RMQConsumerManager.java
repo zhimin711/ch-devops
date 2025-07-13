@@ -23,37 +23,37 @@ import com.ch.cloud.rocketmq.model.TopicConsumerInfo;
 import com.ch.cloud.rocketmq.model.request.ConsumerConfigInfo;
 import com.ch.cloud.rocketmq.model.request.DeleteSubGroupRequest;
 import com.ch.cloud.rocketmq.model.request.ResetOffsetRequest;
-import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
-import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
+import org.apache.rocketmq.remoting.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.remoting.protocol.body.ConsumerRunningInfo;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface RMQConsumerManager {
-    
-    List<GroupConsumeInfo> queryGroupList();
-    
+
+    List<GroupConsumeInfo> queryGroupList(boolean skipSysGroup, String address);
+
     GroupConsumeInfo queryGroup(String consumerGroup);
-    
-    
+
+
     List<TopicConsumerInfo> queryConsumeStatsListByGroupName(String groupName);
-    
+
     List<TopicConsumerInfo> queryConsumeStatsList(String topic, String groupName);
-    
+
     Map<String, TopicConsumerInfo> queryConsumeStatsListByTopicName(String topic);
-    
+
     Map<String /*consumerGroup*/, ConsumerGroupRollBackStat> resetOffset(ResetOffsetRequest resetOffsetRequest);
-    
+
     List<ConsumerConfigInfo> examineSubscriptionGroupConfig(String group);
-    
+
     boolean deleteSubGroup(DeleteSubGroupRequest deleteSubGroupRequest);
-    
+
     boolean createAndUpdateSubscriptionGroupConfig(ConsumerConfigInfo consumerConfigInfo);
-    
+
     Set<String> fetchBrokerNameSetBySubscriptionGroup(String group);
-    
+
     ConsumerConnection getConsumerConnection(String consumerGroup);
-    
+
     ConsumerRunningInfo getConsumerRunningInfo(String consumerGroup, String clientId, boolean jstack);
 }
