@@ -10,7 +10,7 @@ COPY --from=hengyunabc/arthas:latest /opt/arthas /opt/arthas
 
 MAINTAINER zhimin (zhimin711@sina.com)
 
-ADD apache-skywalking-java-agent-8.12.0.tgz .
+#ADD apache-skywalking-java-agent-8.12.0.tgz .
 
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
@@ -21,6 +21,7 @@ COPY --from=builder application/application/ ./
 EXPOSE  8080
 
 ENV JAVA_OPTS=""
-ENV AGENT_OPTS="-javaagent:/skywalking-agent/skywalking-agent.jar"
+#-javaagent:/skywalking-agent/skywalking-agent.jar
+ENV AGENT_OPTS=""
 
 ENTRYPOINT ["sh","-c","exec java ${JAVA_OPTS} ${JAVA_AGENT} -Djava.ext.dirs=$JAVA_HOME/jre/lib/ext:./skywalking-agent/ org.springframework.boot.loader.JarLauncher"]
