@@ -8,7 +8,7 @@ RUN java -Djarmode=layertools -jar application.jar extract
 FROM openjdk:8-alpine
 COPY --from=hengyunabc/arthas:latest /opt/arthas /opt/arthas
 
-MAINTAINER zhimin (zhimin711@sina.com)
+MAINTAINER zhimin (zhimin711@gmail.com)
 
 #ADD apache-skywalking-java-agent-8.12.0.tgz .
 
