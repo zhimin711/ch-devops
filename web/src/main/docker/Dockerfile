@@ -1,6 +1,6 @@
 FROM openjdk:8-alpine as builder
 WORKDIR application
-ARG JAR_FILE=./ch-devops-*.jar
+ARG JAR_FILE=./app.jar
 COPY ${JAR_FILE} application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
