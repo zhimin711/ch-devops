@@ -1,0 +1,129 @@
+package com.ch.cloud.kafka.utils;
+
+import com.ch.cloud.kafka.enums.ContentType;
+import com.ch.cloud.kafka.dto.KafkaTopicDTO;
+import com.ch.utils.CommonUtils;
+import com.ch.utils.DateUtils;
+import com.ch.utils.JSONUtils;
+import com.ch.utils.JarUtils;
+import com.google.common.collect.Maps;
+import io.protostuff.LinkedBuffer;
+import io.protostuff.ProtostuffIOUtil;
+import io.protostuff.Schema;
+import io.protostuff.runtime.RuntimeSchema;
+import lombok.extern.slf4j.Slf4j;
+import org.I0Itec.zkclient.exception.ZkMarshallingError;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
+
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+/**
+ * decs:
+ *
+ * @author zhimin.ma
+ * @since 2019/10/30
+ */
+@Slf4j
+public class KafkaSerializeUtils {
+
+    // 加载过不用重新加载类对象
+    private static Map<String, Class<?>> clazzMap = Maps.newConcurrentMap();
+
+    /**
+     * 序列化
+     *
+     * @param obj
+     * @return
+     */
+    public static <T> byte[] serializer(T obj) {
+        @SuppressWarnings("unchecked")
+        Class<T> clazz = (Class<T>)obj.getClass();
+        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+        try {
+            Schema<T> schema = RuntimeSchema.getSchema(clazz);
+            return ProtostuffIOUtil.toByteArray(obj, schema, buffer);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            buffer.clear();
+        }
+        return new byte[] {};
+    }
+
+    public static <T> T deSerialize(byte[] data, Class<T> clazz) {
+        if (clazz != null && data != null) {
+            Schema<T> schema = RuntimeSchema.getSchema(clazz);
+            T t = null;
+            try {
+                t = clazz.newInstance();
+                ProtostuffIOUtil.mergeFrom(data, t, schema);
+            } catch (Exception var5) {
+                log.error("deSerialize error, Class=" + clazz, var5);
+            }
+            return t;
+        } else {
+            return null;
+        }
+    }
+
+    public static Class<?> loadClazz(String path, String className) {
+        if (CommonUtils.isEmptyOr(path, className))
+            return null;
+        String prefix = "file:";
+        // log.debug("load class file path: {} | {}", prefix, path);
+        try {
+            Class<?> clazz = clazzMap.get(className);
+            if (clazz == null) {
+
+                try {// 先从加载器加载类
+                    clazz = Class.forName(className);
+                } catch (ClassNotFoundException ignored) {
+                }
+                if (clazz == null) {// 加载器类不存在，从Jar文件加载
+                    clazz = JarUtils.loadClassForJar(prefix + path, className);
+                }
+                clazzMap.put(className, clazz);
+            }
+            return clazz;
+        } catch (MalformedURLException | ClassNotFoundException e) {
+            log.error("load class file path: {} | {}", prefix, path);
+            log.error("load class to deSerialize error!", e);
+        }
+        return null;
+    }
+
+    public static ZkSerializer jsonZk() {
+        return new ZkSerializer() {
+            @Override
+            public byte[] serialize(Object o) throws ZkMarshallingError {
+                return JSONUtils.toJson2(o).getBytes(StandardCharsets.UTF_8);
+            }
+
+            @Override
+            public Object deserialize(byte[] bytes) throws ZkMarshallingError {
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+        };
+    }
+
+    public static byte[] convertContent(KafkaTopicDTO kafkaTopicDto, String contentMsg) {
+
+        ContentType contentType = ContentType.from(kafkaTopicDto.getType());
+        if (contentType == ContentType.PROTO_STUFF) {
+            Class<?> clazz = null;
+            if (CommonUtils.isNotEmpty(kafkaTopicDto.getClassName())) {
+                clazz = KafkaSerializeUtils.loadClazz(kafkaTopicDto.getClassFile(), kafkaTopicDto.getClassName());
+            }
+            if (clazz != null) {
+                Object obj = JSONUtils.fromJson2(contentMsg, clazz);
+                log.debug("send clazz content: {}", JSONUtils.toJson2(obj));
+                if (obj != null) {
+                    return KafkaSerializeUtils.serializer(obj);
+                }
+            }
+        }
+        return contentMsg.getBytes();
+    }
+}

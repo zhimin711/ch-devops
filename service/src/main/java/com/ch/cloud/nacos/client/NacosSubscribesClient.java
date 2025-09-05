@@ -1,0 +1,47 @@
+package com.ch.cloud.nacos.client;
+
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.ch.cloud.nacos.NacosAPI;
+import com.ch.cloud.nacos.dto.SubscriberDTO;
+import com.ch.cloud.nacos.vo.ClientEntity;
+import com.ch.cloud.nacos.vo.SubscribesPageClientVO;
+import com.ch.result.InvokerPage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * desc: nacos 服务 client
+ *
+ * @author zhimin
+ * @since 2022/4/25 23:31
+ */
+@Component
+@Slf4j
+public class NacosSubscribesClient extends BaseClient {
+
+    /**
+     * fetch nacos subscribes page
+     *
+     * @param clientEntity
+     *            query params
+     * @return Page
+     */
+    public InvokerPage.Page<SubscriberDTO> fetchPage(ClientEntity<SubscribesPageClientVO> clientEntity) {
+        String url = urlWithAll(NacosAPI.SUBSCRIBERS, clientEntity);
+        log.info("nacos subscribes page url: {}", url);
+        JSONObject resp = restTemplate.getForObject(url, JSONObject.class);
+        if (resp != null && resp.containsKey("count")) {
+            Integer count = resp.getInteger("count");
+            if (count <= 0) {
+                return InvokerPage.build();
+            }
+            JSONArray arr = resp.getJSONArray("subscribers");
+            List<SubscriberDTO> records = arr.toJavaList(SubscriberDTO.class);
+            return InvokerPage.build(count, records);
+        }
+        return InvokerPage.build();
+    }
+}

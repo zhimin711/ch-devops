@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ch.cloud</groupId>
+        <artifactId>ch-devops</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>ch-devops-dao</artifactId>
+    <name>Chao Hua DevOps Dao</name>
+
+    <properties>
+        <file_encoding>UTF-8</file_encoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.ch.cloud</groupId>
+            <artifactId>ch-devops-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ch.cloud</groupId>
+            <artifactId>ch-cloud-starter-tk-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.30</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+    </dependencies>
+</project>

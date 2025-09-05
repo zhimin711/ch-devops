@@ -1,0 +1,72 @@
+server:
+  port: 7004
+
+spring:
+  application:
+    name: ch-devops
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.150.254:3306/ch_devops?characterEncoding=UTF-8&serverTimezone=GMT
+    username: admin
+    password: 123456
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: DatebookHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  thymeleaf:
+    mode: HTML5
+    cache: false
+  mvc: # 解决Swagger3.0 + spring boot 2.6.x兼容
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+
+logging:
+  config: classpath:config/logback.xml
+  level:
+    com:
+      ch: debug
+#      alibaba: warn
+fs:
+  root: data
+  path:
+    tmp: ${fs.root}/${spring.application.name}/tmp
+    libs: ${fs.root}/${spring.application.name}/libs
+rocketmq:
+  namesrv:
+#    addr: 10.206.46.77:9876
+#    addr: 192.168.20.244:9876
+    isVIPChannel: true
+    consoleCollect: true
+#    consoleCollectData: D:\\tmp\\rocket\\console\\data
+    consoleCollectData: data/rocket/console/data
+#  name-server: 192.168.0.205:9876 # 自己的RocketMQ服务地址
+#  name-server: false
+  producer:
+    send-message-timeout: 300000
+    group: ch-devops
+mybatis:
+#  type-aliases-package: #实体类的存放路径，如:com.beyondbit.ias.*.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true #开启驼峰功能
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #sql控制台打印
+#  configuration-properties: { dbSchema: *.* } #配置数据库的模式
+
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  #    path: /swagger-ui/index.html  # 默认路径，可自定义
+  api-docs:
+    path: /v3/api-docs      # OpenAPI JSON 端点
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
